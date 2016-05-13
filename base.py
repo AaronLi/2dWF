@@ -1,4 +1,5 @@
 #Base Platformer
+#TODO: Seperate walls and platforms, x y w h wall/plat
 from pygame import *
 import glob
 class Mob:
@@ -6,10 +7,10 @@ class Mob:
         self.X, self.Y=400,300
         self.W, self.H= 16, 48
         self.vX, self.vY=0,0
-        self.vM, self.vAx=1.5,0.4
+        self.vM, self.vAx=4,0.3
         self.oG = False
 player=Mob()
-friction=0.111
+friction=0.1111
 gravity=0.25
 currentTile=0
 tileSetRects=glob.glob('tileset/plat?.txt')
@@ -54,26 +55,25 @@ def applyFriction(mob):
     return mob
 
 def move(mob):
-    mob.X+=mob.vX
-    mob.Y+=mob.vY
+    mob.X+=int(mob.vX)
+    mob.Y+=int(mob.vY)
     
 def hitSurface(mob,tile):
     global gravity
     mobRect=Rect(mob.X,mob.Y,mob.W,mob.H)
     for platTile in tileRects[tile]:
-        if mobRect.colliderect(platTile):
+        if mobRect.move(0,1).colliderect(platTile):
             mob.vY=0
-            mob.oG=True
             if mobRect.bottom < platTile.bottom:
                 mob.Y=platTile.top-mob.H
                 mob.oG=True
             elif mobRect.top>platTile.top:
                 mob.Y=platTile.bottom
+                mob.oG=False
             else:
                 mob.Y=platTile.top-mob.H
-        if mobRect.move(0,2).colliderect(platTile):
+        if not mobRect.move(0,0).colliderect(platTile):
             mob.oG=False
-        print(mob.oG)
     if not mob.oG:
         mob.vY+=gravity
 def drawStuff(tileNum):
@@ -95,9 +95,10 @@ while running:
     display.set_caption(str(int(gameClock.get_fps())))
     if not paused:
         keysDown()
+        move(player)
         hitSurface(player,currentTile)
         player=applyFriction(player)
-        move(player)
+
         drawStuff(currentTile)
     display.flip()
     gameClock.tick(60)
