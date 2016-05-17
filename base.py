@@ -7,13 +7,14 @@ import glob,pprint
 class Mob:
     def __init__(self):
         self.X, self.Y=400,300
-        self.W, self.H= 16, 32
+        self.W, self.H=33,36
         self.vX, self.vY=0,0
         self.vM, self.vAx=4,0.3
         self.oG = False
         self.jumps=2
 player=Mob()
 friction=0.1111
+airFriction=0.0211
 gravity=0.25
 currentTile=0
 tileSetRects=glob.glob('tileset/plat?.txt')
@@ -55,11 +56,23 @@ def keysDown():
 def applyFriction(mob):
     global friction
     if mob.vX>0:
-        mob.vX=min(mob.vX,mob.vM)
-        mob.vX-=friction
+        if mob.oG:
+            #Friction on Ground
+            mob.vX=min(mob.vX,mob.vM)
+            mob.vX-=friction
+        else:
+            #Friction in Air
+            mob.vX=min(mob.vX,mob.vM)
+            mob.vX-=airFriction
     elif mob.vX<0:
-        mob.vX=max(mob.vX,-mob.vM)
-        mob.vX+=friction
+        if mob.oG:
+            #Friction On ground
+            mob.vX=max(mob.vX,-mob.vM)
+            mob.vX+=friction
+        else:
+            #Friction in Air
+            mob.vX=max(mob.vX,-mob.vM)
+            mob.vX+=airFriction
     elif mob.vX in range(1,-1):
        mob.vX=0
     return mob
@@ -82,7 +95,7 @@ def hitSurface(mob,tile):
                 mob.Y=platTile[0].bottom
                 mob.vY*=-1
                 mob.oG=False
-            elif not mobRect.move(0,0).colliderect(platTile[0]):
+            elif not mobRect.colliderect(platTile[0]):
                 mob.oG=False
         if mobRect.colliderect(platTile[0]) and platTile[1]==1:
             if mobRect.left < platTile[0].left:
@@ -120,7 +133,6 @@ while running:
         move(player)
         hitSurface(player,currentTile)
         player=applyFriction(player)
-        print(player.oG)
         drawStuff(currentTile)
     display.flip()
     gameClock.tick(60)
