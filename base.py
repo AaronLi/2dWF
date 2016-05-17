@@ -1,5 +1,7 @@
 #Base Platformer
-#TODO: Seperate walls and platforms, x y w h wall(0)/plat(1)
+#TODO: Multiple platforms put together
+#Have a master platform list that contains all platforms with preoffset platforms in them?
+#Stitch together all platform visuals?
 from pygame import *
 import glob
 class Mob:
