@@ -3,7 +3,7 @@
 #Have a master platform list that contains all platforms with preoffset platforms in them?
 #Stitch together all platform visuals?
 from pygame import *
-import glob
+import glob,pprint
 class Mob:
     def __init__(self):
         self.X, self.Y=400,300
@@ -19,18 +19,23 @@ currentTile=0
 tileSetRects=glob.glob('tileset/plat?.txt')
 drawTiles=[]
 tileRects=[]
+tileSizes=[]
 counter=0
 paused=False
 for i in range(len(tileSetRects)):
-    tileFile=open(tileSetRects[i])
+    tileFile=open(tileSetRects[i]).readlines()
+    currentTileSize=[int(i) for i in tileFile[0].split()]
+    tileSizes.append(currentTileSize)
     tileRects.append([])
-    drawTiles.append(Surface((1280,720)))
+    drawTiles.append(Surface((currentTileSize)))
     drawTiles[i].fill((255,255,255))
-    for j in tileFile:
-        platInfo=j.split()
+    for j in range(1,len(tileFile)):
+        platInfo=tileFile[j].split()
         newPlat=[int(platInfo[i]) for i in range(4)]
-        draw.rect(drawTiles[i],(0,0,0),newPlat)
+        draw.rect(drawTiles[i],(0,int(platInfo[4])*255,0),newPlat)
         tileRects[i].append([Rect(newPlat),int(platInfo[4])])
+pprint.pprint(tileSizes)
+pprint.pprint(tileRects)
 screen=display.set_mode((1280,720))
 running=True
 playerStanding=Surface((player.W,player.H))
@@ -77,6 +82,8 @@ def hitSurface(mob,tile):
                 mob.Y=platTile[0].bottom
                 mob.vY*=-1
                 mob.oG=False
+            elif not mobRect.move(0,0).colliderect(platTile[0]):
+                mob.oG=False
         if mobRect.colliderect(platTile[0]) and platTile[1]==1:
             if mobRect.left < platTile[0].left:
                 mob.X=platTile[0].left-mob.W-1
@@ -84,8 +91,7 @@ def hitSurface(mob,tile):
             elif mobRect.right>platTile[0].right:
                 mob.X=platTile[0].right+1
                 mob.jumps=2
-        if not mobRect.move(0,0).colliderect(platTile[0]):
-            mob.oG=False
+
     if not mob.oG:
         mob.vY+=gravity
 def drawStuff(tileNum):
@@ -114,7 +120,7 @@ while running:
         move(player)
         hitSurface(player,currentTile)
         player=applyFriction(player)
-
+        print(player.oG)
         drawStuff(currentTile)
     display.flip()
     gameClock.tick(60)
