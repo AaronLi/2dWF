@@ -29,7 +29,11 @@ for i in range(len(tileSetRects)):
         newPlat=[int(platInfo[i]) for i in range(4)]
         draw.rect(drawTiles[i],(0,0,0),newPlat)
         tileRects[i].append([Rect(newPlat),int(platInfo[4])])
+<<<<<<< HEAD
 screen=display.set_mode((1280,720))
+=======
+screen=display.set_mode((800,600))
+>>>>>>> origin/master
 running=True
 playerStanding=Surface((player.W,player.H))
 playerStanding.fill((255,0,0))
@@ -70,6 +74,7 @@ def hitSurface(mob,tile):
             if mobRect.bottom < platTile[0].bottom:
                 mob.Y=platTile[0].top-mob.H
                 mob.oG=True
+<<<<<<< HEAD
                 mob.jumps=2
             elif mobRect.top>platTile[0].top:
                 mob.Y=platTile[0].bottom
@@ -84,6 +89,14 @@ def hitSurface(mob,tile):
                 print('r')
                 mob.jumps=2
         if not mobRect.colliderect(platTile[0]):
+=======
+            elif mobRect.top>platTile[0].top:
+                mob.Y=platTile[0].bottom
+                mob.oG=False
+            else:
+                mob.Y=platTile[0].top-mob.H
+        if not mobRect.move(0,0).colliderect(platTile[0]):
+>>>>>>> origin/master
             mob.oG=False
     if not mob.oG:
         mob.vY+=gravity
