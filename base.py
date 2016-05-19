@@ -10,11 +10,11 @@ class Mob:
         self.W, self.H=33,36
         self.vX, self.vY=0,0
         self.vM, self.vAx=4,0.3
-        self.oG = False
+        self.oG, self.oW = False, False
         self.jumps=2
 player=Mob()
-friction=0.1111
-airFriction=0.0211
+friction=0.2111
+airFriction=0.02111
 gravity=0.25
 currentTile=0
 tileSetRects=glob.glob('tileset/plat?.txt')
@@ -55,6 +55,7 @@ def keysDown():
         
 def applyFriction(mob):
     global friction
+    print(mob.oG)
     if mob.vX>0:
         if mob.oG:
             #Friction on Ground
@@ -84,9 +85,12 @@ def move(mob):
 def hitSurface(mob,tile):
     global gravity
     mobRect=Rect(mob.X,mob.Y,mob.W,mob.H)
+    hitRect=[Rect(0,0,0,0)]
+    wallRect=[Rect(0,0,0,0)]
     for platTile in tileRects[tile]:
         if mobRect.move(0,1).colliderect(platTile[0]) and platTile[1]==0:
             mob.vY=0
+            hitRect=platTile
             if mobRect.bottom < platTile[0].bottom:
                 mob.Y=platTile[0].top-mob.H
                 mob.oG=True
@@ -95,21 +99,25 @@ def hitSurface(mob,tile):
                 mob.Y=platTile[0].bottom
                 mob.vY*=-1
                 mob.oG=False
-            elif not mobRect.colliderect(platTile[0]):
-                mob.oG=False
         if mobRect.colliderect(platTile[0]) and platTile[1]==1:
+            mob.oW=True
+            wallRect=platTile
             if mobRect.left < platTile[0].left:
                 mob.X=platTile[0].left-mob.W-1
                 mob.jumps=2
             elif mobRect.right>platTile[0].right:
                 mob.X=platTile[0].right+1
                 mob.jumps=2
-
-    if not mob.oG:
+    if not mobRect.move(0,1).colliderect(hitRect[0]):
+        mob.oG=False
         mob.vY+=gravity
+    if not (mobRect.move(0,1).colliderect(wallRect[0]) or mobRect.move(0,-1).colliderect(wallRect[0])):
+        mob.oW=False
+
 def drawStuff(tileNum):
-    screen.blit(drawTiles[tileNum],(0,0))
-    screen.blit(playerStanding,(int(player.X), int(player.Y)))
+    screen.fill((0,0,0))
+    screen.blit(drawTiles[tileNum],(tileSizes[tileNum][0]//2-player.X,tileSizes[tileNum][1]//2-player.Y))
+    screen.blit(playerStanding,(640,360))
 while running:
     for e in event.get():
         if e.type==QUIT:
