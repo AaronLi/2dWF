@@ -13,6 +13,11 @@ class Mob:
         self.oG, self.oW = False, False
         self.jumps=2
 player=Mob()
+frame=0
+animation=0
+idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
+idle=idleRight
+jump=jumpRight
 friction=0.2111
 airFriction=0.02111
 gravity=0.25
@@ -44,14 +49,31 @@ playerStanding.fill((255,0,0))
 gameClock=time.Clock()
 onGround=False
 def keysDown():
-    global player
+    global player, animation, idle, jump, frame
     keys=key.get_pressed()
+    animation=idle
+    if player.oG==False:
+        animation=jump
     if keys[K_a]:
         player.vX-=player.vAx
+        idle = idleLeft
+        jump=jumpLeft
+        if player.oG==True:
+            animation = left
     if keys[K_s]:
         print("Insert Crouch Thing")
     if keys[K_d]:
         player.vX+=player.vAx
+        idle = idleRight
+        jump= jumpRight
+        if player.oG==True:
+            animation = right
+    if animation!=idle:   
+        frame = frame + 0.15 
+        if frame >= len(pics[animation]):
+            frame = 0
+    if animation==idle:
+        frame=0
         
 def applyFriction(mob):
     global friction
@@ -113,11 +135,25 @@ def hitSurface(mob,tile):
         mob.vY+=gravity
     if not (mobRect.move(0,1).colliderect(wallRect[0]) or mobRect.move(0,-1).colliderect(wallRect[0])):
         mob.oW=False
-
+def aniPics(name,start,end):
+    pics = []
+    for i in range(start,end+1):
+        picture=image.load("Images/%s%03d.png" % (name,i))
+        picture=transform.scale(picture,(int(picture.get_width()*1.5),int(picture.get_height()*1.5)))
+        pics.append(picture)
+    return pics
+pics = []
+pics.append(aniPics("Excalibur",1,1))
+pics.append(aniPics("Excalibur",2,2))
+pics.append(aniPics("Excalibur",3,8))
+pics.append(aniPics("Excalibur",9,14))
+pics.append(aniPics("Excalibur",15,21))
+pics.append(aniPics("Excalibur",22,28))
 def drawStuff(tileNum):
+    pic = pics[animation][int(frame)]
     screen.fill((0,0,0))
     screen.blit(drawTiles[tileNum],(tileSizes[tileNum][0]//2-player.X,tileSizes[tileNum][1]//2-player.Y))
-    screen.blit(playerStanding,(640,360))
+    screen.blit(pic,(640,360))
 while running:
     for e in event.get():
         if e.type==QUIT:
