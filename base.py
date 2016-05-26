@@ -43,14 +43,15 @@ tileSetRects=glob.glob('tileset/plat?.txt')
 drawTiles=[]
 tileRects=[]
 tileSizes=[]
+tileIO=[]
 counter=0
 paused=False
 #Getting information fomr the level files
 for i in range(len(tileSetRects)):
     tileFile=open(tileSetRects[i]).readlines()
     currentTileSize=[int(i) for i in tileFile[0].split()[0:2]]
-    tileEntrance = tileFile[0].split()[3]
-    tileExit = tileFile[0].split()[4]
+    tileEntrance = tileFile[0].split()[2]
+    tileExit = tileFile[0].split()[3]
     tileIO.append([tileEntrance,tileExit])
     tileSizes.append(currentTileSize)
     tileRects.append([])
@@ -159,6 +160,7 @@ def drawStuff(tileNum,keys):
     screen.blit(pic,(640,360))
 def makeNewLevel(levelLength):
     levelOut=[]
+    
 while running:
     for e in event.get():
         if e.type==QUIT:
@@ -176,6 +178,7 @@ while running:
             if e.key==K_c:
                 counter+=1
                 currentTile=counter%len(drawTiles)
+                player.X,player.Y = tileSizes[currentTile][0]//2, tileSizes[currentTile][1]//2
     display.set_caption(str(int(gameClock.get_fps())))
     keysIn=key.get_pressed()
     if not paused:
