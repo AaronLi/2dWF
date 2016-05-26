@@ -45,9 +45,13 @@ tileRects=[]
 tileSizes=[]
 counter=0
 paused=False
+#Getting information fomr the level files
 for i in range(len(tileSetRects)):
     tileFile=open(tileSetRects[i]).readlines()
-    currentTileSize=[int(i) for i in tileFile[0].split()]
+    currentTileSize=[int(i) for i in tileFile[0].split()[0:2]]
+    tileEntrance = tileFile[0].split()[3]
+    tileExit = tileFile[0].split()[4]
+    tileIO.append([tileEntrance,tileExit])
     tileSizes.append(currentTileSize)
     tileRects.append([])
     drawTiles.append(Surface((currentTileSize)))
