@@ -13,6 +13,8 @@ class Mob:
         self.oG, self.oW = False, False
         self.fA = False #(player.fAcing) True for right, False for left
         self.jumps=2
+screen=display.set_mode((1280,720))
+display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
 player=Mob()
 currentFrame=0
@@ -31,7 +33,10 @@ for i in range(len(frames)):
     addToFrameList.append(flipFrameList) 
     addToFrameList.append(frames[workFrame][1])
     frames.insert(flipFrameOrder[i],addToFrameList)
-    
+for i in range(len(frames)):
+    for j in range(len(frames[i][0])):
+        workFrame=frames[i][0][j]
+        frames[i][0][j]=transform.smoothscale(workFrame,(int(workFrame.get_width()*1.5),int(workFrame.get_height()*1.5)))
 animation=0
 idle=idleRight
 jump=jumpRight
@@ -46,7 +51,7 @@ tileSizes=[]
 tileIO=[]
 counter=0
 paused=False
-#Getting information fomr the level files
+#Getting information from the level files
 for i in range(len(tileSetRects)):
     tileFile=open(tileSetRects[i]).readlines()
     currentTileSize=[int(i) for i in tileFile[0].split()[0:2]]
@@ -62,12 +67,19 @@ for i in range(len(tileSetRects)):
         newPlat=[int(platInfo[i]) for i in range(4)]
         draw.rect(drawTiles[i],(0,int(platInfo[4])*255,0),newPlat)
         tileRects[i].append([Rect(newPlat),int(platInfo[4])])
-screen=display.set_mode((1280,720))
 running=True
 playerStanding=Surface((player.W,player.H))
 playerStanding.fill((255,0,0))
 gameClock=time.Clock()
 onGround=False
+def makeTile(tileInfo):
+    tileSize=tileInfo.pop(0)
+    tileVisual=Surface(tileSize)
+    tileVisual.fill((255,255,255))
+    for i in tileInfo:
+        draw.rect(tileVisual,(0,i[1]*255,0),i[0])
+    #image.save(tileVisual,'tile.png')
+    return(tileSize,tileVisual,tileInfo)
 def keysDown(keys):
     global player
     if keys[K_a]:
@@ -106,12 +118,12 @@ def move(mob):
     mob.X+=int(mob.vX)
     mob.Y+=int(mob.vY)
     
-def hitSurface(mob,tile):
+def hitSurface(mob,tilePlats):
     global gravity
     mobRect=Rect(mob.X,mob.Y,mob.W,mob.H)
     hitRect=[Rect(0,0,0,0)]
     wallRect=[Rect(0,0,0,0)]
-    for platTile in tileRects[tile]:
+    for platTile in tilePlats:
         if mobRect.move(0,1).colliderect(platTile[0]) and platTile[1]==0:
             mob.vY=0
             hitRect=platTile
@@ -138,7 +150,7 @@ def hitSurface(mob,tile):
     if not (mobRect.move(0,1).colliderect(wallRect[0]) or mobRect.move(0,-1).colliderect(wallRect[0])):
         mob.oW=False
 
-def drawStuff(tileNum,keys):
+def drawStuff(tileSurf,tileSize,keys):
     global currentFrame,frames,animation
     if keys[K_a] and player.oG:
         animation=left
@@ -152,15 +164,24 @@ def drawStuff(tileNum,keys):
         animation=idleLeft
     elif not player.fA and player.oG:
         animation=idleRight
-    #print(frames[animation][1],currentFrame,currentFrame//frames[animation][1]%len(frames[animation][0]))
     pic = frames[animation][0][currentFrame//frames[animation][1]%len(frames[animation][0])]
     currentFrame+=1
     screen.fill((0,0,0))
-    screen.blit(drawTiles[tileNum],(tileSizes[tileNum][0]//2-player.X,tileSizes[tileNum][1]//2-player.Y))
+    screen.blit(tileSurf,(640-player.X,360-player.Y))#player.Y))
     screen.blit(pic,(640,360))
 def makeNewLevel(levelLength):
     levelOut=[]
-    
+    tileH = 0
+    levelSeq=[random.randint(0,len(drawTiles)-1) for i in range(levelLength)]
+    xOff, yOff = 0,0
+    for i in levelSeq:
+        for plat in tileRects[i]:
+            levelOut.append([plat[0].move(xOff,yOff),plat[1]])
+        xOff+=tileSizes[i][0]
+        tileH+=tileSizes[i][1]
+    levelOut.insert(0,(xOff,tileH))
+    return levelOut
+playTile=makeTile(makeNewLevel(10))
 while running:
     for e in event.get():
         if e.type==QUIT:
@@ -179,14 +200,15 @@ while running:
                 counter+=1
                 currentTile=counter%len(drawTiles)
                 player.X,player.Y = tileSizes[currentTile][0]//2, tileSizes[currentTile][1]//2
-    display.set_caption(str(int(gameClock.get_fps())))
+    display.set_caption(str(int(gameClock.get_fps()))+" - Dev Build")
     keysIn=key.get_pressed()
     if not paused:
         keysDown(keysIn)
         move(player)
-        hitSurface(player,currentTile)
+        hitSurface(player,playTile[2])
         player=applyFriction(player)
-        drawStuff(currentTile,keysIn)
+        drawStuff(playTile[1],playTile[0],keysIn)
     display.flip()
     gameClock.tick(60)
 quit()
+print('cya')
