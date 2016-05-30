@@ -196,10 +196,10 @@ while running:
                     paused=False
                 elif not paused:
                     paused=True
-            if e.key==K_c:
-                counter+=1
-                currentTile=counter%len(drawTiles)
-                player.X,player.Y = tileSizes[currentTile][0]//2, tileSizes[currentTile][1]//2
+##            if e.key==K_c:
+##                counter+=1
+##                currentTile=counter%len(drawTiles)
+##                player.X,player.Y = tileSizes[currentTile][0]//2, tileSizes[currentTile][1]//2
     display.set_caption(str(int(gameClock.get_fps()))+" - Dev Build")
     keysIn=key.get_pressed()
     if not paused:
