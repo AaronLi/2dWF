@@ -3,23 +3,23 @@
 #Have a master platform list that contains all platforms with preoffset platforms in them?
 #Stitch together all platform visuals?
 from pygame import *
-import glob,pprint,random
+import glob,random
 class Mob:
-    def __init__(self):
-        self.X, self.Y=400,300
-        self.W, self.H=33,36
-        self.vX, self.vY=0,0
-        self.vM, self.vAx=4,0.3
+    def __init__(self,x,y,w,h,vX,vY,vM,vAx,fA,jumps):
+        self.X, self.Y=x,y
+        self.W, self.H=w,h
+        self.vX, self.vY=vX,vY
+        self.vM, self.vAx=vM,vAx
         self.oG, self.oW = False, False
-        self.fA = False #(player.fAcing) True for right, False for left
-        self.jumps=2
+        self.fA = fA #(player.fAcing) True for right, False for left
+        self.jumps=jumps
 screen=display.set_mode((1280,720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
-player=Mob()
+player=Mob(400,300,33,36,0,0,4,0.3,False,2)
 currentFrame=0
 #Animations
-frames=[[[image.load("images/frost001.png")],1],[[image.load("images/frost003.png"),image.load("images/frost004.png"),image.load("images/frost005.png"),image.load("images/frost006.png"),image.load("images/frost007.png"),image.load("images/frost008.png")],5],[[image.load("images/frost015.png"),image.load("images/frost016.png"),image.load("images/frost017.png"),image.load("images/frost018.png"),image.load("images/frost019.png"),image.load("images/frost020.png"),image.load("images/frost021.png")],5]]
+frames=[[[image.load("images/frost001.png")],1],[[image.load("images/frost003.png"),image.load("images/frost004.png"),image.load("images/frost005.png"),image.load("images/frost006.png"),image.load("images/frost007.png"),image.load("images/frost008.png")],7],[[image.load("images/frost015.png"),image.load("images/frost016.png"),image.load("images/frost017.png"),image.load("images/frost018.png"),image.load("images/frost019.png"),image.load("images/frost020.png"),image.load("images/frost021.png")],5]]
 flippedFrame=Surface((0,0))
 ogFrames=[0,2,4]
 flipFrameOrder=[1,3,5]
@@ -168,13 +168,16 @@ def drawStuff(tileSurf,tileSize,keys):
     currentFrame+=1
     screen.fill((0,0,0))
     screen.blit(tileSurf,(640-player.X,360-player.Y))#player.Y))
-    screen.blit(pic,(640,360))
+    #print(pic.get_height())
+    screen.blit(pic,(640,360+(36-pic.get_height())))
 def makeNewLevel(levelLength):
     levelOut=[]
     tileH = 0
     levelSeq=[random.randint(0,len(drawTiles)-1) for i in range(levelLength)]
     xOff, yOff = 0,0
     for i in levelSeq:
+        tileEnter = tileIO[i][0]
+        tileExit = tileIO[i][1]
         for plat in tileRects[i]:
             levelOut.append([plat[0].move(xOff,yOff),plat[1]])
         xOff+=tileSizes[i][0]
@@ -188,7 +191,7 @@ while running:
             running=False
         if e.type==KEYDOWN:
             if e.key ==K_w and player.jumps>0:
-                player.vY=-6
+                player.vY=-7
                 player.oG=False
                 player.jumps-=1
             if e.key==K_p:
