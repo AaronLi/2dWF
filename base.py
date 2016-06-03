@@ -9,16 +9,20 @@ class Mob:
         self.X, self.Y=x,y
         self.W, self.H=w,h
         self.vX, self.vY=vX,vY
-        self.vM, self.vAx=vM,vAx
+        self.vM, self.vAx=vM,vAx #velocity max, acceleration
         self.oG, self.oW = False, False
         self.fA = fA #(player.fAcing) True for right, False for left
         self.jumps=jumps
         self.frame=0
     def move(self):
+        self.X+=int(self.vX)
+        self.Y+=int(self.vY)
+    def enemyMove(self):
+        #print(self.fA,self.vX)
         if self.fA:
-            self.vX-=self.vAx
+            self.vX+=self.vAx
         elif not self.fA:
-            print('oi')
+            self.vX-=self.vAx
 screen=display.set_mode((1280,720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -57,6 +61,7 @@ tileSizes=[]
 tileIO=[]
 counter=0
 paused=False
+enemyList=[Mob(300, 400, 50, 50, 0, 0, 4, 0.3, False, 1)]
 #Getting information from the level files
 for i in range(len(tileSetRects)):
     tileFile=open(tileSetRects[i]).readlines()
@@ -78,9 +83,17 @@ playerStanding=Surface((player.W,player.H))
 playerStanding.fill((255,0,0))
 gameClock=time.Clock()
 onGround=False
-def enemyLogic(enemyList):
-    for i in enemyList:
-        print('eyo')
+def enemyLogic():
+    global enemyList
+    for i in range(len(enemyList)):
+        enemyInfo=enemyList[i]
+        #print(enemyInfo.X,player.X)
+        if player.X > enemyInfo.X:
+            enemyList[i].fA=True
+        elif player.X < enemyInfo.X:
+            enemyList[i].fA=False
+        if enemyInfo.oW:
+            enemyList[i].vY-=7
 def makeTile(tileInfo):
     tileSize=tileInfo.pop(0)
     tileVisual=Surface(tileSize)
@@ -125,10 +138,7 @@ def applyFriction(mob):
        mob.vX=0
     return mob
 
-def move(mob):
-    mob.X+=int(mob.vX)
-    mob.Y+=int(mob.vY)
-    
+   
 def hitSurface(mob,tilePlats):
     global gravity
     mobRect=Rect(mob.X,mob.Y,mob.W,mob.H)
@@ -180,6 +190,9 @@ def drawStuff(tileSurf,tileSize,keys):
     screen.fill((0,0,0))
     screen.blit(tileSurf,(640-player.X,360-player.Y))#player.Y))
     #print(pic.get_height())
+    for i in enemyList:
+        #print(i)
+        draw.rect(screen,(255,0,0),(640-player.X+i.X,360-player.Y+i.Y,i.W,i.H))
     screen.blit(pic,(640,360+(36-pic.get_height())))
 def makeNewLevel(levelLength):
     levelOut=[]
@@ -218,10 +231,16 @@ while running:
     keysIn=key.get_pressed()
     if not paused:
         keysDown(keysIn)
-        move(player)
+        player.move()
         hitSurface(player,playTile[2])
         player=applyFriction(player)
         drawStuff(playTile[1],playTile[0],keysIn)
+        enemyLogic()
+        for i in range(len(enemyList)):
+            enemyList[i].move()
+            enemyList[i].enemyMove()
+            hitSurface(enemyList[i],playTile[2])
+            enemyList[i]=applyFriction(enemyList[i])
     display.flip()
     gameClock.tick(60)
 quit()
