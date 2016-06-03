@@ -13,11 +13,17 @@ class Mob:
         self.oG, self.oW = False, False
         self.fA = fA #(player.fAcing) True for right, False for left
         self.jumps=jumps
+        self.frame=0
+    def move(self):
+        if self.fA:
+            self.vX-=self.vAx
+        elif not self.fA:
+            print('oi')
 screen=display.set_mode((1280,720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
 player=Mob(400,300,33,36,0,0,4,0.3,False,2)
-currentFrame=0
+player.frame=0
 #Animations
 frames=[[[image.load("images/frost001.png")],1],[[image.load("images/frost003.png"),image.load("images/frost004.png"),image.load("images/frost005.png"),image.load("images/frost006.png"),image.load("images/frost007.png"),image.load("images/frost008.png")],7],[[image.load("images/frost015.png"),image.load("images/frost016.png"),image.load("images/frost017.png"),image.load("images/frost018.png"),image.load("images/frost019.png"),image.load("images/frost020.png"),image.load("images/frost021.png")],5]]
 flippedFrame=Surface((0,0))
@@ -72,6 +78,9 @@ playerStanding=Surface((player.W,player.H))
 playerStanding.fill((255,0,0))
 gameClock=time.Clock()
 onGround=False
+def enemyLogic(enemyList):
+    for i in enemyList:
+        print('eyo')
 def makeTile(tileInfo):
     tileSize=tileInfo.pop(0)
     tileVisual=Surface(tileSize)
@@ -85,6 +94,8 @@ def keysDown(keys):
     if keys[K_a]:
         player.vX-=player.vAx
         player.fA=True
+    if keys[K_w] and player.oW:
+        player.vY=max(-4,player.vY-0.5)
     if keys[K_s]:
         print("Insert Crouch Thing")
     if keys[K_d]:
@@ -151,7 +162,7 @@ def hitSurface(mob,tilePlats):
         mob.oW=False
 
 def drawStuff(tileSurf,tileSize,keys):
-    global currentFrame,frames,animation
+    global player,frames,animation
     if keys[K_a] and player.oG:
         animation=left
     elif keys[K_d] and player.oG:
@@ -164,8 +175,8 @@ def drawStuff(tileSurf,tileSize,keys):
         animation=idleLeft
     elif not player.fA and player.oG:
         animation=idleRight
-    pic = frames[animation][0][currentFrame//frames[animation][1]%len(frames[animation][0])]
-    currentFrame+=1
+    pic = frames[animation][0][player.frame//frames[animation][1]%len(frames[animation][0])]
+    player.frame+=1
     screen.fill((0,0,0))
     screen.blit(tileSurf,(640-player.X,360-player.Y))#player.Y))
     #print(pic.get_height())
