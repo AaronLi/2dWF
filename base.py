@@ -14,21 +14,23 @@ class Mob:
         self.fA = fA #(player.fAcing) True for right, False for left
         self.jumps=jumps
         self.frame=0
+        self.hP,self.hW=[Rect(0,0,0,0),0], [Rect(0,0,0,0),0]#Hit Plat, Hit Wall - last floor platform the mob hit
     def move(self):
         self.X+=int(self.vX)
         self.Y+=int(self.vY)
     def enemyMove(self):
-        #print(self.fA,self.vX)
-        if self.fA:
-            self.vX+=self.vAx
-        elif not self.fA:
-            self.vX-=self.vAx
+        if (abs(player.X-self.X) > 200 or not self.oG):#Distance from player
+            if self.fA:
+                self.vX+=self.vAx
+            elif not self.fA:
+                self.vX-=self.vAx
 screen=display.set_mode((1280,720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
 player=Mob(400,300,33,36,0,0,4,0.3,False,2)
 player.frame=0
 #Animations
+praiseCube=image.load("images/cubeLove.png")
 frames=[[[image.load("images/frost001.png")],1],[[image.load("images/frost003.png"),image.load("images/frost004.png"),image.load("images/frost005.png"),image.load("images/frost006.png"),image.load("images/frost007.png"),image.load("images/frost008.png")],7],[[image.load("images/frost015.png"),image.load("images/frost016.png"),image.load("images/frost017.png"),image.load("images/frost018.png"),image.load("images/frost019.png"),image.load("images/frost020.png"),image.load("images/frost021.png")],5]]
 flippedFrame=Surface((0,0))
 ogFrames=[0,2,4]
@@ -61,7 +63,7 @@ tileSizes=[]
 tileIO=[]
 counter=0
 paused=False
-enemyList=[Mob(300, 400, 50, 50, 0, 0, 4, 0.3, False, 1)]
+enemyList=[Mob(300, 400, 50, 50, 0, 0, 4, 0.3, False, 1), Mob(300, 400, 60, 60, 0, 0, 4.5, 0.4, False, 1), Mob(300, 400, 20, 20, 0, 0, 3, 0.3, False, 1)]
 #Getting information from the level files
 for i in range(len(tileSetRects)):
     tileFile=open(tileSetRects[i]).readlines()
@@ -87,20 +89,38 @@ def enemyLogic():
     global enemyList
     for i in range(len(enemyList)):
         enemyInfo=enemyList[i]
-        #print(enemyInfo.X,player.X)
+        enemyRect=Rect(enemyInfo.X,enemyInfo.Y,enemyInfo.W,enemyInfo.H)
+        
+        #Moving left and right
         if player.X > enemyInfo.X:
             enemyList[i].fA=True
         elif player.X < enemyInfo.X:
             enemyList[i].fA=False
-        if enemyInfo.oW:
+
+        #Jumping over obstacles
+        if enemyInfo.oW and enemyInfo.oG:
+            print(enemyList[i].jumps)
+            enemyList[i].jumps-=1
             enemyList[i].vY-=7
+            print(enemyList[i].jumps)
+            
+        #Jumping across gaps
+        if enemyInfo.fA:
+            if (not enemyRect.move(int(enemyInfo.vM),1).colliderect(enemyInfo.hP[0])) and enemyInfo.oG:
+                enemyList[i].vY-=7
+        elif not enemyInfo.fA:
+            if (not enemyRect.move(-int(enemyInfo.vM),1).colliderect(enemyInfo.hP[0])) and enemyInfo.oG:
+                enemyList[i].vY-=7
+
+        #Shooting
+        print(abs(enemyInfo.Y-player.Y))
+        
 def makeTile(tileInfo):
     tileSize=tileInfo.pop(0)
     tileVisual=Surface(tileSize)
     tileVisual.fill((255,255,255))
     for i in tileInfo:
         draw.rect(tileVisual,(0,i[1]*255,0),i[0])
-    #image.save(tileVisual,'tile.png')
     return(tileSize,tileVisual,tileInfo)
 def keysDown(keys):
     global player
@@ -145,9 +165,9 @@ def hitSurface(mob,tilePlats):
     hitRect=[Rect(0,0,0,0)]
     wallRect=[Rect(0,0,0,0)]
     for platTile in tilePlats:
-        if mobRect.move(0,1).colliderect(platTile[0]) and platTile[1]==0:
+        if mobRect.move(0,1).colliderect(Rect(platTile[0])) and platTile[1]==0:
             mob.vY=0
-            hitRect=platTile
+            mob.hP=platTile
             if mobRect.bottom < platTile[0].bottom:
                 mob.Y=platTile[0].top-mob.H
                 mob.oG=True
@@ -158,17 +178,17 @@ def hitSurface(mob,tilePlats):
                 mob.oG=False
         if mobRect.colliderect(platTile[0]) and platTile[1]==1:
             mob.oW=True
-            wallRect=platTile
+            mob.hW=platTile
             if mobRect.left < platTile[0].left:
                 mob.X=platTile[0].left-mob.W-1
                 mob.jumps=1
             elif mobRect.right>platTile[0].right:
                 mob.X=platTile[0].right+1
                 mob.jumps=1
-    if not mobRect.move(0,1).colliderect(hitRect[0]):
+    if not mobRect.move(0,1).colliderect(mob.hP[0]):
         mob.oG=False
         mob.vY+=gravity
-    if not (mobRect.move(0,1).colliderect(wallRect[0]) or mobRect.move(0,-1).colliderect(wallRect[0])):
+    if not (mobRect.move(0,1).colliderect(mob.hW[0]) or mobRect.move(0,-1).colliderect(mob.hW[0])):
         mob.oW=False
 
 def drawStuff(tileSurf,tileSize,keys):
@@ -189,16 +209,17 @@ def drawStuff(tileSurf,tileSize,keys):
     player.frame+=1
     screen.fill((0,0,0))
     screen.blit(tileSurf,(640-player.X,360-player.Y))#player.Y))
-    #print(pic.get_height())
     for i in enemyList:
-        #print(i)
-        draw.rect(screen,(255,0,0),(640-player.X+i.X,360-player.Y+i.Y,i.W,i.H))
+        screen.blit(transform.smoothscale(praiseCube,(i.W,i.H)),(640-player.X+i.X,360-player.Y+i.Y))
     screen.blit(pic,(640,360+(36-pic.get_height())))
+    
 def makeNewLevel(levelLength):
     levelOut=[]
     tileH = 0
     levelSeq=[random.randint(0,len(drawTiles)-1) for i in range(levelLength)]
     xOff, yOff = 0,0
+    checkPlatList=[]
+    sameRect=[]
     for i in levelSeq:
         tileEnter = tileIO[i][0]
         tileExit = tileIO[i][1]
@@ -206,9 +227,19 @@ def makeNewLevel(levelLength):
             levelOut.append([plat[0].move(xOff,yOff),plat[1]])
         xOff+=tileSizes[i][0]
         tileH+=tileSizes[i][1]
+        #Placing rects together
+##    for i in levelOut:
+##        checkPlatList.append([list(i[0]),i[1]])
+##    checkPlatList.sort()
+##    print(checkPlatList)
+##    for i in range(len(checkPlatList)):
+##        pCheck=checkPlatList[i][0]
+##        while :
+            
     levelOut.insert(0,(xOff,tileH))
     return levelOut
 playTile=makeTile(makeNewLevel(10))
+#print(playTile)
 while running:
     for e in event.get():
         if e.type==QUIT:
@@ -216,7 +247,7 @@ while running:
         if e.type==KEYDOWN:
             if e.key ==K_w and player.jumps>0:
                 player.vY=-7
-                player.oG=False
+                #player.oG=False
                 player.jumps-=1
             if e.key==K_p:
                 if paused:
