@@ -121,7 +121,30 @@ playerStanding = Surface((player.W, player.H))
 playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
 onGround = False
-
+def checkBullTrajectory(angle, x, y):
+    hit = False
+    startX,startY = x,y
+    while not hit:
+        print(angle)
+        if math.hypot(startX-x,startY-y)>=700:
+            hit = True
+            return None
+        for i in playTile[2]:
+            #print(i)
+            if i[0].collidepoint(x, y):
+                hit = True
+                return 'environment'
+        for i in range(len(enemyList)):
+            eInfo=enemyList[i]
+            mobRect=Rect(eInfo.X,eInfo.Y,eInfo.W,eInfo.H)
+            if mobRect.collidepoint(x,y):
+                hit = True
+                return i
+        x+=cosd(angle)
+        y+=sind(angle)
+        screen.set_at((640-player.X+int(x),360-player.Y+int(y)),(0,0,0))
+        display.flip()
+    return None
 def drawUpper(playerX, playerY):
     global upperSurf
     mx, my = mouse.get_pos()
@@ -145,7 +168,6 @@ def drawUpper(playerX, playerY):
         if not partList[i].live:
             del partList[i]
     player.fA =-270 < angle < -90
-    print( -270 < angle < -90, angle)
 def enemyLogic():
     global enemyList
     for i in range(len(enemyList)):
@@ -198,6 +220,8 @@ def makeTile(tileInfo):
 
 def keysDown(keys):
     global player
+    mx, my = mouse.get_pos()
+    mb=mouse.get_pressed()
     if keys[K_a]:
         player.vX -= player.vAx
         player.fA = True
@@ -208,7 +232,10 @@ def keysDown(keys):
     if keys[K_d]:
         player.vX += player.vAx
         player.fA = False
-
+    if mb[0]:
+        angle = math.degrees(math.atan2(mx-player.X, my-player.Y))-90
+        print(angle)
+        print(checkBullTrajectory(angle, player.X, player.Y))
 
 def applyFriction(mob):
     global friction
