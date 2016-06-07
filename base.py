@@ -24,12 +24,26 @@ class Mob:
         self.Y += int(self.vY)
 
     def enemyMove(self):
-        if abs(player.X - self.X) > 200 or not self.oG:  # Distance from player
-            if self.fA:
-                self.vX += self.vAx
-            elif not self.fA:
-                self.vX -= self.vAx
+                # Moving left and right
+        if player.X > self.X:
+            enemyList[i].fA = True
+        elif player.X < self.X:
+            enemyList[i].fA = False
 
+        if abs(player.X - self.X) > 195 or not self.oG:  # Distance from player
+            if player.X > self.X:
+                enemyList[i].fA = True
+                self.vX += self.vAx
+            elif player.X < self.X:
+                enemyList[i].fA = False
+                self.vX -= self.vAx
+        elif abs(player.X - self.X) < 190 or not self.oG:  # Distance from player
+            if player.X > self.X:
+                enemyList[i].fA = False
+                self.vX -= self.vAx
+            elif player.X < self.X:
+                enemyList[i].fA = True
+                self.vX += self.vAx
 
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/icon.png'))
@@ -71,7 +85,7 @@ tileSizes = []
 tileIO = []
 counter = 0
 paused = False
-enemyList = [Mob(300, 400, 50, 50, 0, 0, 4, 0.3, False, 1), Mob(300, 400, 60, 60, 0, 0, 4.5, 0.4, False, 1),
+enemyList = [Mob(300, 400, 50, 50, 0, 0, 4, 0.3, False, 1), Mob(300, 400, 60, 60, 0, 0, 4, 0.4, False, 1),
              Mob(300, 400, 20, 20, 0, 0, 3, 0.3, False, 1)]
 # Getting information from the level files
 for i in range(len(tileSetRects)):
@@ -101,13 +115,9 @@ def enemyLogic():
     for i in range(len(enemyList)):
         enemyInfo = enemyList[i]
         enemyRect = Rect(enemyInfo.X, enemyInfo.Y, enemyInfo.W, enemyInfo.H)
-
-        # Moving left and right
-        if player.X > enemyInfo.X:
-            enemyList[i].fA = True
-        elif player.X < enemyInfo.X:
-            enemyList[i].fA = False
-
+        playerRect = Rect(player.X, player.Y, player.W, player.H)
+        losX = enemyInfo.X #line of sight x for checking whether you can shoot or not
+        checkLos=True
         # Jumping over obstacles
         if enemyInfo.oW and enemyInfo.oG:
             print(enemyList[i].jumps)
@@ -124,8 +134,22 @@ def enemyLogic():
                 enemyList[i].vY -= 7
 
         # Shooting
-        print(abs(enemyInfo.Y - player.Y))
-
+        if abs(enemyInfo.X-player.X) in range(190, 200):
+            if abs(enemyInfo.Y - player.Y) <30 and int(enemyInfo.vX) == 0:
+                    while checkLos:
+                        #print(checkLos)
+                        for i in playTile[2]:
+                            if i[0].collidepoint(losX,player.Y):
+                                checkLos=False
+                                break
+                        if playerRect.collidepoint(losX, player.Y):
+                            #print('king dedede')
+                            break
+                        if player.X>enemyInfo.X:
+                            losX+=3
+                        elif player.X<enemyInfo.X:
+                            losX-=3
+                        draw.line(screen,(255,0,0),(640-player.X+enemyInfo.X,360-player.Y+enemyInfo.Y),(640-player.X+losX,360-player.Y+enemyInfo.Y))
 
 def makeTile(tileInfo):
     tileSize = tileInfo.pop(0)
@@ -225,7 +249,7 @@ def drawStuff(tileSurf, tileSize, keys):
     pic = frames[animation][0][player.frame // frames[animation][1] % len(frames[animation][0])]
     player.frame += 1
     screen.fill((0, 0, 0))
-    screen.blit(tileSurf, (640 - player.X, 360 - player.Y))  # player.Y))
+    screen.blit(tileSurf, (640 - player.X, 360 - player.Y))
     for i in enemyList:
         screen.blit(transform.smoothscale(praiseCube, (i.W, i.H)), (640 - player.X + i.X, 360 - player.Y + i.Y))
     screen.blit(pic, (640, 360 + (36 - pic.get_height())))
