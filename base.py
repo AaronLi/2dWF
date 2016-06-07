@@ -4,8 +4,11 @@
 # Have a master platform list that contains all platforms with preoffset platforms in them?
 # Stitch together all platform visuals?
 from pygame import *
-import glob, random
-
+import glob, random, pyParticle, math
+def sind(deg):
+    return math.sin(math.radians(deg))
+def cosd(deg):
+    return math.cos(math.radians(deg))
 
 class Mob:
     def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps):
@@ -50,6 +53,16 @@ display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
 player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2)
 player.frame = 0
+braton = image.load('images/braton.png')
+frostUpper = image.load('images/frostUpper.png')
+frostArms = image.load('images/frostArms.png')
+frostLower = image.load('images/frostLower.png')
+upperSurf=Surface((22,20),SRCALPHA)
+upperSurf.blit(frostUpper,(1, 0))#(380, 288))
+upperSurf.blit(braton,(1+4, 0+8))#(384,296))
+upperSurf.blit(frostArms, (1-1, 0+10))#(379, 298))
+upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))
+lUpperSurf = transform.flip(upperSurf, False, True)
 # Animations
 praiseCube = image.load("images/cubeLove.png")
 frames = [[[image.load("images/frost001.png")], 1], [[image.load("images/frost003.png"), image.load("images/frost004.png"), image.load("images/frost005.png"), image.load("images/frost006.png"), image.load("images/frost007.png"), image.load("images/frost008.png")], 7], [[image.load("images/frost015.png"), image.load("images/frost016.png"), image.load("images/frost017.png"), image.load("images/frost018.png"), image.load("images/frost019.png"), image.load("images/frost020.png"), image.load("images/frost021.png")], 5]]
@@ -69,8 +82,8 @@ for i in range(len(frames)):
 for i in range(len(frames)):
     for j in range(len(frames[i][0])):
         workFrame = frames[i][0][j]
-        frames[i][0][j] = transform.smoothscale(workFrame,
-                                                (int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5)))
+        frames[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5)))
+partList=[]    
 animation = 0
 idle = idleRight
 jump = jumpRight
@@ -109,7 +122,30 @@ playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
 onGround = False
 
+def drawUpper(playerX, playerY):
+    global upperSurf
+    mx, my = mouse.get_pos()
+    angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
+    #screen.blit(frostLower, (playerX-12, playerY+4))#(376, 299))
+    if not player.fA:
+        rotUpper=transform.rotate(upperSurf,angle)
+        screen.blit(rotUpper, (playerX-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
+    else:
+        rotUpper=transform.rotate(lUpperSurf,angle)
+        screen.blit(rotUpper, (playerX-5-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
+    
 
+    if True:            
+        if len(partList)<100:
+            for i in range(10):
+                partList.append(pyParticle.Particle(screen, playerX+15*cosd(angle), playerY-15*sind(angle), -angle, 3, (200, random.randint(100,200), 0), 5, 0.1, 0.1,10, 2, 20))
+        draw.line(screen,(155,100,0), (playerX+10*cosd(angle), playerY-10*sind(angle)), (playerX+5000*cosd(angle), playerY-5000*sind(angle)))
+    for i in range(len(partList)-1,-1,-1):
+        partList[i].moveParticle()
+        if not partList[i].live:
+            del partList[i]
+    player.fA =-270 < angle < -90
+    print( -270 < angle < -90, angle)
 def enemyLogic():
     global enemyList
     for i in range(len(enemyList)):
@@ -253,7 +289,8 @@ def drawStuff(tileSurf, tileSize, keys):
     for i in enemyList:
         screen.blit(transform.smoothscale(praiseCube, (i.W, i.H)), (640 - player.X + i.X, 360 - player.Y + i.Y))
     screen.blit(pic, (640, 360 + (36 - pic.get_height())))
-
+    if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG):
+        drawUpper(660,376 + (36 - pic.get_height()))
 
 def makeNewLevel(levelLength):
     levelOut = []
