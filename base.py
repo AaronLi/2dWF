@@ -65,6 +65,7 @@ upperSurf.blit(braton,(1+4, 0+8))#(384,296))
 upperSurf.blit(frostArms, (1-1, 0+10))#(379, 298))
 upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))
 lUpperSurf = transform.flip(upperSurf, False, True)
+visualOff = 0
 # Animations
 praiseCube = image.load("images/cubeLove.png")
 frames = [[[image.load("images/frost001.png")], 1], [[image.load("images/frost003.png"), image.load("images/frost004.png"), image.load("images/frost005.png"), image.load("images/frost006.png"), image.load("images/frost007.png"), image.load("images/frost008.png")], 7], [[image.load("images/frost015.png"), image.load("images/frost016.png"), image.load("images/frost017.png"), image.load("images/frost018.png"), image.load("images/frost019.png"), image.load("images/frost020.png"), image.load("images/frost021.png")], 5]]
@@ -204,10 +205,8 @@ def enemyLogic():
             
         # Jumping over obstacles
         if enemyInfo.oW and enemyInfo.oG:
-            print(enemyList[i].jumps)
             enemyList[i].jumps -= 1
             enemyList[i].vY -= 7
-            print(enemyList[i].jumps)
 
         # Jumping across gaps
         if enemyInfo.fA:
@@ -239,6 +238,7 @@ def makeTile(tileInfo):
     tileVisual = Surface(tileSize)
     tileVisual.fill((255, 255, 255))
     for i in tileInfo:
+        #print(tileVisual)
         draw.rect(tileVisual, (0, i[1] * 255, 0), i[0])
     return (tileSize, tileVisual, tileInfo)
 
@@ -317,7 +317,7 @@ def hitSurface(mob, tilePlats):
 
 
 def drawStuff(tileSurf, tileSize, keys):
-    global player, frames, animation
+    global player, frames, animation, visualOff
     if keys[K_a] and player.oG:
         animation = left
     elif keys[K_d] and player.oG:
@@ -349,14 +349,18 @@ def makeNewLevel(levelLength):
     xOff, yOff = 0, 0
     checkPlatList = []
     sameRect = []
-    for i in levelSeq:
-        tileEnter = int(tileIO[i][0])
-        lastTileExit = int(tileIO[i-1][1])
-        yOff = tileEnter-lastTileExit
-        for plat in tileRects[i]:
+    for i in range(len(levelSeq)):
+        #print(i)
+        tileEnter = int(tileIO[levelSeq[i]][0])
+        #print(tileIO[i-1])
+        lastTileExit = int(tileIO[levelSeq[i-1]][1])
+        #print(lastTileExit, tileEnter)
+        yOff += lastTileExit-tileEnter
+        #print(yOff)
+        for plat in tileRects[levelSeq[i]]:
             levelOut.append([plat[0].move(xOff, yOff), plat[1]])
-        xOff += tileSizes[i][0]
-        tileH += tileSizes[i][1]
+        xOff += tileSizes[levelSeq[i]][0]
+        tileH += tileSizes[levelSeq[i]][1]
         # Placing rects together
     ##    for i in levelOut:
     ##        checkPlatList.append([list(i[0]),i[1]])
@@ -373,9 +377,22 @@ def playerShoot(weapon):
     mx, my = mouse.get_pos()
     angle = math.degrees(math.atan2(mx-640, my-360))-90+random.randint(-1,1)
     return checkBullTrajectory(angle, player.X, player.Y+20)
-        
-playTile = makeTile(makeNewLevel(10))
-# print(playTile)
+def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding box
+    global visualOff
+    platHeights=[]
+    newTile=[levelIn.pop(0)]
+    for i in levelIn:
+        #print(i[0])
+        platHeights.append(i[0].top)
+    #print(min(platHeights))
+    visualOff = min(platHeights)
+    for i in levelIn:
+        newTile.append([i[0].move(0,-min(platHeights)),i[1]])
+    print(newTile)
+    return newTile
+playTile = makeTile(fixLevel(makeNewLevel(10)))
+#player.Y = visualOff
+#print(playTile)
 while running:
     for e in event.get():
         if e.type == QUIT:
