@@ -55,6 +55,7 @@ display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
 player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2)
 player.frame = 0
+levelAtlas = image.load('images/tileTextures.png')
 braton = image.load('images/braton.png')
 frostUpper = image.load('images/frostUpper.png')
 frostArms = image.load('images/frostArms.png')
@@ -119,7 +120,7 @@ for i in range(len(tileSetRects)):
     for j in range(1, len(tileFile)):
         platInfo = tileFile[j].split()
         newPlat = [int(platInfo[i]) for i in range(4)]
-        draw.rect(drawTiles[i], (0, int(platInfo[4]) * 255, 0), newPlat)
+        draw.rect(drawTiles[i], (0, 0, 0), newPlat)
         tileRects[i].append([Rect(newPlat), int(platInfo[4])])
 running = True
 playerStanding = Surface((player.W, player.H))
@@ -234,12 +235,28 @@ def enemyLogic():
                             losX-=3
                         screen.set_at((640-player.X+losX, 360), (255,0,0))
 def makeTile(tileInfo):
+    global levelAtlas
     tileSize = tileInfo.pop(0)
     tileVisual = Surface(tileSize)
     tileVisual.fill((255, 255, 255))
     for i in tileInfo:
         #print(tileVisual)
-        draw.rect(tileVisual, (0, i[1] * 255, 0), i[0])
+        if i[1] !=2:
+            print(i)
+            draw.rect(tileVisual, (0, 0, 0), i[0])
+            tileVisual.blit(levelAtlas, i[0].topleft,(0,0,16,16))
+            tileVisual.blit(levelAtlas, i[0].move(-16,0).topright, (32,32,16,16))
+            tileVisual.blit(levelAtlas, i[0].move(0,-16).bottomleft, (16,64,16,16))
+            tileVisual.blit(levelAtlas, i[0].move(-16,-16).bottomright, (80,32,16,16))
+            if i[0].width>32:
+                for j in range(16,i[0].width-16,16):
+                    tileVisual.blit(levelAtlas,(i[0].left+j,i[0].top),(16,112,16,16))
+                    tileVisual.blit(levelAtlas,(i[0].left+j,i[0].bottom-16),(48,128,16,16))
+            if i[0].height >32:
+                print('wall')
+                for j in range(16,i[0].height-16,16):
+                    tileVisual.blit(levelAtlas, (i[0].left,i[0].top+j), (128,32,16,16))
+                    tileVisual.blit(levelAtlas, (i[0].move(-16,0).right,i[0].top+j), (0,16,16,16))
     return (tileSize, tileVisual, tileInfo)
 
 
@@ -289,7 +306,7 @@ def hitSurface(mob, tilePlats):
     hitRect = [Rect(0, 0, 0, 0)]
     wallRect = [Rect(0, 0, 0, 0)]
     for platTile in tilePlats:
-        if mobRect.move(0, 1).colliderect(Rect(platTile[0])) and platTile[1] == 0:
+        if mobRect.move(0, 1).colliderect(Rect(platTile[0])) and (platTile[1] == 0 or platTile[1] == 2):
             mob.vY = 0
             mob.hP = platTile
             if mobRect.bottom < platTile[0].bottom:
@@ -387,8 +404,7 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
     #print(min(platHeights))
     visualOff = min(platHeights)
     for i in levelIn:
-        newTile.append([i[0].move(0,-min(platHeights)),i[1]])
-    print(newTile)
+        newTile.append([i[0].move(0,-min(platHeights)+640),i[1]])
     return newTile
 playTile = makeTile(fixLevel(makeNewLevel(10)))
 #player.Y = visualOff
