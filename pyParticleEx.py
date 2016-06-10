@@ -35,7 +35,7 @@ while running:
     if partTime%10 == 0:            
         if len(partList)<100:
             for i in range(10):
-                partList.append(pyParticle.Particle(screen, playerX+10*cosd(angle), playerY-10*sind(angle), -angle, 3, (200, random.randint(100,200), 0), 5, 0.1, 0.1,10, 2, 20))
+                partList.append(pyParticle.Particle(screen, playerX+10*cosd(angle), playerY-10*sind(angle), -angle, 100, (200, random.randint(100,200), 0), 5, 2, 0.1,10, 2, 20))
         draw.line(screen,(155,100,0), (playerX+10*cosd(angle), playerY-10*sind(angle)), (playerX+5000*cosd(angle), playerY-5000*sind(angle)))
     for i in range(len(partList)-1,-1,-1):
         partList[i].moveParticle()

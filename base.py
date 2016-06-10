@@ -4,6 +4,7 @@
 # Have a master platform list that contains all platforms with preoffset platforms in them?
 # Stitch together all platform visuals?
 from pygame import *
+mixer.init()
 import glob, random, pyParticle, math
 def sind(deg):
     return math.sin(math.radians(deg))
@@ -11,7 +12,7 @@ def cosd(deg):
     return math.cos(math.radians(deg))
 
 class Mob:
-    def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps):
+    def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100):
         self.X, self.Y = x, y
         self.W, self.H = w, h
         self.vX, self.vY = vX, vY
@@ -21,7 +22,7 @@ class Mob:
         self.jumps = jumps
         self.frame = 0
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
-
+        self.health = health
     def move(self):
         self.X += int(self.vX)
         self.Y += int(self.vY)
@@ -47,7 +48,8 @@ class Mob:
             elif player.X < self.X:
                 enemyList[i].fA = True
                 self.vX += self.vAx
-
+bratonShoot = mixer.Sound('sfx/bratonShoot.ogg')
+weaponList = [['braton', 20, 20, 45, 2, bratonShoot]]#name, damage per shot, rounds per second, mag size, reload speed, sfx
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -83,6 +85,7 @@ for i in range(len(frames)):
     for j in range(len(frames[i][0])):
         workFrame = frames[i][0][j]
         frames[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5)))
+globalTicks = 0
 partList=[]    
 animation = 0
 idle = idleRight
@@ -97,9 +100,10 @@ tileRects = []
 tileSizes = []
 tileIO = []
 counter = 0
+shooting = False
 paused = False
 enemyList = [Mob(300, 400, 50, 50, 0, 0, 4, 0.3, False, 1), Mob(300, 400, 60, 60, 0, 0, 4, 0.4, False, 1),
-             Mob(300, 400, 20, 20, 0, 0, 3, 0.3, False, 1)]
+             Mob(300, 400, 40, 40, 0, 0, 3, 0.3, False, 1)]
 # Getting information from the level files
 for i in range(len(tileSetRects)):
     tileFile = open(tileSetRects[i]).readlines()
@@ -121,33 +125,45 @@ playerStanding = Surface((player.W, player.H))
 playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
 onGround = False
-def checkBullTrajectory(angle, x, y):
+currentWeapon = 0
+def checkBullTrajectory(bullAngle, x, y):
     hit = False
     startX,startY = x,y
+    endX, endY = x, y
+    retVal = None
+    mx, my=mouse.get_pos()
     while not hit:
-        print(angle)
+        #print(bullAngle)
         if math.hypot(startX-x,startY-y)>=700:
             hit = True
-            return None
+            endX, endY = x, y
+            break
         for i in playTile[2]:
             #print(i)
             if i[0].collidepoint(x, y):
                 hit = True
-                return 'environment'
+                endX, endY = x,y
+                retVal = None
         for i in range(len(enemyList)):
             eInfo=enemyList[i]
             mobRect=Rect(eInfo.X,eInfo.Y,eInfo.W,eInfo.H)
             if mobRect.collidepoint(x,y):
                 hit = True
-                return i
-        x+=cosd(angle)
-        y+=sind(angle)
-        screen.set_at((640-player.X+int(x),360-player.Y+int(y)),(0,0,0))
-        display.flip()
-    return None
+                endX, endY = x, y
+                retVal = i
+        x+=cosd(bullAngle)
+        y+=sind(-bullAngle)
+    shotDistance = math.hypot(startX-endX, startY-endY)
+    #draw.line(screen,(155,100,0), (655+10*cosd(bullAngle),375-10*sind(bullAngle)), (655+shotDistance*cosd(bullAngle),375-shotDistance*sind(bullAngle)))
+    #display.flip()
+    #time.wait(50)
+    #screen.set_at((int(player.X+10*cosd(bullAngle)+x), int(player.Y-10*sind(bullAngle)+y)),(0,0,0))
+    #display.flip()
+    return retVal
 def drawUpper(playerX, playerY):
-    global upperSurf
+    global upperSurf, currentWeapon, shootClock
     mx, my = mouse.get_pos()
+    mb = mouse.get_pressed()
     angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
     #screen.blit(frostLower, (playerX-12, playerY+4))#(376, 299))
     if not player.fA:
@@ -157,25 +173,35 @@ def drawUpper(playerX, playerY):
         rotUpper=transform.rotate(lUpperSurf,angle)
         screen.blit(rotUpper, (playerX-5-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
     
-
-    if True:            
-        if len(partList)<100:
+    #print(globalTicks % weaponList[currentWeapon][2])
+    if mb[0] and not shootClock % int(weaponList[currentWeapon][2]):
+        if len(partList)<10:
             for i in range(10):
-                partList.append(pyParticle.Particle(screen, playerX+15*cosd(angle), playerY-15*sind(angle), -angle, 3, (200, random.randint(100,200), 0), 5, 0.1, 0.1,10, 2, 20))
-        draw.line(screen,(155,100,0), (playerX+10*cosd(angle), playerY-10*sind(angle)), (playerX+5000*cosd(angle), playerY-5000*sind(angle)))
+                partList.append(pyParticle.Particle(screen, playerX+15*cosd(angle), playerY-15*sind(angle), -angle, 5, (200, random.randint(100,200), 0), 4, 0.1, 0.1,7, 2, 20))
+        enemyHit = playerShoot(weaponList[currentWeapon])
+        weaponList[currentWeapon][5].play()
+        if type(enemyHit) == int:
+            enemyList[enemyHit].health -= weaponList[currentWeapon][1]
+            print(enemyList[enemyHit].health)
+        #draw.line(screen,(155,100,0), (playerX+10*cosd(angle), playerY-10*sind(angle)), (playerX+5000*cosd(angle), playerY-5000*sind(angle)))
     for i in range(len(partList)-1,-1,-1):
         partList[i].moveParticle()
         if not partList[i].live:
             del partList[i]
     player.fA =-270 < angle < -90
+    
 def enemyLogic():
     global enemyList
-    for i in range(len(enemyList)):
+    for i in range(len(enemyList)-1,-1,-1):
         enemyInfo = enemyList[i]
         enemyRect = Rect(enemyInfo.X, enemyInfo.Y, enemyInfo.W, enemyInfo.H)
         playerRect = Rect(player.X, player.Y, player.W, player.H)
         losX = enemyInfo.X #line of sight x for checking whether you can shoot or not
         checkLos=True
+        #Checking health
+        if enemyInfo.health<=0:
+            del enemyList[i]
+            
         # Jumping over obstacles
         if enemyInfo.oW and enemyInfo.oG:
             print(enemyList[i].jumps)
@@ -207,8 +233,7 @@ def enemyLogic():
                             losX+=3
                         elif player.X<enemyInfo.X:
                             losX-=3
-                        draw.line(screen,(255,0,0),(640-player.X+enemyInfo.X,360-player.Y+enemyInfo.Y),(640-player.X+losX,360-player.Y+enemyInfo.Y))
-
+                        screen.set_at((640-player.X+losX, 360), (255,0,0))
 def makeTile(tileInfo):
     tileSize = tileInfo.pop(0)
     tileVisual = Surface(tileSize)
@@ -232,10 +257,6 @@ def keysDown(keys):
     if keys[K_d]:
         player.vX += player.vAx
         player.fA = False
-    if mb[0]:
-        angle = math.degrees(math.atan2(mx-player.X, my-player.Y))-90
-        print(angle)
-        print(checkBullTrajectory(angle, player.X, player.Y))
 
 def applyFriction(mob):
     global friction
@@ -322,13 +343,16 @@ def drawStuff(tileSurf, tileSize, keys):
 def makeNewLevel(levelLength):
     levelOut = []
     tileH = 0
-    levelSeq = [random.randint(0, len(drawTiles) - 1) for i in range(levelLength)]
+    levelSeq = [0]
+    for i in range(levelLength):
+        levelSeq.append(random.randint(0, len(drawTiles) - 1))
     xOff, yOff = 0, 0
     checkPlatList = []
     sameRect = []
     for i in levelSeq:
-        tileEnter = tileIO[i][0]
-        tileExit = tileIO[i][1]
+        tileEnter = int(tileIO[i][0])
+        lastTileExit = int(tileIO[i-1][1])
+        yOff = tileEnter-lastTileExit
         for plat in tileRects[i]:
             levelOut.append([plat[0].move(xOff, yOff), plat[1]])
         xOff += tileSizes[i][0]
@@ -345,7 +369,11 @@ def makeNewLevel(levelLength):
     levelOut.insert(0, (xOff, tileH))
     return levelOut
 
-
+def playerShoot(weapon):
+    mx, my = mouse.get_pos()
+    angle = math.degrees(math.atan2(mx-640, my-360))-90+random.randint(-1,1)
+    return checkBullTrajectory(angle, player.X, player.Y+20)
+        
 playTile = makeTile(makeNewLevel(10))
 # print(playTile)
 while running:
@@ -362,10 +390,17 @@ while running:
                     paused = False
                 elif not paused:
                     paused = True
-                ##            if e.key==K_c:
-                ##                counter+=1
-                ##                currentTile=counter%len(drawTiles)
-                ##                player.X,player.Y = tileSizes[currentTile][0]//2, tileSizes[currentTile][1]//2
+            if e.key==K_c:
+                if len(enemyList)>0:
+                    del enemyList[-1]
+        if e.type == MOUSEBUTTONDOWN:
+            #print(e.button)
+            if e.button == 1:
+                shooting = True
+                shootClock = 0
+        if e.type == MOUSEBUTTONUP:
+            if e.button == 1:
+                shooting = False
     display.set_caption(str(int(gameClock.get_fps())) + " - Dev Build")
     keysIn = key.get_pressed()
     if not paused:
@@ -380,6 +415,8 @@ while running:
             enemyList[i].enemyMove()
             hitSurface(enemyList[i], playTile[2])
             enemyList[i] = applyFriction(enemyList[i])
+    if shooting:
+        shootClock += 1
     display.flip()
     gameClock.tick(60)
 quit()
