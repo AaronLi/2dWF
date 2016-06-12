@@ -384,18 +384,18 @@ def makeNewLevel(levelLength):
         previousPlat = [checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]
         
         if (previousPlat[0]+previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
-                print('join',previousPlat,pCheck)
+                #print('join',previousPlat,pCheck)
                 unionedRect=Rect(previousPlat).union(Rect(pCheck))
-                checkPlatList.insert(2,[[unionedRect[1],unionedRect[0],unionedRect[2],unionedRect[3]],0])
+                checkPlatList.insert(2,[[unionedRect[1],unionedRect[0],unionedRect[2],unionedRect[3]],0])#Change back into height prioritized format
                 del checkPlatList[0]
                 del checkPlatList[0]
         else:
             if [Rect(pCheck),0] not in levelOut and Rect(pCheck).collidelist(rectOuts)==-1:
-                print('added')
+                #print('added')
                 levelOut.append([Rect(previousPlat),0])
                 rectOuts.append(Rect(previousPlat))
             del checkPlatList[0]
-        print(len(checkPlatList))
+        #print(len(checkPlatList))
     levelOut.insert(0, (xOff, tileH))
     return levelOut
 
@@ -431,6 +431,8 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
     return newTile
 playTile = makeTile(fixLevel(makeNewLevel(10)))
 #player.Y = visualOff
+
+
 while running:
     for e in event.get():
         if e.type == QUIT:
@@ -448,6 +450,8 @@ while running:
             if e.key==K_c:
                 if len(enemyList)>0:
                     del enemyList[-1]
+            if e.key==K_ESCAPE:
+                running=False
         if e.type == MOUSEBUTTONDOWN:
             #print(e.button)
             if e.button == 1:
@@ -456,6 +460,8 @@ while running:
         if e.type == MOUSEBUTTONUP:
             if e.button == 1:
                 shooting = False
+
+                
     display.set_caption(str(int(gameClock.get_fps())) + " - Dev Build")
     keysIn = key.get_pressed()
     #print(player.hP)
