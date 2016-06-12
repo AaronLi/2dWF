@@ -380,13 +380,13 @@ def makeNewLevel(levelLength):
         checkPlatList.sort()
     while len(checkPlatList)>1:
         #print(len(checkPlatList))
-        pCheck=[checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]
+        pCheck=[checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]#Change back to original after it's been sorted
         previousPlat = [checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]
         
-        if previousPlat[0]+previousPlat[2] == pCheck[0] and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
+        if (previousPlat[0]+previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
                 print('join',previousPlat,pCheck)
-                levelOut.append([Rect(previousPlat).union(Rect(pCheck)),0])
-                rectOuts.append(Rect(previousPlat).union(Rect(pCheck)))
+                unionedRect=Rect(previousPlat).union(Rect(pCheck))
+                checkPlatList.insert(2,[[unionedRect[1],unionedRect[0],unionedRect[2],unionedRect[3]],0])
                 del checkPlatList[0]
                 del checkPlatList[0]
         else:
