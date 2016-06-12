@@ -69,24 +69,24 @@ lUpperSurf = transform.flip(upperSurf, False, True)
 visualOff = 0
 # Animations
 praiseCube = image.load("images/cubeLove.png")
-frames = [[[image.load("images/frost001.png")], 1], [[image.load("images/frost003.png"), image.load("images/frost004.png"), image.load("images/frost005.png"), image.load("images/frost006.png"), image.load("images/frost007.png"), image.load("images/frost008.png")], 7], [[image.load("images/frost015.png"), image.load("images/frost016.png"), image.load("images/frost017.png"), image.load("images/frost018.png"), image.load("images/frost019.png"), image.load("images/frost020.png"), image.load("images/frost021.png")], 5]]
+playerFrames = [[[image.load("images/frost001.png")], 1], [[image.load("images/frost003.png"), image.load("images/frost004.png"), image.load("images/frost005.png"), image.load("images/frost006.png"), image.load("images/frost007.png"), image.load("images/frost008.png")], 7], [[image.load("images/frost015.png"), image.load("images/frost016.png"), image.load("images/frost017.png"), image.load("images/frost018.png"), image.load("images/frost019.png"), image.load("images/frost020.png"), image.load("images/frost021.png")], 5]]
 flippedFrame = Surface((0, 0))
 ogFrames = [0, 2, 4]
 flipFrameOrder = [1, 3, 5]
-for i in range(len(frames)):
+for i in range(len(playerFrames)):
     addToFrameList = []  # Frames and how fast to play them
     flipFrameList = []  # Just the frames
     workFrame = ogFrames[i]
-    for j in range(len(frames[workFrame][0])):
-        flippedFrame = transform.flip(frames[workFrame][0][j], True, False)
+    for j in range(len(playerFrames[workFrame][0])):
+        flippedFrame = transform.flip(playerFrames[workFrame][0][j], True, False)
         flipFrameList.append(flippedFrame)
     addToFrameList.append(flipFrameList)
-    addToFrameList.append(frames[workFrame][1])
-    frames.insert(flipFrameOrder[i], addToFrameList)
-for i in range(len(frames)):
-    for j in range(len(frames[i][0])):
-        workFrame = frames[i][0][j]
-        frames[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5)))
+    addToFrameList.append(playerFrames[workFrame][1])
+    playerFrames.insert(flipFrameOrder[i], addToFrameList)
+for i in range(len(playerFrames)):
+    for j in range(len(playerFrames[i][0])):
+        workFrame = playerFrames[i][0][j]
+        playerFrames[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5)))
 globalTicks = 0
 partList=[]    
 animation = 0
@@ -221,13 +221,11 @@ def enemyLogic():
         if abs(enemyInfo.X-player.X) in range(190, 200):
             if abs(enemyInfo.Y - player.Y) <30 and int(enemyInfo.vX) == 0:
                     while checkLos:
-                        #print(checkLos)
                         for i in playTile[2]:
                             if i[0].collidepoint(losX,player.Y):
                                 checkLos=False
                                 break
                         if playerRect.collidepoint(losX, player.Y):
-                            #print('king dedede')
                             break
                         if player.X>enemyInfo.X:
                             losX+=3
@@ -237,12 +235,10 @@ def enemyLogic():
 def makeTile(tileInfo):
     global levelAtlas
     tileSize = tileInfo.pop(0)
-    tileVisual = Surface(tileSize)
-    tileVisual.fill((255, 255, 255))
+    tileVisual = Surface(tileSize,SRCALPHA)
+    #tileVisual.fill((255, 255, 255))
     for i in tileInfo:
-        #print(tileVisual)
         if i[1] !=2:
-            print(i)
             draw.rect(tileVisual, (0, 0, 0), i[0])
             tileVisual.blit(levelAtlas, i[0].topleft,(0,0,16,16))
             tileVisual.blit(levelAtlas, i[0].move(-16,0).topright, (32,32,16,16))
@@ -253,7 +249,6 @@ def makeTile(tileInfo):
                     tileVisual.blit(levelAtlas,(i[0].left+j,i[0].top),(16,112,16,16))
                     tileVisual.blit(levelAtlas,(i[0].left+j,i[0].bottom-16),(48,128,16,16))
             if i[0].height >32:
-                print('wall')
                 for j in range(16,i[0].height-16,16):
                     tileVisual.blit(levelAtlas, (i[0].left,i[0].top+j), (128,32,16,16))
                     tileVisual.blit(levelAtlas, (i[0].move(-16,0).right,i[0].top+j), (0,16,16,16))
@@ -347,7 +342,7 @@ def drawStuff(tileSurf, tileSize, keys):
         animation = idleLeft
     elif not player.fA and player.oG:
         animation = idleRight
-    pic = frames[animation][0][player.frame // frames[animation][1] % len(frames[animation][0])]
+    pic = playerFrames[animation][0][player.frame // playerFrames[animation][1] % len(playerFrames[animation][0])]
     player.frame += 1
     screen.fill((0, 0, 0))
     screen.blit(tileSurf, (640 - player.X, 360 - player.Y))
@@ -360,33 +355,47 @@ def drawStuff(tileSurf, tileSize, keys):
 def makeNewLevel(levelLength):
     levelOut = []
     tileH = 0
-    levelSeq = [0]
+    levelSeq = [0,0]
     for i in range(levelLength):
         levelSeq.append(random.randint(0, len(drawTiles) - 1))
     xOff, yOff = 0, 0
     checkPlatList = []
     sameRect = []
+    stitchedLevel=[]
+    rectOuts=[]
     for i in range(len(levelSeq)):
-        #print(i)
         tileEnter = int(tileIO[levelSeq[i]][0])
-        #print(tileIO[i-1])
         lastTileExit = int(tileIO[levelSeq[i-1]][1])
-        #print(lastTileExit, tileEnter)
         yOff += lastTileExit-tileEnter
-        #print(yOff)
         for plat in tileRects[levelSeq[i]]:
-            levelOut.append([plat[0].move(xOff, yOff), plat[1]])
+            stitchedLevel.append([plat[0].move(xOff, yOff), plat[1]])
         xOff += tileSizes[levelSeq[i]][0]
         tileH += tileSizes[levelSeq[i]][1]
         # Placing rects together
-    ##    for i in levelOut:
-    ##        checkPlatList.append([list(i[0]),i[1]])
-    ##    checkPlatList.sort()
-    ##    print(checkPlatList)
-    ##    for i in range(len(checkPlatList)):
-    ##        pCheck=checkPlatList[i][0]
-    ##        while :
-
+        for i in stitchedLevel:
+            if i[1] == 0 or i[1] == 2:
+                checkPlatList.append([[i[0][1],i[0][0],i[0][2],i[0][3]],i[1]])#Because adjacent tiles should have same height first
+            else:
+                levelOut.append(i)
+        checkPlatList.sort()
+    while len(checkPlatList)>1:
+        #print(len(checkPlatList))
+        pCheck=[checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]
+        previousPlat = [checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]
+        
+        if previousPlat[0]+previousPlat[2] == pCheck[0] and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
+                print('join',previousPlat,pCheck)
+                levelOut.append([Rect(previousPlat).union(Rect(pCheck)),0])
+                rectOuts.append(Rect(previousPlat).union(Rect(pCheck)))
+                del checkPlatList[0]
+                del checkPlatList[0]
+        else:
+            if [Rect(pCheck),0] not in levelOut and Rect(pCheck).collidelist(rectOuts)==-1:
+                print('added')
+                levelOut.append([Rect(previousPlat),0])
+                rectOuts.append(Rect(previousPlat))
+            del checkPlatList[0]
+        print(len(checkPlatList))
     levelOut.insert(0, (xOff, tileH))
     return levelOut
 
@@ -396,19 +405,32 @@ def playerShoot(weapon):
     return checkBullTrajectory(angle, player.X, player.Y+20)
 def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding box
     global visualOff
+    print(len(levelIn))
     platHeights=[]
+    platRectList=[]
+    platTypes=[]
     newTile=[levelIn.pop(0)]
+    finalRects=[]
     for i in levelIn:
-        #print(i[0])
+        #print(i)
         platHeights.append(i[0].top)
-    #print(min(platHeights))
+        platRectList.append(Rect(i[0]))
+        platTypes.append(i[1])
     visualOff = min(platHeights)
+##    print(len(platRectList))
+##    for i in platRectList:
+##        collidedRects = i.collidelistall(platRectList)
+##        print(collidedRects)
+##        if len(collidedRects)>0:
+##            for i in range(len(collidedRects)-1,-1,-1):
+##                del platRectList[collidedRects[i]]
+##    print(len(platRectList))
+    print(len(levelIn))
     for i in levelIn:
         newTile.append([i[0].move(0,-min(platHeights)+640),i[1]])
     return newTile
 playTile = makeTile(fixLevel(makeNewLevel(10)))
 #player.Y = visualOff
-#print(playTile)
 while running:
     for e in event.get():
         if e.type == QUIT:
@@ -436,6 +458,7 @@ while running:
                 shooting = False
     display.set_caption(str(int(gameClock.get_fps())) + " - Dev Build")
     keysIn = key.get_pressed()
+    #print(player.hP)
     if not paused:
         keysDown(keysIn)
         player.move()
