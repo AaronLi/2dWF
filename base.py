@@ -102,7 +102,7 @@ hudFont=font.Font('fonts/Roboto-Light.ttf',30)
 descFont = font.Font('fonts/Roboto-Light.ttf',20)
 bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
 deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
-weaponList = {'braton':[ 20, 20, 45, 2, bratonShoot], 'dera':[16, 30, 30, 2, deraShoot]}#damage per shot, fire rate, mag size, reload speed, sfx
+weaponList = {'braton':[ 20, 20, 45, 2, bratonShoot,(200, 150, 0)], 'dera':[16, 17, 30, 2, deraShoot,(50,170,255)]}#damage per shot, fire rate, mag size, reload speed, sfx
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -110,15 +110,11 @@ player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2)
 beginShieldRegen = mixer.Sound('sfx/warframes/shield/shieldRegen.ogg')
 levelAtlas = image.load('images/tileTextures.png')
 braton = image.load('images/weapons/corpus/braton.png')
+dera = image.load('images/weapons/corpus/dera.png')
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
 frostLower = image.load('images/warframes/frost/frostLower.png')
-upperSurf=Surface((22,20),SRCALPHA)
-upperSurf.blit(frostUpper,(1, 0))#(380, 288))
-upperSurf.blit(braton,(1+4, 0+8))#(384,296))
-upperSurf.blit(frostArms, (1-1, 0+10))#(379, 298))
-upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))
-lUpperSurf = transform.flip(upperSurf, False, True)
+currentWeapon = 'braton'
 visualOff = 0
 # Animations
 crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 7], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
@@ -170,8 +166,21 @@ playerStanding = Surface((player.W, player.H))
 playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
 onGround = False
-currentWeapon = 'braton'
-
+def drawUpperSprite():
+    global currentWeapon, upperSurf, lUpperSurf
+    upperSurf=Surface((22,20),SRCALPHA)
+    upperSurf.blit(frostUpper,(1, 0))#(380, 288))
+    upperSurf.blit(eval(currentWeapon),(5, 8))#(384,296))
+    upperSurf.blit(frostArms, (0, 10))#(379, 298))
+    upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))
+    lUpperSurf = transform.flip(upperSurf, False, True)
+def miniMap():
+    mMapSurf=Surface((200,100),SRCALPHA)
+    mMapSurf.fill((255,255,255))
+    draw.rect(mMapSurf, (0,0,0), (102,52,2,5))
+    mMapSurf.blit(minimap,(100-player.X//7,50-player.Y//7))
+    mMapSurf = transform.rotate(mMapSurf, -1)
+    screen.blit(mMapSurf,(5,5))
 def drawHud():
     global currentWeapon, weaponList,hudFont, screen
     angledHudSec=Surface((300,43),SRCALPHA)
@@ -189,9 +198,10 @@ def drawHud():
     rotatedAmmoHud = transform.rotate(ammoHud, -2)
     screen.blit(rotatedHud,(965,2))
     screen.blit(rotatedAmmoHud, (1102, 685))
-    
+    miniMap()
     
 def checkBullTrajectory(bullAngle, x, y):
+    global partList
     hit = False
     startX,startY = x,y
     endX, endY = x, y
@@ -206,6 +216,8 @@ def checkBullTrajectory(bullAngle, x, y):
             if i[0].collidepoint(x, y):
                 hit = True
                 endX, endY = x,y
+                for i in range(5):
+                    partList.append(pyParticle.Particle(screen, 640-player.X+endX,360-player.Y+endY,bullAngle+180, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in range(len(enemyList)):
             eInfo=enemyList[i]
@@ -214,6 +226,8 @@ def checkBullTrajectory(bullAngle, x, y):
                 hit = True
                 endX, endY = x, y
                 retVal = i
+                for i in range(5):
+                    partList.append(pyParticle.Particle(screen, 640-player.X+endX,360-player.Y+endY,bullAngle+180, 20, [255,0,0], 3, 1, 0.2, 0, 1, 10))
         x+=cosd(bullAngle)
         y+=sind(-bullAngle)
     shotDistance = math.hypot(startX-endX, startY-endY)
@@ -221,10 +235,11 @@ def checkBullTrajectory(bullAngle, x, y):
     return retVal
 
 def calcBullets():
-    global regenTimer
-    playerRect = Rect(player.X,player.Y,player.W,player.H)
+    global regenTimer, playerRect
+    
     for i in range(len(bulletList)-1,-1,-1):
         if bulletList[i].hitRect.colliderect(playerRect):
+            print('hit')
             if player.shield != player.maxShield:
                 regenTimer = 200
             if player.shield>0:
@@ -239,7 +254,7 @@ def calcBullets():
             bulletList[i].life-=1
 
 def drawUpper(playerX, playerY):# Also includes shooting
-    global upperSurf, currentWeapon
+    global upperSurf, currentWeapon, partList
     mx, my = mouse.get_pos()
     mb = mouse.get_pressed()
     angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
@@ -251,26 +266,19 @@ def drawUpper(playerX, playerY):# Also includes shooting
         screen.blit(rotUpper, (playerX-5-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
     
     if mb[0] and not player.shootCounter % int(weaponList[currentWeapon][1]) and player.mag>0:
-        if len(partList)<10:
-            for i in range(10):
-                partList.append(pyParticle.Particle(screen, playerX+15*cosd(angle), playerY-15*sind(angle), -angle, 5, (200, random.randint(100,200), 0), 4, 0.1, 0.1,7, 2, 20))
+        for i in range(10):
+            partList.append(pyParticle.Particle(screen, playerX+15*cosd(angle), playerY-15*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
         enemyHit = playerShoot(weaponList[currentWeapon])
         weaponList[currentWeapon][4].play()
         player.mag-=1
         if type(enemyHit) == int:
             enemyList[enemyHit].health -= weaponList[currentWeapon][1]
-    for i in range(len(partList)-1,-1,-1):
-        partList[i].moveParticle()
-        if not partList[i].live:
-            del partList[i]
-    player.fA =-270 < angle < -90
-    
+    player.fA =-270 < angle < -90   
 def enemyLogic():
-    global enemyList
+    global enemyList, playerRect
     for i in range(len(enemyList)-1,-1,-1):
         enemyInfo = enemyList[i]
         enemyRect = Rect(enemyInfo.X, enemyInfo.Y, enemyInfo.W, enemyInfo.H)
-        playerRect = Rect(player.X, player.Y, player.W, player.H)
         losX = enemyInfo.X #line of sight x for checking whether you can shoot or not
         checkLos=True
         #Checking health
@@ -296,10 +304,14 @@ def enemyLogic():
             if abs(enemyInfo.X-player.X) in range(190, 200):
                 if abs(enemyInfo.Y - player.Y) <30 and int(enemyInfo.vX) == 0:
                         while checkLos:
+                            #print(checkLos)
                             for j in playTile[2]:
                                 if j[0].collidepoint(losX,player.Y):
                                     checkLos=False
                                     break
+                            #print(losX)
+                            if abs(player.X-losX) >210:
+                                checkLos = False
                             if playerRect.collidepoint(losX, player.Y):
                                 enemyList[i].attacking=True
                                 enemyList[i].shootCounter+=1
@@ -315,10 +327,8 @@ def enemyLogic():
                                 losX+=3
                             elif player.X<enemyInfo.X:
                                 losX-=3
-                            screen.set_at((640-player.X+losX, 360), (255,0,0))
                 else:
                     enemyList[i].attacking=False
-        
 def makeTile(tileInfo):
     global levelAtlas
     tileSize = tileInfo.pop(0)
@@ -436,14 +446,20 @@ def drawStuff(tileSurf, tileSize, keys):
     for i in bulletList:
         draw.rect(screen,(255,255,255),i.hitRect.move(640-player.X,360-player.Y))
     for i in enemyList:
+        draw.line(screen,(255,40,40),(640-player.X+i.X+(30*i.health//i.maxHealth),360-player.Y+i.Y), (640-player.X+i.X,360-player.Y+i.Y))
         if i.enemyType == 0:
             enemyPic = crewmanFrames[i.animation][0][i.frame // crewmanFrames[i.animation][1]  % len(crewmanFrames[i.animation][0])]
             i.frame+=1
-            screen.blit(transform.smoothscale(enemyPic, (i.W, i.H)), (640 - player.X + i.X, 360 - player.Y + i.Y))
+            screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
     screen.blit(pic, (640, 360 + (36 - pic.get_height())))
     if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG):
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
+def moveParticles():
+    for i in range(len(partList)-1,-1,-1):
+        partList[i].moveParticle()
+        if not partList[i].live:
+            del partList[i]
 def makeNewLevel(levelLength):
     levelOut = []
     tileH = 0
@@ -518,9 +534,11 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
         newTile.append([i[0].move(0,-min(platHeights)+640),i[1]])
     return newTile
 playTile = makeTile(fixLevel(makeNewLevel(10)))
+drawnMap = playTile[1]
+minimap = transform.smoothscale(drawnMap, [drawnMap.get_width()//7,drawnMap.get_height()//7])
 #player.Y = visualOff
 
-
+drawUpperSprite()
 while running:
     for e in event.get():
         if e.type == QUIT:
@@ -544,8 +562,12 @@ while running:
                 player.mag = weaponList[currentWeapon][2]
             if e.key == K_t:
                 currentWeapon = 'dera'
+                player.mag = min(weaponList[currentWeapon][2],player.mag)
+                drawUpperSprite()
             if e.key == K_y:
                 currentWeapon = 'braton'
+                player.mag = min(weaponList[currentWeapon][2],player.mag)
+                drawUpperSprite()
         if e.type == MOUSEBUTTONDOWN:
             #print(e.button)
             if e.button == 1:
@@ -554,6 +576,7 @@ while running:
         if e.type == MOUSEBUTTONUP:
             if e.button == 1:
                 shooting = False
+    playerRect = Rect(player.X,player.Y,player.W,player.H)
     screen.fill((0, 0, 0))                
     display.set_caption(str(int(gameClock.get_fps())) + " - Dev Build")
     keysIn = key.get_pressed()
@@ -563,6 +586,7 @@ while running:
         hitSurface(player, playTile[2])
         player = applyFriction(player)
         enemyLogic()
+        #print('lawgi')
         for i in range(len(enemyList)):
             enemyList[i].move()
             enemyList[i].enemyMove()
@@ -578,8 +602,8 @@ while running:
         if shooting:
             player.shootCounter += 1
         regenTimer = max(0,regenTimer-1)
-
-    drawStuff(playTile[1], playTile[0], keysIn)
+        moveParticles()
+        drawStuff(playTile[1], playTile[0], keysIn)
     display.flip()
     gameClock.tick(60)
 quit()
