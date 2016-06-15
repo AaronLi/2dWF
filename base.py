@@ -2,11 +2,37 @@
 # TODO: Make everything shoot
 from pygame import *
 init()
-import glob, random, pyParticle, math
+import glob, random, math
 def sind(deg):
     return math.sin(math.radians(deg))
 def cosd(deg):
     return math.cos(math.radians(deg))
+class Particle:
+    def __init__(self,surface,x,y,rotation, lifetime, colour, speed, gravity, airResistance,fadeRate, length=1, variation = 10):
+        colourOff=random.randint(0,255-max(colour))
+        self.surf=surface
+        self.X, self.Y=x,y
+        self.rot=rotation+random.randint(-variation,variation)
+        self.life=lifetime
+        self.col=(colour[0]+colourOff, colour[1]+colourOff, colour[2]+colourOff)
+        self.speed = speed
+        self.fG = gravity
+        self.aR = airResistance
+        self.fR = fadeRate
+        self.live = True
+        self.length = length
+        
+    def moveParticle(self):
+        if self.live:
+            draw.line(self.surf, self.col, (640-player.X+int(self.X), 360-player.Y+int(self.Y)), (640-player.X+int(self.X-self.length*cosd(self.rot)), 360-player.Y+int(self.Y-self.length*sind(self.rot))))
+            self.X+=self.speed*cosd(self.rot)
+            self.Y+=self.speed*sind(self.rot)
+            self.col=(max(self.col[0]-self.fR, 0), max(self.col[1]-self.fR, 0), max(self.col[2]-self.fR, 0))
+            self.life-=1
+            self.speed=max(self.speed-self.aR, 0)
+            self.Y=max(self.Y+self.fG, 0)
+        if self.life <= 0:
+            self.live = False
 
 class Mob:#Sticking too many things into one class?
     def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton'):
@@ -32,6 +58,7 @@ class Mob:#Sticking too many things into one class?
         self.shootCounter = 0
         self.mag = 45
         self.reloading = 0
+        self.reserveAmmo = [500,200,500] #Rifle Ammo, Shotgun Ammo, laser Ammo
         #Enemy Related things
         self.enemyType = enemyType
         self.attacking = False
@@ -79,8 +106,30 @@ class Pickup:
     def __init__(self,x,y,dropType,amount):
         self.X=x
         self.Y=y
+        self.vY=0
         self.dropType=dropType
         self.amount=amount
+    def fallToGround(self):
+        canFall = True
+        for i in playTile[2]:
+            if i[0].colliderect(Rect(self.X,self.Y,16,16)):
+                self.Y = i[0].top-pickupSprites[self.dropType].get_height()
+                self.vY = 0
+                canFall = False
+                break
+        if canFall:
+            self.vY+=0.5
+            self.Y+=int(self.vY)
+    def checkCollide(self):
+        if Rect(self.X,self.Y,16,16).colliderect(Rect(player.X,player.Y,player.W,player.H)):
+            print(self.dropType)
+            if type(self.dropType) == int:
+                player.reserveAmmo[self.dropType]+=self.amount
+            elif self.dropType == 'health':
+                player.health=min(player.maxHealth,player.health+25)
+            ammoPickup.play()
+            return True
+        return False
 def flipFrames(frameList):
     flippedList=[]
     for i in range(len(frameList)):
@@ -122,39 +171,43 @@ def completeFrames(frameList,ogFrames,flipFrameOrder):
     return frameList
 hudFont=font.Font('fonts/Roboto-Light.ttf',30)
 descFont = font.Font('fonts/Roboto-Light.ttf',20)
+#Sounds
 bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
 deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
 boarShoot = mixer.Sound('sfx/weapons/orokin/boarP.ogg')
-weaponList = {'braton':[ 20, 20, 45, 2, bratonShoot,(200, 150, 0),1,1], 'dera':[16, 17, 30, 2, deraShoot,(50,170,255),1,3],'boarP':[5,13,20,2,boarShoot, (200,150,0),15,12]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy
+laserShoot = mixer.Sound('sfx/weapons/factionless/moaGun.ogg')
+laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
+bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
+deraReload = mixer.Sound('sfx/weapons/corpus/deraReload.ogg')
+ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
+weaponList = {'braton':[ 23, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[6,13,20,2,boarShoot, (200,150,0),13,12,laserReload,1],'laser':[3,1,250,100,laserShoot, (255,0,0),1,0,laserReload,2]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
-player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 999,shield = 999)
+player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 beginShieldRegen = mixer.Sound('sfx/warframes/shield/shieldRegen.ogg')
 levelAtlas = image.load('images/tileTextures.png')
 braton = image.load('images/weapons/corpus/braton.png')
 dera = image.load('images/weapons/corpus/dera.png')
 boarP = image.load('images/weapons/orokin/boarP.png')
+laser = image.load('images/weapons/corpus/moaGun.png')
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
 frostLower = image.load('images/warframes/frost/frostLower.png')
-currentWeapon = 'boarP'
+currentWeapon = 'laser'
 visualOff = 0
 pic = Surface((20,30))
-pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'), image.load('images/drops/lifeSupport/health.png')]#titties
-#
+pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'),image.load('images/drops/ammo/laserAmmo.png') ,image.load('images/drops/lifeSupport/health.png')]
+
 # Animations
 moaFrames = [[[image.load('images/enemies/moa/Moa001.png')],1], [[image.load('images/enemies/moa/Moa002.png'),image.load('images/enemies/moa/Moa003.png'),image.load('images/enemies/moa/Moa004.png'),image.load('images/enemies/moa/Moa005.png'),image.load('images/enemies/moa/Moa006.png'),image.load('images/enemies/moa/Moa007.png')],7], [[image.load('images/enemies/moa/Moa008.png'),image.load('images/enemies/moa/Moa009.png')],7], [[image.load('images/enemies/moa/Moa010.png'),image.load('images/enemies/moa/Moa011.png'),image.load('images/enemies/moa/Moa012.png'),image.load('images/enemies/moa/Moa013.png'),image.load('images/enemies/moa/Moa014.png'),image.load('images/enemies/moa/Moa015.png'),image.load('images/enemies/moa/Moa016.png')],7]]
 crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 7], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
 playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [[image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"), image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"), image.load("images/warframes/frost/frost007.png"), image.load("images/warframes/frost/frost008.png")], 7], [[image.load("images/warframes/frost/frost015.png"), image.load("images/warframes/frost/frost016.png"), image.load("images/warframes/frost/frost017.png"), image.load("images/warframes/frost/frost018.png"), image.load("images/warframes/frost/frost019.png"), image.load("images/warframes/frost/frost020.png"), image.load("images/warframes/frost/frost021.png")], 5]]
 flippedFrame = Surface((0, 0))
 #Player frames
-print(len(playerFrames), len(crewmanFrames))
 playerFrames=completeFrames(playerFrames, [0,2,4], [1,3,5])
 crewmanFrames = completeFrames(crewmanFrames, [0,2, 4, 6], [1,3, 5, 7])
-print(len(moaFrames))
 moaFrames = flipFrames(completeFrames(moaFrames, [0,2,4,6], [1,3,5,7]))
-print(len(moaFrames))
 globalTicks = 0
 partList=[]    
 idle = idleRight
@@ -173,9 +226,10 @@ bulletTrailList=[]
 counter = 0
 shooting = False
 paused = False
+caseNumber = random.randint(0,999999)
 regenTimer = 0
 canRegenShields = False
-enemyList = [Mob(300, 400, 60, 45, 0, 0, 4, 0.3, False, 1,weapon = 'dera', enemyType =1), Mob(300, 400, 45, 45, 0, 0, 4, 0.4, False, 1, weapon = 'dera'),
+enemyList = [Mob(300, 400, 60, 45, 0, 0, 4, 0.3, False, 1,weapon = 'laser', enemyType =1), Mob(300, 400, 45, 45, 0, 0, 4, 0.4, False, 1, weapon = 'dera'),
              Mob(300, 400, 45, 45, 0, 0, 3, 0.3, False, 1, weapon = 'dera')]
 bulletList = []
 # Getting information from the level files
@@ -208,17 +262,20 @@ def drawUpperSprite():
     upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))
     lUpperSurf = transform.flip(upperSurf, False, True)
 def miniMap():
-    mMapSurf=Surface((200,100),SRCALPHA)
+    mMapSurf=Surface((200,100))
+    mMapSurf.set_alpha(200)
+    mMapSurf=mMapSurf.convert_alpha()
     mMapSurf.fill((255,255,255))
     draw.rect(mMapSurf, (0,0,0), (102,52,2,5))
     mMapSurf.blit(minimap,(100-player.X//7,50-player.Y//7))
     mMapSurf = transform.rotate(mMapSurf, -1)
+
     screen.blit(mMapSurf,(5,5))
 def drawHud():
     global currentWeapon, weaponList,hudFont, screen
     angledHudSec=Surface((300,43),SRCALPHA)
-    ammoHud = Surface((150,20),SRCALPHA)
-    ammoCounter=descFont.render('%10s: %-3d/ %2d' % (currentWeapon, player.mag, weaponList[currentWeapon][2]),True, (255,255,255))
+    ammoHud = Surface((165,20),SRCALPHA)
+    ammoCounter=descFont.render('%10s: %-3d/ %2d' % (currentWeapon, player.mag, player.reserveAmmo[weaponList[currentWeapon][9]]),True, (255,255,255))
     healthCounter = hudFont.render(str(max(0,player.health)), True, (255,40,40))
     shieldCounter = hudFont.render(str(max(0,int(player.shield))), True, (100,170,255))
     angledHudSec.blit(healthCounter, (300-healthCounter.get_width(), 10))
@@ -230,7 +287,7 @@ def drawHud():
     rotatedHud = transform.rotate(angledHudSec, 2)
     rotatedAmmoHud = transform.rotate(ammoHud, -2)
     screen.blit(rotatedHud,(965,2))
-    screen.blit(rotatedAmmoHud, (1102, 685))
+    screen.blit(rotatedAmmoHud, (1270-rotatedAmmoHud.get_width(), 685))
     miniMap()
     
 def checkBullTrajectory(bullAngle, x, y):
@@ -250,7 +307,7 @@ def checkBullTrajectory(bullAngle, x, y):
                 hit = True
                 endX, endY = x,y
                 for i in range(5):
-                    partList.append(pyParticle.Particle(screen, 640-player.X+endX,360-player.Y+endY,bullAngle+180, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
+                    partList.append(Particle(screen, endX,endY,bullAngle+180, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in range(len(enemyList)):
             eInfo=enemyList[i]
@@ -260,7 +317,7 @@ def checkBullTrajectory(bullAngle, x, y):
                 endX, endY = x, y
                 retVal = i
                 for i in range(5):
-                    partList.append(pyParticle.Particle(screen, 640-player.X+endX,360-player.Y+endY,bullAngle+180, 20, [255,0,0], 3, 1, 0.2, 0, 1, 10))
+                    partList.append(Particle(screen, endX, endY,bullAngle+180, 20, [255,0,0], 3, 1, 0.2, 0, 1, 10))
         x+=7*cosd(bullAngle)
         y+=7*sind(-bullAngle)
     bulletTrailList.append([startX,startY,endX,endY])
@@ -299,7 +356,7 @@ def drawUpper(playerX, playerY):# Also includes shooting
     
     if mb[0] and not player.shootCounter % int(weaponList[currentWeapon][1]) and player.mag>0:
         for i in range(10):
-            partList.append(pyParticle.Particle(screen, playerX+20*cosd(angle), playerY-20*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
+            partList.append(Particle(screen, player.X+(player.W//2)+20*cosd(angle), player.Y+20-20*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
         weaponList[currentWeapon][4].play()
         player.mag-=1
         for i in range(weaponList[currentWeapon][6]):
@@ -322,10 +379,11 @@ def enemyLogic():
                 #enemyList[i].dieing = False
                 enemyList[i].frame = 1
             if enemyInfo.frame%25 == 0:
-                        del enemyList[i]
-                    #if random.randint(0,10) == 0:
+                    del enemyList[i]
+                    if random.randint(0,2) == 0:
                         dropType = random.randint(0,len(pickupSprites)-1)
-                        pickupList.append(Pickup(enemyInfo.X+enemyInfo.W//2, enemyInfo.Y+enemyInfo.H-pickupSprites[dropType].get_height(), dropType, random.randint(0,20)))
+                        dropAmounts = [20,10,50,'health']#Rifle, shotgun, laser
+                        pickupList.append(Pickup(enemyInfo.X+enemyInfo.W//2, enemyInfo.Y+enemyInfo.H-pickupSprites[dropType].get_height(), dropType, dropAmounts[dropType]))
         else:          
             # Jumping over obstacles
             if enemyInfo.oW and enemyInfo.oG:
@@ -344,12 +402,10 @@ def enemyLogic():
             if abs(enemyInfo.X-player.X) in range(190, 200):
                 if abs(enemyInfo.Y - player.Y) <30 and int(enemyInfo.vX) == 0:
                         while checkLos:
-                            #print(checkLos)
                             for j in playTile[2]:
                                 if j[0].collidepoint(losX,player.Y):
                                     checkLos=False
                                     break
-                            #print(losX)
                             if abs(player.X-losX) >210:
                                 checkLos = False
                             if playerRect.collidepoint(losX, player.Y):
@@ -486,13 +542,12 @@ def drawStuff(tileSurf, tileSize, keys):
     for i in bulletList:
         draw.rect(screen,i.colour,i.hitRect.move(640-player.X,360-player.Y))
     for i in range(len(pickupList)):
-        print(len(pickupSprites),pickupList[i].dropType,i)
         screen.blit(pickupSprites[pickupList[i].dropType], (640-player.X+pickupList[i].X,360-player.Y+pickupList[i].Y))
     for i in range(len(bulletTrailList)-1,-1,-1):
         draw.line(screen,weaponList[currentWeapon][5],(640-player.X+bulletTrailList[i][0],360-player.Y+bulletTrailList[i][1]),(640-player.X+bulletTrailList[i][2],360-player.Y+bulletTrailList[i][3]))
         del bulletTrailList[i]
     for i in enemyList:
-        draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y), (640-player.X+i.X,360-player.Y+i.Y))
+        
         if i.enemyType == 0:
             enemyPic = crewmanFrames[i.animation][0][i.frame // crewmanFrames[i.animation][1]  % len(crewmanFrames[i.animation][0])]
             i.frame+=1
@@ -501,6 +556,7 @@ def drawStuff(tileSurf, tileSize, keys):
             enemyPic = moaFrames[i.animation][0][i.frame // moaFrames[i.animation][1]  % len(moaFrames[i.animation][0])]
             i.frame+=1
             screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
+        draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
     screen.blit(pic, (640, 360 + (36 - pic.get_height())))
     if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG):
         drawUpper(660,376 + (36 - pic.get_height()))
@@ -530,28 +586,26 @@ def makeNewLevel(levelLength):
         xOff += tileSizes[levelSeq[i]][0]
         tileH += tileSizes[levelSeq[i]][1]
         # Placing rects together
-        for i in stitchedLevel:
-            if i[1] == 0 or i[1] == 2:
-                checkPlatList.append([[i[0][1],i[0][0],i[0][2],i[0][3]],i[1]])#Because adjacent tiles should have same height first
-            else:
-                levelOut.append(i)
+    for i in stitchedLevel:
+        if i[1] == 0: #or i[1] == 2:
+            checkPlatList.append([[i[0][1],i[0][0],i[0][2],i[0][3]],i[1]])#Because adjacent tiles should have same height first
+        else:
+            levelOut.append(i)
         checkPlatList.sort()
     while len(checkPlatList)>1:
-        pCheck=[checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]#Change back to original after it's been sorted
+        pCheck = [checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]#Change back to original after it's been sorted
         previousPlat = [checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]
-
-        if (previousPlat[0]+previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
+        if (previousPlat[0]+previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and pCheck[1] == previousPlat[1]: #and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
                 unionedRect=Rect(previousPlat).union(Rect(pCheck))
                 checkPlatList.insert(2,[[unionedRect[1],unionedRect[0],unionedRect[2],unionedRect[3]],0])#Change back into height prioritized format
                 del checkPlatList[0]
                 del checkPlatList[0]
         else:
-            if [Rect(pCheck),0] not in levelOut: #and Rect(pCheck).collidelist(rectOuts)==-1:
+            if [Rect(pCheck),0] not in levelOut and Rect(pCheck).collidelist(rectOuts)==-1:
                 levelOut.append([Rect(previousPlat),0])
                 rectOuts.append(Rect(previousPlat))
             del checkPlatList[0]
-    levelOut.append([Rect(checkPlatList.pop()[0]),0])
-    print(len(checkPlatList))
+    levelOut.append([Rect([checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]),0])
     levelOut.insert(0, (xOff, tileH))
     return levelOut
 
@@ -562,7 +616,6 @@ def playerShoot(weapon):
     return checkBullTrajectory(angle, player.X+player.W//2, player.Y+20)
 def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding box
     global visualOff
-    #print(len(levelIn))
     platHeights=[]
     platRectList=[]
     platTypes=[]
@@ -573,17 +626,9 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
         platRectList.append(Rect(i[0]))
         platTypes.append(i[1])
     visualOff = min(platHeights)
-    #print(visualOff)
-##    print(len(platRectList))
-##    for i in platRectList:
-##        collidedRects = i.collidelistall(platRectList)
-##        print(collidedRects)
-##        if len(collidedRects)>0:
-##            for i in range(len(collidedRects)-1,-1,-1):
-##                del platRectList[collidedRects[i]]
-##    print(len(platRectList))
+    player.Y = abs(visualOff)+1280
     for i in levelIn:
-        newTile.append([i[0].move(0,abs(min(platHeights))+1280),i[1]])
+        newTile.append([i[0].move(0,abs(visualOff)+1280),i[1]])
     return newTile
 def drawMenu():
     global running,animationStatus,menuAnimation
@@ -603,6 +648,8 @@ def drawMenu():
                 if option == 0:
                     animationStatus =-1
                     menuAnimation = 20
+                elif option == 1:
+                    print('nothing is here...')
                 elif option == 2:
                     running=False
         else:
@@ -610,6 +657,14 @@ def drawMenu():
             draw.rect(screen,(0,0,255),optionRect,2)
             optionText = hudFont.render(options[i], True, (255,255,255))
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
+def reloadTime():
+    global weaponList
+    if player.reloading >0:
+        player.reloading+=1
+    if player.reloading == weaponList[currentWeapon][3]:
+        player.reloading = 0
+        player.reserveAmmo[weaponList[currentWeapon][9]]+=player.mag-weaponList[currentWeapon][2]
+        player.mag = weaponList[currentWeapon][2]
 playTile = makeTile(fixLevel(makeNewLevel(10)))
 drawnMap = playTile[1]
 animationStatus=-1#positive for opening, negative for closing
@@ -641,24 +696,32 @@ while running:
             if e.key==K_ESCAPE:
                 running=False
             if e.key == K_r:
-                player.mag = weaponList[currentWeapon][2]
+                if player.reloading == 0:
+                    weaponList[currentWeapon][8].play()
+                    player.reloading+=1
                 
-            if e.key == K_t:
+            if e.key == K_1:
                 currentWeapon = 'dera'
                 player.mag = min(weaponList[currentWeapon][2],player.mag)
                 drawUpperSprite()
                 
-            if e.key == K_y:
+            if e.key == K_2:
                 currentWeapon = 'braton'
                 player.mag = min(weaponList[currentWeapon][2],player.mag)
                 drawUpperSprite()
-
+            if e.key == K_3:
+                currentWeapon = 'laser'
+                player.mag = min(weaponList[currentWeapon][2],player.mag)
+                drawUpperSprite()
+            if e.key == K_4:
+                currentWeapon = 'boarP'
+                player.mag = min(weaponList[currentWeapon][2],player.mag)
+                drawUpperSprite()
             if e.key == K_u:
                 gameState = 'ship'
 
    
         if e.type == MOUSEBUTTONDOWN:
-            #print(e.button)
             if e.button == 1:
                 shooting = True
                 player.shootCounter = 0
@@ -667,11 +730,12 @@ while running:
                 shooting = False
     playerRect = Rect(player.X,player.Y,player.W,player.H)
     screen.fill((0, 0, 0))                
-    display.set_caption(str(int(gameClock.get_fps())) + " - Dev Build")
+    display.set_caption('%d, %10d, %10d - Dev Build' %(int(gameClock.get_fps()),player.X,player.Y))
     keysIn = key.get_pressed()
     if gameState == 'game':
         if menuAnimation <= 0:
             keysDown(keysIn)
+            reloadTime()
             player.move()
             hitSurface(player, playTile[2])
             player = applyFriction(player)
@@ -691,6 +755,10 @@ while running:
             if shooting:
                 player.shootCounter += 1
             regenTimer = max(0,regenTimer-1)
+            for i in range(len(pickupList)-1,-1,-1):
+                pickupList[i].fallToGround()
+                if pickupList[i].checkCollide():
+                    del pickupList[i]
             moveParticles()
             drawStuff(playTile[1], playTile[0], keysIn)
         elif menuAnimation >= 1:
@@ -702,4 +770,4 @@ while running:
     display.flip()
     gameClock.tick(60)
 quit()
-print('cya')
+print('cya',player.X,player.Y)
