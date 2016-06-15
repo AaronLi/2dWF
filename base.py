@@ -55,7 +55,7 @@ class Mob:#Sticking too many things into one class?
         self.shieldTimer = 300
         self.animation = animation
         self.weapon = weapon
-        self.shootCounter = 0
+        self.shootCooldown = 0
         self.mag = 45
         self.reloading = 0
         self.reserveAmmo = [500,200,500] #Rifle Ammo, Shotgun Ammo, laser Ammo
@@ -63,12 +63,12 @@ class Mob:#Sticking too many things into one class?
         self.enemyType = enemyType
         self.attacking = False
         self.dieing=0
+        self.shootCounter = 0
     def move(self):
         self.X += int(self.vX)
         self.Y += int(self.vY)
 
     def enemyMove(self):
-        #print(self.shootCounter)
                 # Moving left and right
         if self.animation !=6:
             if player.X > self.X:
@@ -92,7 +92,7 @@ class Mob:#Sticking too many things into one class?
                     self.vX -= self.vAx
                     self.animation = left
                 self.shootCounter= 0
-            elif abs(player.X - self.X) < 190 or not self.oG:  # Distance from player
+            elif abs(player.X - self.X) < 50 or not self.oG:  # Distance from player
                 if player.X > self.X:
                     enemyList[i].fA = False
                     self.vX -= self.vAx
@@ -112,7 +112,7 @@ class Pickup:
     def fallToGround(self):
         canFall = True
         for i in playTile[2]:
-            if i[0].colliderect(Rect(self.X,self.Y,16,16)):
+            if i[0].move(0,1).colliderect(Rect(self.X,self.Y,16,16)):
                 self.Y = i[0].top-pickupSprites[self.dropType].get_height()
                 self.vY = 0
                 canFall = False
@@ -122,10 +122,9 @@ class Pickup:
             self.Y+=int(self.vY)
     def checkCollide(self):
         if Rect(self.X,self.Y,16,16).colliderect(Rect(player.X,player.Y,player.W,player.H)):
-            print(self.dropType)
-            if type(self.dropType) == int:
+            if type(self.amount) == int:
                 player.reserveAmmo[self.dropType]+=self.amount
-            elif self.dropType == 'health':
+            elif self.amount == 'health':
                 player.health=min(player.maxHealth,player.health+25)
             ammoPickup.play()
             return True
@@ -161,51 +160,78 @@ def completeFrames(frameList,ogFrames,flipFrameOrder):
         for j in range(len(frameList[workFrame][0])):
             flippedFrame = transform.flip(frameList[workFrame][0][j], True, False)
             flipFrameList.append(flippedFrame)
+##            draw.rect(screen,(255,255,255),(100,0,frameList[workFrame][0][j].get_width(),frameList[workFrame][0][j].get_height()))
+##            draw.rect(screen,(255,255,255),(0,0,flippedFrame.get_width(),flippedFrame.get_height()))
+##            screen.blit(flippedFrame,(0,0))
+##            screen.blit(frameList[workFrame][0][j],(100,0))
+##            display.flip()
+##            screen.fill((0,0,0))
+##            time.wait(2000)
         addToFrameList.append(flipFrameList)
         addToFrameList.append(frameList[workFrame][1])
         frameList.insert(flipFrameOrder[i], addToFrameList)
     for i in range(len(frameList)):
         for j in range(len(frameList[i][0])):
             workFrame = frameList[i][0][j]
-            frameList[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5)))
+            frameList[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5))).convert_alpha()
     return frameList
 hudFont=font.Font('fonts/Roboto-Light.ttf',30)
 descFont = font.Font('fonts/Roboto-Light.ttf',20)
 #Sounds
+    #Shooting
 bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
 deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
 boarShoot = mixer.Sound('sfx/weapons/orokin/boarP.ogg')
 laserShoot = mixer.Sound('sfx/weapons/factionless/moaGun.ogg')
+hekShoot = mixer.Sound('sfx/weapons/grineer/hekShoot.ogg')
+rubicoShoot = mixer.Sound('sfx/weapons/tenno/rubico.ogg')
+tigrisShoot = mixer.Sound('sfx/weapons/tenno/tigris.ogg')
+    #Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
 deraReload = mixer.Sound('sfx/weapons/corpus/deraReload.ogg')
+boarReload = mixer.Sound('sfx/weapons/orokin/boarPreload.ogg')
+hekReload = mixer.Sound('sfx/weapons/grineer/hekReload.ogg')
+rubicoReload = mixer.Sound('sfx/weapons/tenno/rubicoReload.ogg')
+tigrisReload = mixer.Sound('sfx/weapons/tenno/tigrisReload.ogg')
+    #Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
-weaponList = {'braton':[ 23, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[6,13,20,2,boarShoot, (200,150,0),13,12,laserReload,1],'laser':[3,1,250,100,laserShoot, (255,0,0),1,0,laserReload,2]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
+sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
+weaponList = {'braton':[ 23, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[6,13,20,2,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,1,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
+              'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[100, 100, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,0]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
 player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 beginShieldRegen = mixer.Sound('sfx/warframes/shield/shieldRegen.ogg')
 levelAtlas = image.load('images/tileTextures.png')
+#Guns
 braton = image.load('images/weapons/corpus/braton.png')
 dera = image.load('images/weapons/corpus/dera.png')
 boarP = image.load('images/weapons/orokin/boarP.png')
 laser = image.load('images/weapons/corpus/moaGun.png')
+rubico = image.load('images/weapons/tenno/rubico.png')
+tigris = image.load('images/weapons/tenno/tigris.png')
+hek = image.load('images/weapons/grineer/hek.png')
+
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
 frostLower = image.load('images/warframes/frost/frostLower.png')
-currentWeapon = 'laser'
+currentWeapon = 'rubico'
+player.mag = weaponList[currentWeapon][2]
 visualOff = 0
+currentFrame = 0
 pic = Surface((20,30))
 pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'),image.load('images/drops/ammo/laserAmmo.png') ,image.load('images/drops/lifeSupport/health.png')]
 
 # Animations
 moaFrames = [[[image.load('images/enemies/moa/Moa001.png')],1], [[image.load('images/enemies/moa/Moa002.png'),image.load('images/enemies/moa/Moa003.png'),image.load('images/enemies/moa/Moa004.png'),image.load('images/enemies/moa/Moa005.png'),image.load('images/enemies/moa/Moa006.png'),image.load('images/enemies/moa/Moa007.png')],7], [[image.load('images/enemies/moa/Moa008.png'),image.load('images/enemies/moa/Moa009.png')],7], [[image.load('images/enemies/moa/Moa010.png'),image.load('images/enemies/moa/Moa011.png'),image.load('images/enemies/moa/Moa012.png'),image.load('images/enemies/moa/Moa013.png'),image.load('images/enemies/moa/Moa014.png'),image.load('images/enemies/moa/Moa015.png'),image.load('images/enemies/moa/Moa016.png')],7]]
 crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 7], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
-playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [[image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"), image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"), image.load("images/warframes/frost/frost007.png"), image.load("images/warframes/frost/frost008.png")], 7], [[image.load("images/warframes/frost/frost015.png"), image.load("images/warframes/frost/frost016.png"), image.load("images/warframes/frost/frost017.png"), image.load("images/warframes/frost/frost018.png"), image.load("images/warframes/frost/frost019.png"), image.load("images/warframes/frost/frost020.png"), image.load("images/warframes/frost/frost021.png")], 5]]
+playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [[image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"), image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"), image.load("images/warframes/frost/frost007.png"), image.load("images/warframes/frost/frost008.png")], 7], [[image.load("images/warframes/frost/frost015.png"), image.load("images/warframes/frost/frost016.png"), image.load("images/warframes/frost/frost017.png"), image.load("images/warframes/frost/frost018.png"), image.load("images/warframes/frost/frost019.png"), image.load("images/warframes/frost/frost020.png"), image.load("images/warframes/frost/frost021.png")], 5],[[image.load('images/warframes/frost/frostMelee001.png'),image.load('images/warframes/frost/frostMelee002.png'),image.load('images/warframes/frost/frostMelee003.png'),image.load("images/warframes/frost/frostMelee004.png")],12]]# image.load('images/warframes/frost/frostMelee005.png'),image.load('images/warframes/frost/frostMelee006.png')],10]]
 flippedFrame = Surface((0, 0))
 #Player frames
-playerFrames=completeFrames(playerFrames, [0,2,4], [1,3,5])
+playerFrames=completeFrames(playerFrames, [0,2,4,6], [1,3,5,7])
 crewmanFrames = completeFrames(crewmanFrames, [0,2, 4, 6], [1,3, 5, 7])
 moaFrames = flipFrames(completeFrames(moaFrames, [0,2,4,6], [1,3,5,7]))
 globalTicks = 0
@@ -232,6 +258,7 @@ canRegenShields = False
 enemyList = [Mob(300, 400, 60, 45, 0, 0, 4, 0.3, False, 1,weapon = 'laser', enemyType =1), Mob(300, 400, 45, 45, 0, 0, 4, 0.4, False, 1, weapon = 'dera'),
              Mob(300, 400, 45, 45, 0, 0, 3, 0.3, False, 1, weapon = 'dera')]
 bulletList = []
+additionalOffsets=[[0],[0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[-20,-20,0,0],[-49,-19,-19,-7]]#[-6,-6,-19,-10]]
 # Getting information from the level files
 for i in range(len(tileSetRects)):
     tileFile = open(tileSetRects[i]).readlines()
@@ -253,6 +280,19 @@ playerStanding = Surface((player.W, player.H))
 playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
 onGround = False
+def swordHit():
+    global playerRect
+    for i in enemyList:
+        enemyRect = Rect(i.X,i.Y,i.W,i.H)
+        swingBox = Rect(player.X, player.Y, 30,21)#Swing
+        if player.fA:
+            if enemyRect.colliderect(swingBox.move(-swingBox.w,0)):
+                i.health -=50
+                break
+        elif not player.fA:
+            if enemyRect.colliderect(swingBox.move(player.W,0)):
+                i.health -=50
+                break
 def drawUpperSprite():
     global currentWeapon, upperSurf, lUpperSurf
     upperSurf=Surface((22,20),SRCALPHA)
@@ -307,12 +347,12 @@ def checkBullTrajectory(bullAngle, x, y):
                 hit = True
                 endX, endY = x,y
                 for i in range(5):
-                    partList.append(Particle(screen, endX,endY,bullAngle+180, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
+                    partList.append(Particle(screen, endX,endY,180+bullAngle, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in range(len(enemyList)):
             eInfo=enemyList[i]
             mobRect=Rect(eInfo.X,eInfo.Y,eInfo.W,eInfo.H)
-            if mobRect.collidepoint(x,y):
+            if mobRect.collidepoint(x,y) and eInfo.dieing == 0:
                 hit = True
                 endX, endY = x, y
                 retVal = i
@@ -328,19 +368,26 @@ def calcBullets():
     global regenTimer, playerRect
     
     for i in range(len(bulletList)-1,-1,-1):
-        if bulletList[i].hitRect.colliderect(playerRect) and bulletList[i].faction == 0:
-            if player.shield != player.maxShield:
-                regenTimer = 200
-            if player.shield>0:
-                player.shield-=bulletList[i].damage
+        nextBullet = False
+        for j in playTile[2]:
+            if bulletList[i].hitRect.colliderect(j[0]):
+                del bulletList[i]
+                nextBullet = True
+                break
+        if not nextBullet:
+            if bulletList[i].hitRect.colliderect(playerRect) and bulletList[i].faction == 0:
+                if player.shield != player.maxShield:
+                    regenTimer = 200
+                if player.shield>0:
+                    player.shield-=bulletList[i].damage
+                else:
+                    player.health=max(0,player.health-bulletList[i].damage)
+                del bulletList[i]
+            elif bulletList[i].life<=0:
+                del bulletList[i]
             else:
-                player.health-=bulletList[i].damage
-            del bulletList[i]
-        elif bulletList[i].life<=0:
-            del bulletList[i]
-        else:
-            bulletList[i].moveBullet()
-            bulletList[i].life-=1
+                bulletList[i].moveBullet()
+                bulletList[i].life-=1
 
 def drawUpper(playerX, playerY):# Also includes shooting
     global upperSurf, currentWeapon, partList
@@ -354,13 +401,14 @@ def drawUpper(playerX, playerY):# Also includes shooting
         rotUpper=transform.rotate(lUpperSurf,angle)
         screen.blit(rotUpper, (playerX-5-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
     
-    if mb[0] and not player.shootCounter % int(weaponList[currentWeapon][1]) and player.mag>0:
+    if mb[0] and player.shootCooldown == 0 and player.mag>0:
+        player.shootCooldown= weaponList[currentWeapon][1] 
         for i in range(10):
             partList.append(Particle(screen, player.X+(player.W//2)+20*cosd(angle), player.Y+20-20*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
         weaponList[currentWeapon][4].play()
         player.mag-=1
         for i in range(weaponList[currentWeapon][6]):
-            enemyHit = playerShoot(weaponList[currentWeapon])
+            enemyHit = playerShoot(weaponList[currentWeapon])           
             if type(enemyHit) == int:
                 enemyList[enemyHit].health -= weaponList[currentWeapon][0]
     player.fA =-270 < angle < -90   
@@ -372,7 +420,7 @@ def enemyLogic():
         losX = enemyInfo.X #line of sight x for checking whether you can shoot or not
         checkLos=True
         #Checking health
-        if enemyInfo.health<=0:
+        if enemyInfo.health<=0 or enemyInfo.Y>10000:
             enemyList[i].animation = 6
             enemyList[i].dieing+=1
             if enemyInfo.dieing == 1:
@@ -399,7 +447,7 @@ def enemyLogic():
                     enemyList[i].vY -= 7
 
             # Shooting
-            if abs(enemyInfo.X-player.X) in range(190, 200):
+            if abs(enemyInfo.X-player.X) in range(50, 200):
                 if abs(enemyInfo.Y - player.Y) <30 and int(enemyInfo.vX) == 0:
                         while checkLos:
                             for j in playTile[2]:
@@ -416,7 +464,10 @@ def enemyLogic():
                                 else:
                                     enemyList[i].animation = 5
                                 if enemyInfo.shootCounter % weaponList[enemyInfo.weapon][1] == 0:
-                                    bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
+                                    if enemyInfo.enemyType == 0:
+                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
+                                    elif enemyInfo.enemyType ==1:
+                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
                                     weaponList[enemyInfo.weapon][4].play()
                                 break
                             if player.X>enemyInfo.X:
@@ -449,7 +500,7 @@ def makeTile(tileInfo):
 
 
 def keysDown(keys):
-    global player
+    global player, canUseSword, currentFrame
     mx, my = mouse.get_pos()
     mb=mouse.get_pressed()
     if keys[K_a]:
@@ -462,7 +513,24 @@ def keysDown(keys):
     if keys[K_d]:
         player.vX += player.vAx
         player.fA = False
-
+    if keys[K_e]:
+##        if not (player.animation ==7 or player.animation == 6):
+##            player.frames = 0
+        if player.fA:
+            player.animation = 7
+        elif not player.fA:
+            player.animation = 6
+        if (currentFrame == 0 or currentFrame == 2) and canUseSword:
+            swordHit()
+            canUseSword=False
+        elif currentFrame == 1 or currentFrame == 3:
+            canUseSword = True
+        print(canUseSword,currentFrame)
+    else:
+        if player.fA:
+            player.animation = idleLeft
+        elif not player.fA:
+            player.animation = idleRight
 def applyFriction(mob):
     global friction
     if mob.vX > 0:
@@ -522,7 +590,7 @@ def hitSurface(mob, tilePlats):
 
 
 def drawStuff(tileSurf, tileSize, keys):
-    global player, frames, animation, visualOff, pic
+    global player, frames, animation, visualOff, pic, currentFrame
     if keys[K_a] and player.oG:
         player.animation = left
     elif keys[K_d] and player.oG:
@@ -531,9 +599,9 @@ def drawStuff(tileSurf, tileSize, keys):
         player.animation = jumpLeft
     elif not player.fA and not player.oG:
         player.animation = jumpRight
-    elif player.fA and player.oG:
+    elif player.fA and player.oG and player.animation != 7:
         player.animation = idleLeft
-    elif not player.fA and player.oG:
+    elif not player.fA and player.oG and player.animation!= 6:
         player.animation = idleRight
    
     pic = playerFrames[player.animation][0][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])]
@@ -557,8 +625,9 @@ def drawStuff(tileSurf, tileSize, keys):
             i.frame+=1
             screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
         draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
-    screen.blit(pic, (640, 360 + (36 - pic.get_height())))
-    if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG):
+    currentFrame = player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])
+    screen.blit(pic, (640+additionalOffsets[player.animation][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])], 360 + (36 - pic.get_height())))
+    if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG or player.animation == 7 or player.animation == 6):
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
 def moveParticles():
@@ -566,12 +635,20 @@ def moveParticles():
         partList[i].moveParticle()
         if not partList[i].live:
             del partList[i]
-def makeNewLevel(levelLength):
+def spawnEnemies():
+    if len(enemyList)<2:
+        for i in range(4):
+            newEnemyType = random.randint(0,1)
+            if newEnemyType == 0:
+                enemyList.append(Mob(player.X+random.randint(-700,700), 400, 45, 45, 0, 0, 3, 0.3, False, 1, weapon = 'dera'))
+            elif newEnemyType == 1:
+                enemyList.append(Mob(player.X+random.randint(-700,700), 400, 60, 45, 0, 0, 4, 0.3, False, 1,weapon = 'laser', enemyType =1))
+def makeNewLevel(levelLength):#Where the magic happens
     levelOut = []
     tileH = 0
-    levelSeq = [0,0]
+    levelSeq = [0]
     for i in range(levelLength):
-        levelSeq.append(random.randint(0, len(drawTiles) - 1))
+        levelSeq.append(random.randint(1, len(drawTiles) - 1))
     xOff, yOff = 0, 0
     checkPlatList = []
     sameRect = []
@@ -591,7 +668,7 @@ def makeNewLevel(levelLength):
             checkPlatList.append([[i[0][1],i[0][0],i[0][2],i[0][3]],i[1]])#Because adjacent tiles should have same height first
         else:
             levelOut.append(i)
-        checkPlatList.sort()
+    checkPlatList.sort()
     while len(checkPlatList)>1:
         pCheck = [checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]#Change back to original after it's been sorted
         previousPlat = [checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]
@@ -629,6 +706,8 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
     player.Y = abs(visualOff)+1280
     for i in levelIn:
         newTile.append([i[0].move(0,abs(visualOff)+1280),i[1]])
+        if i[1] == 3:
+            player.X ,player.Y = newTile[-1][0].topleft
     return newTile
 def drawMenu():
     global running,animationStatus,menuAnimation
@@ -663,8 +742,13 @@ def reloadTime():
         player.reloading+=1
     if player.reloading == weaponList[currentWeapon][3]:
         player.reloading = 0
-        player.reserveAmmo[weaponList[currentWeapon][9]]+=player.mag-weaponList[currentWeapon][2]
-        player.mag = weaponList[currentWeapon][2]
+        player.reserveAmmo[weaponList[currentWeapon][9]]+=player.mag
+        transferAmmo = min(weaponList[currentWeapon][2],player.reserveAmmo[weaponList[currentWeapon][9]])
+        print(weaponList[currentWeapon][2],player.reserveAmmo)
+        player.mag = transferAmmo
+        player.reserveAmmo[weaponList[currentWeapon][9]] -= transferAmmo
+        #
+        #player.mag = weaponList[currentWeapon][2]
 playTile = makeTile(fixLevel(makeNewLevel(10)))
 drawnMap = playTile[1]
 animationStatus=-1#positive for opening, negative for closing
@@ -672,6 +756,7 @@ minimap = transform.smoothscale(drawnMap, [drawnMap.get_width()//7,drawnMap.get_
 #player.Y = visualOff
 menuOn = 0
 menuAnimation=0
+canUseSword = True
 gameState = 'game'
 drawUpperSprite()
 while running:
@@ -718,13 +803,10 @@ while running:
                 player.mag = min(weaponList[currentWeapon][2],player.mag)
                 drawUpperSprite()
             if e.key == K_u:
-                gameState = 'ship'
-
-   
+                gameState = 'ship' 
         if e.type == MOUSEBUTTONDOWN:
             if e.button == 1:
                 shooting = True
-                player.shootCounter = 0
         if e.type == MOUSEBUTTONUP:
             if e.button == 1:
                 shooting = False
@@ -734,6 +816,7 @@ while running:
     keysIn = key.get_pressed()
     if gameState == 'game':
         if menuAnimation <= 0:
+            spawnEnemies()
             keysDown(keysIn)
             reloadTime()
             player.move()
@@ -747,13 +830,13 @@ while running:
                 enemyList[i] = applyFriction(enemyList[i])
             canRegenShields = player.shield < player.maxShield
             calcBullets()
+            
             #Shield regen and sfx
             if int(player.shield) == 0 and regenTimer == 0:
                 beginShieldRegen.play()
             if canRegenShields and regenTimer == 0:
                 player.shield += 0.4
-            if shooting:
-                player.shootCounter += 1
+
             regenTimer = max(0,regenTimer-1)
             for i in range(len(pickupList)-1,-1,-1):
                 pickupList[i].fallToGround()
@@ -761,6 +844,8 @@ while running:
                     del pickupList[i]
             moveParticles()
             drawStuff(playTile[1], playTile[0], keysIn)
+            if player.shootCooldown >0:
+                player.shootCooldown-=1
         elif menuAnimation >= 1:
             screen.blit(pauseScreen,(0,0))
             draw.rect(screen,(255,255,255),(670-min(menuAnimation*10,180),350-min(menuAnimation*20,200),2*min(menuAnimation*10,180),2*min(menuAnimation*10,110)))
@@ -768,6 +853,7 @@ while running:
                 drawMenu()
         menuAnimation+=animationStatus
     display.flip()
+    print(player.shootCooldown)
     gameClock.tick(60)
 quit()
 print('cya',player.X,player.Y)
