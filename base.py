@@ -35,7 +35,7 @@ class Particle:
             self.live = False
 
 class Mob:#Sticking too many things into one class?
-    def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton',avoidance = 50):
+    def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton',avoidance = 50,shootRange = 200):
         self.X, self.Y = x, y
         self.W, self.H = w, h
         self.vX, self.vY = vX, vY
@@ -65,6 +65,7 @@ class Mob:#Sticking too many things into one class?
         self.attacking = False
         self.dieing=0
         self.avoidance=avoidance
+        self.shootRange = shootRange
         self.shootCounter = 0
     def move(self):
         self.X += int(self.vX)
@@ -84,7 +85,7 @@ class Mob:#Sticking too many things into one class?
                     self.shootCounter= 0
                     self.animation = idleLeft
 
-            if abs(player.X - self.X) > 195 or not self.oG:  # Distance from player
+            if abs(player.X - self.X) > self.shootRange or not self.oG:  # Distance from player
                 if player.X > self.X:
                     enemyList[i].fA = True
                     self.vX += self.vAx
@@ -191,6 +192,8 @@ tigrisShoot = mixer.Sound('sfx/weapons/tenno/tigris.ogg')
 gorgonShoot = mixer.Sound('sfx/weapons/grineer/gorgon.ogg')
 grakataShoot = mixer.Sound('sfx/weapons/grineer/grakataShoot.ogg')
 twinviperShoot = mixer.Sound('sfx/weapons/grineer/twinviper.ogg')
+vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
+lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
     #Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
@@ -202,14 +205,17 @@ tigrisReload = mixer.Sound('sfx/weapons/tenno/tigrisReload.ogg')
 gorgonReload = mixer.Sound('sfx/weapons/grineer/gorgonReload.ogg')
 grakataReload = mixer.Sound('sfx/weapons/grineer/grakataReload.ogg')
 twinviperReload = mixer.Sound('sfx/weapons/grineer/twinviperReload.ogg')
+vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
+lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
     #Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
 sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
 sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
+enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 weaponList = {'braton':[ 23, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
               'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[100, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0],
-              'grakata':[15,5,60,100,grakataShoot,(200,150,0),1,6,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[80,100,6,100,vulkarShoot,(200,150,0),1,1,vulkarReload,3],'lanka':[70,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -230,6 +236,8 @@ hek = image.load('images/weapons/grineer/hek.png')
 gorgon = image.load('images/weapons/grineer/gorgon.png')
 grakata = image.load('images/weapons/grineer/grakata.png')
 twinviper = image.load('images/weapons/grineer/twinviper.png')
+vulkar = image.load('images/weapons/grineer/vulkar.png')
+lanka = image.load('images/weapons/corpus/lanka.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
@@ -244,16 +252,19 @@ encouragement =['UNACCEPTABLE!!!','Go Again','Keep Trying','Finish the Job',"You
 encouragementText=''
 # Animations
 moaFrames = [[[image.load('images/enemies/moa/Moa001.png')],1], [[image.load('images/enemies/moa/Moa002.png'),image.load('images/enemies/moa/Moa003.png'),image.load('images/enemies/moa/Moa004.png'),image.load('images/enemies/moa/Moa005.png'),image.load('images/enemies/moa/Moa006.png'),image.load('images/enemies/moa/Moa007.png')],7], [[image.load('images/enemies/moa/Moa008.png'),image.load('images/enemies/moa/Moa009.png')],7], [[image.load('images/enemies/moa/Moa010.png'),image.load('images/enemies/moa/Moa011.png'),image.load('images/enemies/moa/Moa012.png'),image.load('images/enemies/moa/Moa013.png'),image.load('images/enemies/moa/Moa014.png'),image.load('images/enemies/moa/Moa015.png'),image.load('images/enemies/moa/Moa016.png')],7]]
-crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 7], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
+crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 9], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
+sCrewmanFrames = [[[image.load('images/enemies/sniperCrewman/sCrewman001.png')],1],[[image.load('images/enemies/sniperCrewman/sCrewman002.png'),image.load('images/enemies/sniperCrewman/sCrewman003.png'),image.load('images/enemies/sniperCrewman/sCrewman004.png'),image.load('images/enemies/sniperCrewman/sCrewman005.png'),image.load('images/enemies/sniperCrewman/sCrewman006.png'),image.load('images/enemies/sniperCrewman/sCrewman007.png'),image.load('images/enemies/sniperCrewman/sCrewman008.png'),image.load('images/enemies/sniperCrewman/sCrewman009.png')],7],[[image.load('images/enemies/sniperCrewman/sCrewman010.png')],1],[[image.load('images/enemies/sniperCrewman/sCrewman014.png'),image.load('images/enemies/sniperCrewman/sCrewman015.png'),image.load('images/enemies/sniperCrewman/sCrewman016.png'),image.load('images/enemies/sniperCrewman/sCrewman017.png'),image.load('images/enemies/sniperCrewman/sCrewman018.png'),image.load('images/enemies/sniperCrewman/sCrewman019.png'),image.load('images/enemies/sniperCrewman/sCrewman020.png')],5]]
 playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [[image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"), image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"), image.load("images/warframes/frost/frost007.png"), image.load("images/warframes/frost/frost008.png")], 7], [[image.load("images/warframes/frost/frost015.png"), image.load("images/warframes/frost/frost016.png"), image.load("images/warframes/frost/frost017.png"), image.load("images/warframes/frost/frost018.png"), image.load("images/warframes/frost/frost019.png"), image.load("images/warframes/frost/frost020.png"), image.load("images/warframes/frost/frost021.png")], 5],[[image.load('images/warframes/frost/frostMelee001.png'),image.load('images/warframes/frost/frostMelee002.png'),image.load('images/warframes/frost/frostMelee003.png'),image.load("images/warframes/frost/frostMelee004.png")],15],[[image.load('images/warframes/frost/frost022.png'),image.load('images/warframes/frost/frost023.png'),image.load('images/warframes/frost/frost024.png'),image.load('images/warframes/frost/frost025.png'),image.load('images/warframes/frost/frost026.png'),image.load('images/warframes/frost/frost027.png')],7]]
 flippedFrame = Surface((0, 0))
 #Player frames
 playerFrames=completeFrames(playerFrames, [0,2,4,6,8,10], [1,3,5,7,9,11])
 crewmanFrames = completeFrames(crewmanFrames, [0,2, 4, 6], [1,3, 5, 7])
 moaFrames = flipFrames(completeFrames(moaFrames, [0,2,4,6], [1,3,5,7]))
+sCrewmanFrames = completeFrames(sCrewmanFrames,[0,2,4,6],[1,3,5,7])
 globalTicks = 0
 mobSpawnY=0
-partList=[]    
+partList=[]
+movedTiles = []
 idle = idleRight
 jump = jumpRight
 friction = 0.2111
@@ -261,13 +272,14 @@ airFriction = 0.02111
 gravity = 0.25
 currentTile = 0
 tileSetRects = glob.glob('tileset/plat?.txt')
+canClick=True
 drawTiles = []
 tileRects = []
 tileSizes = []
 tileIO = []
 pickupList=[]
-purchasedWeapons =[[1,0,0],[0,0,0],[0],[0,0]]
-weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000],[20000,25000]]
+purchasedWeapons =[[1,0,0],[0,0,0],[0,0],[0,0]]
+weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000,17500],[20000,25000]]
 bulletTrailList=[]
 counter = 0
 shooting = False
@@ -305,9 +317,10 @@ onGround = False
 selectedWeaponType=0
 def swordHit():
     global playerRect
+    swingBox = Rect(player.X, player.Y, 40,player.H)
     for i in enemyList:
         enemyRect = Rect(i.X,i.Y,i.W,i.H)
-        swingBox = Rect(player.X, player.Y, 40,21)#Swing
+        #Swing
         if player.fA:
             if enemyRect.colliderect(swingBox.move(-swingBox.w,0)):
                 i.health -=50
@@ -315,6 +328,17 @@ def swordHit():
         elif not player.fA:
             if enemyRect.colliderect(swingBox.move(player.W,0)):
                 i.health -=50
+                break
+    for i in bulletList:
+        if player.fA:
+            if i.hitRect.colliderect(swingBox.move(-swingBox.w,0)):
+                i.fA = not player.fA
+                i.faction = 1
+                break
+        elif not player.fA:
+            if i.hitRect.colliderect(swingBox.move(player.W,0)):
+                i.fA = not player.fA
+                i.faction = 1
                 break
 def drawUpperSprite():
     global currentWeapon, upperSurf, lUpperSurf
@@ -404,19 +428,26 @@ def calcBullets():
                 nextBullet = True
                 break
         if not nextBullet:
-            if bulletList[i].hitRect.colliderect(playerRect) and bulletList[i].faction == 0:
-                if player.shield != player.maxShield:
-                    regenTimer = 200
-                if player.shield>0:
-                    player.shield-=bulletList[i].damage
+            for j in range(len(enemyList)-1,-1,-1):
+                enemyRect = Rect(enemyList[j].X,enemyList[j].Y,enemyList[j].W,enemyList[j].H)
+                if enemyRect.colliderect(bulletList[i].hitRect) and bulletList[i].faction == 1 and enemyList[j].dieing == 0:
+                    enemyList[j].health -= bulletList[i].damage
+                    bulletList[i].life = 0
+        if not nextBullet:
+            if len(bulletList)>0:
+                if bulletList[i].hitRect.colliderect(playerRect) and bulletList[i].faction == 0 and bulletList[i].life >0:
+                    if player.shield != player.maxShield:
+                        regenTimer = 200
+                    if player.shield>0:
+                        player.shield-=bulletList[i].damage
+                    else:
+                        player.health=max(0,player.health-bulletList[i].damage)
+                    bulletList[i].life=0
                 else:
-                    player.health=max(0,player.health-bulletList[i].damage)
-                del bulletList[i]
-            elif bulletList[i].life<=0:
-                del bulletList[i]
-            else:
-                bulletList[i].moveBullet()
-                bulletList[i].life-=1
+                    bulletList[i].moveBullet()
+                    bulletList[i].life-=1
+                if bulletList[i].life<=0:
+                    del bulletList[i]
 
 def drawUpper(playerX, playerY):# Also includes shooting
     global upperSurf, currentWeapon, partList
@@ -456,7 +487,12 @@ def enemyLogic():
         checkLos=True
         #Checking health
         if enemyInfo.health<=0:
-            enemyList[i].animation = 6
+            if enemyList[i].fA:
+                enemyList[i].animation = 6
+            else:
+                enemyList[i].animation = 7
+            if enemyList[i].enemyType != 1:
+                random.choice(enemyDeathSounds).play()
             enemyList[i].dieing+=1
             if enemyInfo.dieing == 1:
                 #enemyList[i].dieing = False
@@ -484,14 +520,14 @@ def enemyLogic():
                     enemyList[i].vY -= 7
 
             # Shooting
-            if abs(enemyInfo.X-player.X) in range(enemyInfo.avoidance, 200):
+            if abs(enemyInfo.X-player.X) in range(enemyInfo.avoidance, enemyInfo.shootRange):
                 if abs(enemyInfo.Y - player.Y) <30 and int(enemyInfo.vX) == 0:
                         while checkLos:
                             for j in playTile[2]:
                                 if j[0].collidepoint(losX,player.Y):
                                     checkLos=False
                                     break
-                            if abs(player.X-losX) >210:
+                            if abs(player.X-losX) >enemyInfo.shootRange:
                                 checkLos = False
                             if playerRect.collidepoint(losX, player.Y):
                                 enemyList[i].attacking=True
@@ -505,6 +541,8 @@ def enemyLogic():
                                         bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
                                     elif enemyInfo.enemyType ==1:
                                         bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
+                                    elif enemyInfo.enemyType == 2:
+                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 7, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
                                     weaponList[enemyInfo.weapon][4].play()
                                 break
                             if player.X>enemyInfo.X:
@@ -514,10 +552,9 @@ def enemyLogic():
                 else:
                     enemyList[i].attacking=False
 def makeTile(tileInfo):
-    global levelAtlas
+    global levelAtlas,visualOff
     tileSize = tileInfo.pop(0)
     tileVisual = Surface(tileSize,SRCALPHA)
-    #tileVisual.fill((255, 255, 255))
     for i in tileInfo:
         if i[1] !=2 and i[1]!=3:
             draw.rect(tileVisual, (0, 0, 0), i[0])
@@ -561,13 +598,26 @@ def keysDown(keys):
             player.animation = 7
         elif not player.fA:
             player.animation = 6
-        if (currentFrame == 0 or currentFrame == 2) and canUseSword:
-            swordHit()
-            if currentFrame == 0:
-                sword1.play()
-            elif currentFrame == 2:
-                sword1.play()
-            canUseSword=False
+        if (currentFrame == 0 or currentFrame == 2):
+            if canUseSword:
+                swordHit()
+                if currentFrame == 0:
+                    sword1.play()
+                elif currentFrame == 2:
+                    sword1.play()
+                canUseSword=False
+            swingBox = Rect(player.X, player.Y, 40,player.H)
+            for i in bulletList:
+                if player.fA:
+                    if i.hitRect.colliderect(swingBox.move(-swingBox.w,0)):
+                        i.fA = not player.fA
+                        i.faction = 1
+                        break
+                elif not player.fA:
+                    if i.hitRect.colliderect(swingBox.move(player.W,0)):
+                        i.fA = not player.fA
+                        i.faction = 1
+                        break
         elif currentFrame == 1 or currentFrame == 3:
             canUseSword = True
     elif player.oG:
@@ -662,12 +712,13 @@ def drawStuff(tileSurf, tileSize, keys):
         
         if i.enemyType == 0:
             enemyPic = crewmanFrames[i.animation][0][i.frame // crewmanFrames[i.animation][1]  % len(crewmanFrames[i.animation][0])]
-            i.frame+=1
-            screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
-        if i.enemyType == 1:
+        elif i.enemyType == 1:
             enemyPic = moaFrames[i.animation][0][i.frame // moaFrames[i.animation][1]  % len(moaFrames[i.animation][0])]
-            i.frame+=1
-            screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
+        elif  i.enemyType == 2:
+            enemyPic = sCrewmanFrames[i.animation][0][i.frame // sCrewmanFrames[i.animation][1]  % len(sCrewmanFrames[i.animation][0])]
+        #screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))            
+        i.frame+=1
+        screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
         draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
     currentFrame = player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])
     screen.blit(pic, (640+additionalOffsets[player.animation][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])], 360 + (36 - pic.get_height())))
@@ -681,14 +732,15 @@ def moveParticles():
             del partList[i]
 def spawnEnemies():
     mobSpawnY = player.Y-500
-    print(mobSpawnY)
     if len(enemyList)<2:
         for i in range(4):
-            newEnemyType = random.randint(0,1)
+            newEnemyType = random.randint(0,2)
             if newEnemyType == 0:
                 enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 30, 45, 0, 0, 3+random.random(), 0.3, False, 1, weapon = 'dera',avoidance=50+random.randint(-5,60)))
             elif newEnemyType == 1:
-                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 4+random.random(), 0.3, False, 1,weapon = 'laser', enemyType =1,avoidance=50+random.randint(-5,60)))
+                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 4+random.random(), 0.3, False, 1,weapon = 'laser', enemyType =1,avoidance=50+random.randint(-5,60),health = 150))
+            elif newEnemyType == 2:
+                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 2+random.random(), 0.3, False, 1,weapon = 'lanka', enemyType =2,avoidance=430+random.randint(-5,60),shootRange = 500,health=60))
 def makeNewLevel(levelLength):#Where the magic happens
     levelOut = []
     tileH = 0
@@ -733,14 +785,13 @@ def makeNewLevel(levelLength):#Where the magic happens
     return levelOut
 
 def playerShoot(weapon):
-    global pic
+    global pic, movedTileTops
     mx, my = mouse.get_pos()
     angle = math.degrees(math.atan2(mx-660,my-376 + (36 - pic.get_height())))-90+random.randint(-weaponList[currentWeapon][7],weaponList[currentWeapon][7])
     return checkBullTrajectory(angle, player.X+player.W//2, player.Y+20)
 def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding box
     global visualOff, mobSpawnY,spawnX,spawnY,movedTileTops
     platHeights=[]
-    
     platRectList=[]
     platTypes=[]
     movedTileTops=[]
@@ -758,11 +809,11 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
         if i[1] == 3:
             spawnX,spawnY = newTile[-1][0].topleft
     newTile.append([Rect(-16,min(movedTileTops)-720,20000,32),2]  )
-    newTile.append([Rect(-16,min(movedTileTops)-32,32,newTile[0][1]),1]  )
-    newTile.append([Rect(newTile[0][0]+32,min(movedTileTops)-32,32,newTile[0][1]),1]  )
+    newTile.append([Rect(-16,min(movedTileTops)-720,32,newTile[0][1]),1]  )
+    newTile.append([Rect(newTile[0][0]+32,min(movedTileTops)-720,32,newTile[0][1]),1]  )
     return newTile
 def pauseMenu():
-    global running,animationStatus,menuAnimation,mx,my,mb,gameState
+    global running,animationStatus,menuAnimation,mx,my,mb,gameState,canClick
     options = ['Back To Game', 'Return To Ship', 'Quit']
     for i in range(len(options)):
         optionRect= Rect(500,70*i+160,340,60)
@@ -779,6 +830,7 @@ def pauseMenu():
                     animationStatus =-1
                     menuAnimation = 20
                 elif option == 1:
+                    canClick=False
                     gameState = 'ship'
                 elif option == 2:
                     running=False
@@ -788,7 +840,7 @@ def pauseMenu():
             optionText = hudFont.render(options[i], True, (255,255,255))
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
 def shipMenu():
-    global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon
+    global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick
     screen.fill((0,0,0))
     weaponOffX=0
     startGameButton = Rect(1130,640,140,70)
@@ -797,7 +849,7 @@ def shipMenu():
     snipersButton = Rect(643,20,264,50)
     heavyButton = Rect(917,20,264,50)
     weaponTypeButtons = [riflesButton,shotgunsButton,snipersButton,heavyButton]
-    typeSortedWeapons = [['dera','braton','grakata'],['tigris','hek','boarP'],['rubico'],['gorgon','laser']]
+    typeSortedWeapons = [['dera','braton','grakata'],['tigris','hek','boarP'],['rubico','vulkar'],['gorgon','laser']]
     weaponTypes = ['Rifles', 'Shotguns', 'Snipers', 'Heavy']
     weapons=list(weaponList.keys())
     weapons.sort()
@@ -827,7 +879,7 @@ def shipMenu():
         screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337))
         
         
-        if mb[0]==1:
+        if mb[0]==1 and canClick:
             if Rect(weaponOffX+400,270,120,85).collidepoint(mx,my):
                 if player.money >=k and not j:
                     player.money-=k
@@ -853,7 +905,7 @@ def shipMenu():
     screen.blit(legendText,(19,588))
     legendText=descFont.render('Not Enough Money',True,(255,255,255))
     screen.blit(legendText,(19,608))
-    legendText=descFont.render('Buyable',True,(255,255,255))
+    legendText=descFont.render('Purchased',True,(255,255,255))
     screen.blit(legendText,(19,628))
     legendText=descFont.render('Equipped',True,(255,255,255))
     screen.blit(legendText,(19,648))
@@ -944,6 +996,7 @@ while running:
             if e.button == 1:
                 shooting = True
         if e.type == MOUSEBUTTONUP:
+            canClick=True
             if e.button == 1:
                 shooting = False
     mb = mouse.get_pressed()
@@ -996,13 +1049,13 @@ while running:
             if player.health<=0 and deathAnimation == 0:
                 encouragementText=random.choice(encouragement)
             deathAnimation +=1
-            screen.fill((min(200,deathAnimation*4),0,0))
-            if deathAnimation in range(50,300):
+            screen.fill((min(200,deathAnimation*3),0,0))
+            if deathAnimation in range(50,350):
                 screen.blit(hudFont.render('You Died', True, (0,0,0)),(580,300))
-            if deathAnimation in range(150,300):
+            if deathAnimation in range(200,350):
                 encouragementRender=hudFont.render(encouragementText, True, (0,0,0))
                 screen.blit(encouragementRender,(640-encouragementRender.get_width()//2,350))
-            if deathAnimation >300:
+            if deathAnimation >350:
                 gameState = 'ship'
                 deathAnimation =0
                 
