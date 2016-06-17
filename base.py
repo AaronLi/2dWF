@@ -634,7 +634,6 @@ def playerShoot(weapon):#finds what the player hit
     return checkBullTrajectory(angle, player.X+player.W//2, player.Y+20)
 def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding box
     global visualOff, mobSpawnY,spawnX,spawnY,movedTileTops
-    print(levelIn)
     platHeights=[]
     platTypes=[]
     movedTileTops=[]
@@ -650,7 +649,7 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
         newTile.append([movedRect,i[1]])
         if i[1] == 3:#make the player's spawn location the spawn box's coordinates
             spawnX,spawnY = newTile[-1][0].topleft
-    newTile.append([Rect(-16,min(movedTileTops)-720,levelIn[0][0],32),2]  )#platform so player can't leave level
+    newTile.append([Rect(-16,min(movedTileTops)-720,20000,32),2]  )#platform so player can't leave level
     newTile.append([Rect(-16,min(movedTileTops)-720,32,newTile[0][1]),1]  )#wall on left
     newTile.append([Rect(newTile[0][0]-16,min(movedTileTops)-720,32,newTile[0][1]),1]  )#wall on right
     return newTile
