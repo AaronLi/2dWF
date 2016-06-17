@@ -1,5 +1,4 @@
 # Base Platformer
-# TODO: Make everything shoot
 from pygame import *
 init()
 import glob, random, math
@@ -7,22 +6,22 @@ def sind(deg):
     return math.sin(math.radians(deg))
 def cosd(deg):
     return math.cos(math.radians(deg))
-class Particle:
+class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
     def __init__(self,surface,x,y,rotation, lifetime, colour, speed, gravity, airResistance,fadeRate, length=1, variation = 10):
         colourOff=random.randint(0,255-max(colour))
         self.surf=surface
-        self.X, self.Y=x,y
-        self.rot=rotation+random.randint(-variation,variation)
-        self.life=lifetime
+        self.X, self.Y=x,y#position
+        self.rot=rotation+random.randint(-variation,variation)#direction
+        self.life=lifetime#amount of iterations before it disappears
         self.col=(colour[0]+colourOff, colour[1]+colourOff, colour[2]+colourOff)
-        self.speed = speed
-        self.fG = gravity
-        self.aR = airResistance
-        self.fR = fadeRate
+        self.speed = speed#distance it moevs per iteration
+        self.fG = gravity#amount it's Y is affected per iteration
+        self.aR = airResistance#amount it's X is affected per iteration
+        self.fR = fadeRate#Amount it's colour fades per iteration
         self.live = True
-        self.length = length
+        self.length = length#Length of particle tail
         
-    def moveParticle(self):
+    def moveParticle(self):#Move the particle based on it's speed and remove it if it's dead
         if self.live:
             draw.line(self.surf, self.col, (640-player.X+int(self.X), 360-player.Y+int(self.Y)), (640-player.X+int(self.X-self.length*cosd(self.rot)), 360-player.Y+int(self.Y-self.length*sind(self.rot))))
             self.X+=self.speed*cosd(self.rot)
@@ -34,88 +33,87 @@ class Particle:
         if self.life <= 0:
             self.live = False
 
-class Mob:#Sticking too many things into one class?
+class Mob:#Class used for the player and enemies
     def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton',avoidance = 50,shootRange = 200):
         self.X, self.Y = x, y
         self.W, self.H = w, h
         self.vX, self.vY = vX, vY
-        self.vM, self.vAx = vM, vAx  # velocity max, acceleration
-        self.oG, self.oW = False, False
+        self.vM, self.vAx = vM, vAx  # max velocity for mob to travel at, acceleration rate to the max
+        self.oG, self.oW = False, False#whether the mob is on the ground/floor, whether the mob is on a wall
         self.fA = fA  # (player.fAcing) True for right, False for left
-        self.jumps = jumps
-        self.frame = 0
+        self.jumps = jumps#amount of jumps the mob has left
+        self.frame = 0#Current frame the mob is on
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
         self.maxHealth= health#Won't be changed, only read to find the limit
-        self.maxShield = shield
-        self.money = 0
+        self.maxShield = shield#same as maxHealth
+        self.money = 0#Credits, for purchasing weapons
         
-        self.health = health
-        self.shield = shield
-        self.energy = 300
+        self.health = health#current Health
+        self.shield = shield#current shields
         
-        self.shieldTimer = 300
-        self.animation = animation
-        self.weapon = weapon
-        self.shootCooldown = 0
-        self.mag = 45
-        self.reloading = 0
+        self.shieldTimer = 300#Time until shield begins regenerating
+        self.animation = animation#current frame set the mob is on
+        self.weapon = weapon#current weapon the mob is using (Used more with enemies)
+        self.shootCooldown = 0#Fire rate timer
+        self.mag = 45#Current magazine size, changes with weapon
+        self.reloading = 0#Reload timer
         self.reserveAmmo = [500,200,2500,60] #Rifle Ammo, Shotgun Ammo, laser Ammo, sniperAmmo
         #Enemy Related things
         self.enemyType = enemyType
         self.attacking = False
-        self.dieing=0
-        self.avoidance=avoidance
-        self.shootRange = shootRange
-        self.shootCounter = 0
+        self.dieing=0#0 if alive >0 if not alive
+        self.avoidance=avoidance#How close the player can be
+        self.shootRange = shootRange#How far the mob tries to stay
+        self.shootCounter = 0#Enemy fire rate timer
     def move(self):
         self.X += int(self.vX)
         self.Y += int(self.vY)
 
     def enemyMove(self):
                 # Moving left and right
-        if self.animation !=6:
-            if player.X > self.X:
+        if self.animation !=6:#Won't work if mob is currently dieing
+            if player.X > self.X:#face right if player is on right
                 enemyList[i].fA = True
-                if not self.attacking:
+                if not self.attacking:#use standing animation if not attacking
                     self.shootCounter = 0
                     self.animation = idleRight
-            elif player.X < self.X :
+            elif player.X < self.X :#Face left is player is on left
                 enemyList[i].fA = False
                 if not self.attacking:
                     self.shootCounter= 0
                     self.animation = idleLeft
 
-            if abs(player.X - self.X) > self.shootRange or not self.oG:  # Distance from player
-                if player.X > self.X:
+            if abs(player.X - self.X) > self.shootRange or not self.oG:  # Move towards player if not on ground or if outside of shooting range
+                if player.X > self.X:#begin walking to the right
                     enemyList[i].fA = True
                     self.vX += self.vAx
                     self.animation = right
-                elif player.X < self.X:
+                elif player.X < self.X:#begin walking to the left
                     enemyList[i].fA = False
                     self.vX -= self.vAx
                     self.animation = left
                 self.shootCounter= 0
-            elif abs(player.X - self.X) < self.avoidance or not self.oG:  # Distance from player
-                if player.X > self.X:
+            elif abs(player.X - self.X) < self.avoidance or not self.oG:  # Move away from player if not on ground or inside avoidance area
+                if player.X > self.X:#Move left
                     enemyList[i].fA = False
                     self.vX -= self.vAx
                     self.animation=left
-                elif player.X < self.X:
+                elif player.X < self.X:#Move right
                     enemyList[i].fA = True
                     self.vX += self.vAx
                     self.animation=right
                 self.shootCounter= 0
-class Pickup:
+class Pickup:#Class for ammo, health, and credit drops
     def __init__(self,x,y,dropType,amount):
         self.X=x
         self.Y=y
         self.vY=0
-        self.dropType=dropType
-        self.amount=amount
+        self.dropType=dropType#an int that describes what kind of ammo the drop is
+        self.amount=amount#int for ammo amount, string if credits or health
     def fallToGround(self):
         canFall = True
         for i in playTile[2]:
-            if i[0].colliderect(Rect(self.X,self.Y,16,16).move(0,1)):
+            if i[0].colliderect(Rect(self.X,self.Y,16,16).move(0,1)):#if pickup is hitting any platform in the level
                 self.Y = i[0].top-pickupSprites[self.dropType].get_height()
                 self.vY = 0
                 canFall = False
@@ -123,48 +121,51 @@ class Pickup:
         if canFall:
             self.vY+=0.5
             self.Y+=int(self.vY)
-    def checkCollide(self):
-        if Rect(self.X,self.Y,16,16).colliderect(Rect(player.X,player.Y,player.W,player.H)):
-            if type(self.amount) == int:
-                player.reserveAmmo[self.dropType]+=self.amount
+    def checkCollide(self):#Checks if player is colliding with the pickup
+        if Rect(self.X,self.Y,16,16).colliderect(Rect(player.X,player.Y,player.W,player.H)):#if colliding
+            if type(self.amount) == int:#if the drop is ammo
+                player.reserveAmmo[self.dropType]+=self.amount#add ammo to respective reserve
                 ammoPickup.play()
                 return True
-            elif self.amount == 'health' and player.health<player.maxHealth:
+            elif self.amount == 'health' and player.health<player.maxHealth:#if the drop is health and the player isn't at max health
                 healthPickup.play()
-                player.health=min(player.maxHealth,player.health+25)
+                player.health=min(player.maxHealth,player.health+25)#add health
                 return True
-            elif self.amount == 'credits':
-                player.money += 50*random.randint(100,200)
+            elif self.amount == 'credits':#if the drop is credits
+                player.money += 50*random.randint(100,200)#Add a random amount of credits
                 return True
         return False
-def flipFrames(frameList):
-    flippedList=[]
+def flipFrames(frameList):#Reflects the sprites in a spritelist if they're all facing the wrong direction
+    flippedList=[]#output
     for i in range(len(frameList)):
-        flippedList.append([])
-        flippedList[-1].append([])
+        flippedList.append([])#Create a new list in the output
+        flippedList[-1].append([])#Create a new list in the new list
         for j in frameList[i][0]:
-           flippedList[i][0].append(transform.flip(j,True,False))
-        flippedList[i].append(frameList[i][1])
+           flippedList[i][0].append(transform.flip(j,True,False))#append to the new list the flipped frame
+        flippedList[i].append(frameList[i][1])#Append the rate at which the frames should be played
     return flippedList
-class Bullet:
+class Bullet:#Enemy bullets
     def __init__(self,bulletRect,direction,speed,damage,colour,faction = 0):#0 is enemy, 1 is friendly
         self.hitRect = bulletRect
         self.fA = direction
         self.vX = speed
         self.damage = damage
-        self.life = 400
-        self.faction = faction
+        self.life = 400#Iterations before it is deleted
+        self.faction = faction#0 will hit the player, 1 will hit enemies
         self.colour = colour
-    def moveBullet(self):
+    def moveBullet(self):#Move a bullet
         if self.fA:
             self.hitRect.move_ip(self.vX,0)
         else:
             self.hitRect.move_ip(-self.vX,0)
-def completeFrames(frameList,ogFrames,flipFrameOrder):
+def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of frames that contains the frames and their reflected form for use
     for i in range(len(frameList)):
+        #frameList is the actual frames
+        #ogFrames is the positions of the old frames
+        #flipFrame Order is the positions of the new frames
         addToFrameList = []  # Frames and how fast to play them
         flipFrameList = []  # Just the frames
-        workFrame = ogFrames[i]
+        workFrame = ogFrames[i]#the frame
         for j in range(len(frameList[workFrame][0])):
             flippedFrame = transform.flip(frameList[workFrame][0][j], True, False)
             flipFrameList.append(flippedFrame)
