@@ -134,7 +134,7 @@ class Pickup:
                 player.health=min(player.maxHealth,player.health+25)
                 return True
             elif self.amount == 'credits':
-                player.money += 50*random.randint(100,500)
+                player.money += 50*random.randint(100,200)
                 return True
         return False
 def flipFrames(frameList):
@@ -176,145 +176,7 @@ def completeFrames(frameList,ogFrames,flipFrameOrder):
             workFrame = frameList[i][0][j]
             frameList[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5))).convert_alpha()
     return frameList
-hudFont=font.Font('fonts/Roboto-Light.ttf',30)
-descFont = font.Font('fonts/Roboto-Light.ttf',20)
-lisetSprite = image.load('images/levels/liset.png')
-lisetSprite = transform.smoothscale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
-#Sounds
-    #Shooting
-bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
-deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
-boarShoot = mixer.Sound('sfx/weapons/orokin/boarP.ogg')
-laserShoot = mixer.Sound('sfx/weapons/factionless/moaGun.ogg')
-hekShoot = mixer.Sound('sfx/weapons/grineer/hekShoot.ogg')
-rubicoShoot = mixer.Sound('sfx/weapons/tenno/rubico.ogg')
-tigrisShoot = mixer.Sound('sfx/weapons/tenno/tigris.ogg')
-gorgonShoot = mixer.Sound('sfx/weapons/grineer/gorgon.ogg')
-grakataShoot = mixer.Sound('sfx/weapons/grineer/grakataShoot.ogg')
-twinviperShoot = mixer.Sound('sfx/weapons/grineer/twinviper.ogg')
-vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
-lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
-    #Reloading
-laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
-bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
-deraReload = mixer.Sound('sfx/weapons/corpus/deraReload.ogg')
-boarReload = mixer.Sound('sfx/weapons/orokin/boarPreload.ogg')
-hekReload = mixer.Sound('sfx/weapons/grineer/hekReload.ogg')
-rubicoReload = mixer.Sound('sfx/weapons/tenno/rubicoReload.ogg')
-tigrisReload = mixer.Sound('sfx/weapons/tenno/tigrisReload.ogg')
-gorgonReload = mixer.Sound('sfx/weapons/grineer/gorgonReload.ogg')
-grakataReload = mixer.Sound('sfx/weapons/grineer/grakataReload.ogg')
-twinviperReload = mixer.Sound('sfx/weapons/grineer/twinviperReload.ogg')
-vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
-lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
-    #Other
-ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
-healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
-sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
-sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
-enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
-weaponList = {'braton':[ 23, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
-              'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0],
-              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3],'lanka':[70,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
-screen = display.set_mode((1280, 720))
-display.set_icon(image.load('images/deco/icon.png'))
-idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
-player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
-beginShieldRegen = mixer.Sound('sfx/warframes/shield/shieldRegen.ogg')
-openMenu = mixer.Sound('sfx/misc/openMenu.ogg')
-closeMenu = mixer.Sound('sfx/misc/closeMenu.ogg')
-levelAtlas = image.load('images/levels/tileTextures.png')
-hudCredit = image.load('images/drops/lifeSupport/hudCredits.png')
-#Guns
-braton = image.load('images/weapons/corpus/braton.png')
-dera = image.load('images/weapons/corpus/dera.png')
-boarP = image.load('images/weapons/orokin/boarP.png')
-laser = image.load('images/weapons/corpus/moaGun.png')
-rubico = image.load('images/weapons/tenno/rubico.png')
-tigris = image.load('images/weapons/tenno/tigris.png')
-hek = image.load('images/weapons/grineer/hek.png')
-gorgon = image.load('images/weapons/grineer/gorgon.png')
-grakata = image.load('images/weapons/grineer/grakata.png')
-twinviper = image.load('images/weapons/grineer/twinviper.png')
-vulkar = image.load('images/weapons/grineer/vulkar.png')
-lanka = image.load('images/weapons/corpus/lanka.png')
 
-frostUpper = image.load('images/warframes/frost/frostUpper.png')
-frostArms = image.load('images/warframes/frost/frostArms.png')
-frostLower = image.load('images/warframes/frost/frostLower.png')
-currentWeapon = 'dera'
-player.mag = weaponList[currentWeapon][2]
-visualOff = 0
-currentFrame = 0
-pic = Surface((20,30))
-pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'),image.load('images/drops/ammo/laserAmmo.png') ,image.load('images/drops/ammo/sniperAmmo.png'),image.load('images/drops/lifeSupport/health.png'),image.load('images/drops/lifeSupport/credits.png')]#money is now required to live
-encouragement =['Go Again','Keep Trying','Finish the Job',"You're making progress",'Finish them off','Finish the job']
-encouragementText=''
-# Animations
-moaFrames = [[[image.load('images/enemies/moa/Moa001.png')],1], [[image.load('images/enemies/moa/Moa002.png'),image.load('images/enemies/moa/Moa003.png'),image.load('images/enemies/moa/Moa004.png'),image.load('images/enemies/moa/Moa005.png'),image.load('images/enemies/moa/Moa006.png'),image.load('images/enemies/moa/Moa007.png')],7], [[image.load('images/enemies/moa/Moa008.png'),image.load('images/enemies/moa/Moa009.png')],7], [[image.load('images/enemies/moa/Moa010.png'),image.load('images/enemies/moa/Moa011.png'),image.load('images/enemies/moa/Moa012.png'),image.load('images/enemies/moa/Moa013.png'),image.load('images/enemies/moa/Moa014.png'),image.load('images/enemies/moa/Moa015.png'),image.load('images/enemies/moa/Moa016.png')],7]]
-crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 9], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
-sCrewmanFrames = [[[image.load('images/enemies/sniperCrewman/sCrewman001.png')],1],[[image.load('images/enemies/sniperCrewman/sCrewman002.png'),image.load('images/enemies/sniperCrewman/sCrewman003.png'),image.load('images/enemies/sniperCrewman/sCrewman004.png'),image.load('images/enemies/sniperCrewman/sCrewman005.png'),image.load('images/enemies/sniperCrewman/sCrewman006.png'),image.load('images/enemies/sniperCrewman/sCrewman007.png'),image.load('images/enemies/sniperCrewman/sCrewman008.png'),image.load('images/enemies/sniperCrewman/sCrewman009.png')],7],[[image.load('images/enemies/sniperCrewman/sCrewman010.png')],1],[[image.load('images/enemies/sniperCrewman/sCrewman014.png'),image.load('images/enemies/sniperCrewman/sCrewman015.png'),image.load('images/enemies/sniperCrewman/sCrewman016.png'),image.load('images/enemies/sniperCrewman/sCrewman017.png'),image.load('images/enemies/sniperCrewman/sCrewman018.png'),image.load('images/enemies/sniperCrewman/sCrewman019.png'),image.load('images/enemies/sniperCrewman/sCrewman020.png')],5]]
-playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [[image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"), image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"), image.load("images/warframes/frost/frost007.png"), image.load("images/warframes/frost/frost008.png")], 7], [[image.load("images/warframes/frost/frost015.png"), image.load("images/warframes/frost/frost016.png"), image.load("images/warframes/frost/frost017.png"), image.load("images/warframes/frost/frost018.png"), image.load("images/warframes/frost/frost019.png"), image.load("images/warframes/frost/frost020.png"), image.load("images/warframes/frost/frost021.png")], 5],[[image.load('images/warframes/frost/frostMelee001.png'),image.load('images/warframes/frost/frostMelee002.png'),image.load('images/warframes/frost/frostMelee003.png'),image.load("images/warframes/frost/frostMelee004.png")],15],[[image.load('images/warframes/frost/frost022.png'),image.load('images/warframes/frost/frost023.png'),image.load('images/warframes/frost/frost024.png'),image.load('images/warframes/frost/frost025.png'),image.load('images/warframes/frost/frost026.png'),image.load('images/warframes/frost/frost027.png')],7]]
-flippedFrame = Surface((0, 0))
-#Player frames
-playerFrames=completeFrames(playerFrames, [0,2,4,6,8,10], [1,3,5,7,9,11])
-crewmanFrames = completeFrames(crewmanFrames, [0,2, 4, 6], [1,3, 5, 7])
-moaFrames = flipFrames(completeFrames(moaFrames, [0,2,4,6], [1,3,5,7]))
-sCrewmanFrames = completeFrames(sCrewmanFrames,[0,2,4,6],[1,3,5,7])
-globalTicks = 0
-mobSpawnY=0
-partList=[]
-movedTiles = []
-idle = idleRight
-jump = jumpRight
-friction = 0.2111
-airFriction = 0.02111
-gravity = 0.25
-currentTile = 0
-tileSetRects = glob.glob('tileset/plat?.txt')
-canClick=True
-drawTiles = []
-tileRects = []
-tileSizes = []
-tileIO = []
-pickupList=[]
-purchasedWeapons =[[1,0,0],[0,0,0],[0,0],[0,0]]
-weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000,17500],[20000,25000]]
-bulletTrailList=[]
-counter = 0
-shooting = False
-paused = False
-caseNumber = random.randint(0,999999)
-regenTimer = 0
-deathAnimation =0
-canRegenShields = False
-movedTileTops=[]
-enemyList =[]# [Mob(300, 400, 60, 45, 0, 0, 4, 0.3, False, 1,weapon = 'laser', enemyType =1), Mob(300, 400, 45, 45, 0, 0, 4, 0.4, False, 1, weapon = 'dera'),
-           #  Mob(300, 400, 45, 45, 0, 0, 3, 0.3, False, 1, weapon = 'dera')]
-bulletList = []
-additionalOffsets=[[0],[0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[-20,-20,0,0],[-49,-19,-19,-7],[0,0,0,0,0,0],[0,0,0,0,0,0]]#[-6,-6,-19,-10]]
-# Getting information from the level files
-for i in range(len(tileSetRects)):
-    tileFile = open(tileSetRects[i]).readlines()
-    currentTileSize = [int(i) for i in tileFile[0].split()[0:2]]
-    tileEntrance = tileFile[0].split()[2]
-    tileExit = tileFile[0].split()[3]
-    tileIO.append([tileEntrance, tileExit])
-    tileSizes.append(currentTileSize)
-    tileRects.append([])
-    drawTiles.append(Surface((currentTileSize)))
-    drawTiles[i].fill((255, 255, 255))
-    for j in range(1, len(tileFile)):
-        platInfo = tileFile[j].split()
-        newPlat = [int(platInfo[i]) for i in range(4)]
-        draw.rect(drawTiles[i], (0, 0, 0), newPlat)
-        tileRects[i].append([Rect(newPlat), int(platInfo[4])])
-running = True
-playerStanding = Surface((player.W, player.H))
-playerStanding.fill((255, 0, 0))
-gameClock = time.Clock()
-onGround = False
-selectedWeaponType=0
 def swordHit():
     global playerRect
     swingBox = Rect(player.X, player.Y, 40,player.H)
@@ -343,9 +205,9 @@ def swordHit():
 def drawUpperSprite():
     global currentWeapon, upperSurf, lUpperSurf
     upperSurf=Surface((22,20),SRCALPHA)
-    upperSurf.blit(frostUpper,(1, 0))#(380, 288))
-    upperSurf.blit(eval(currentWeapon),(5, 8))#(384,296))
-    upperSurf.blit(frostArms, (0, 10))#(379, 298))
+    upperSurf.blit(frostUpper,(1, 0))
+    upperSurf.blit(eval(currentWeapon),(5, 8))
+    upperSurf.blit(frostArms, (0, 10))
     upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))
     lUpperSurf = transform.flip(upperSurf, False, True)
 def miniMap():
@@ -384,7 +246,7 @@ def drawHud():
     miniMap()
     
 def checkBullTrajectory(bullAngle, x, y):
-    global partList
+    global particleList
     hit = False
     startX,startY = x,y
     endX, endY = x, y
@@ -400,7 +262,7 @@ def checkBullTrajectory(bullAngle, x, y):
                 hit = True
                 endX, endY = x,y
                 for i in range(5):
-                    partList.append(Particle(screen, endX,endY,180+bullAngle, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
+                    particleList.append(Particle(screen, endX,endY,180+bullAngle, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in range(len(enemyList)):
             eInfo=enemyList[i]
@@ -410,7 +272,7 @@ def checkBullTrajectory(bullAngle, x, y):
                 endX, endY = x, y
                 retVal = i
                 for i in range(5):
-                    partList.append(Particle(screen, endX, endY,bullAngle+180, 20, [255,0,0], 3, 1, 0.2, 0, 1, 10))
+                    particleList.append(Particle(screen, endX, endY,bullAngle+180, 20, [255,0,0], 3, 1, 0.2, 0, 1, 10))
         x+=7*cosd(bullAngle)
         y+=7*sind(-bullAngle)
     bulletTrailList.append([startX,startY,endX,endY])
@@ -450,7 +312,7 @@ def calcBullets():
                     del bulletList[i]
 
 def drawUpper(playerX, playerY):# Also includes shooting
-    global upperSurf, currentWeapon, partList
+    global upperSurf, currentWeapon, particleList
     mx, my = mouse.get_pos()
     mb = mouse.get_pressed()
     angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
@@ -464,7 +326,7 @@ def drawUpper(playerX, playerY):# Also includes shooting
     if mb[0] and player.shootCooldown == 0 and player.mag>0:
         player.shootCooldown= weaponList[currentWeapon][1] 
         for i in range(10):
-            partList.append(Particle(screen, player.X+(player.W//2)+20*cosd(angle), player.Y+20-20*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
+            particleList.append(Particle(screen, player.X+(player.W//2)+20*cosd(angle), player.Y+20-20*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
         weaponList[currentWeapon][4].play()
         player.mag-=1
         for i in range(weaponList[currentWeapon][6]):
@@ -495,7 +357,6 @@ def enemyLogic():
                 random.choice(enemyDeathSounds).play()
             enemyList[i].dieing+=1
             if enemyInfo.dieing == 1:
-                #enemyList[i].dieing = False
                 enemyList[i].frame = 1
             if enemyInfo.frame%25 == 0:
                     del enemyList[i]
@@ -689,9 +550,9 @@ def drawStuff(tileSurf, tileSize, keys):
         player.animation = left
     elif keys[K_d] and player.oG:
         player.animation = right
-    elif player.fA and not player.oG and not player.oW:#player.animation != 9:
+    elif player.fA and not player.oG and not player.oW:
         player.animation = jumpLeft
-    elif not player.fA and not player.oG and not player.oW:#player.animation !=8:
+    elif not player.fA and not player.oG and not player.oW:
         player.animation = jumpRight
     elif player.fA and player.oG and player.animation != 7 and player.animation != 8:
         player.animation = idleLeft
@@ -715,8 +576,7 @@ def drawStuff(tileSurf, tileSize, keys):
         elif i.enemyType == 1:
             enemyPic = moaFrames[i.animation][0][i.frame // moaFrames[i.animation][1]  % len(moaFrames[i.animation][0])]
         elif  i.enemyType == 2:
-            enemyPic = sCrewmanFrames[i.animation][0][i.frame // sCrewmanFrames[i.animation][1]  % len(sCrewmanFrames[i.animation][0])]
-        #screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))            
+            enemyPic = sCrewmanFrames[i.animation][0][i.frame // sCrewmanFrames[i.animation][1]  % len(sCrewmanFrames[i.animation][0])]            
         i.frame+=1
         screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
         draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
@@ -726,22 +586,22 @@ def drawStuff(tileSurf, tileSize, keys):
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
 def moveParticles():
-    for i in range(len(partList)-1,-1,-1):
-        partList[i].moveParticle()
-        if not partList[i].live:
-            del partList[i]
+    for i in range(len(particleList)-1,-1,-1):
+        particleList[i].moveParticle()
+        if not particleList[i].live:
+            del particleList[i]
 def spawnEnemies():
     mobSpawnY = player.Y-500
     if len(enemyList)<2:
         for i in range(3):
             newEnemyType = random.randint(0,2)
             if newEnemyType == 0:
-                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 30, 45, 0, 0, 3+random.random(), 0.3, False, 1, weapon = 'dera',avoidance=50+random.randint(-5,60)))
+                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 30, 45, 0, 0, 3+random.random(), 0.3, False, 1, weapon = 'dera',avoidance=50+random.randint(-5,60),shootRange = 150+random.randint(-10,10)))
             elif newEnemyType == 1:
-                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 4+random.random(), 0.3, False, 1,weapon = 'laser', enemyType =1,avoidance=50+random.randint(-5,60),health = 150))
+                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 4+random.random(), 0.3, False, 1,weapon = 'laser', enemyType =1,avoidance=40+random.randint(-5,30),health = 150,shootRange = 130+random.randint(-20,10)))
             elif newEnemyType == 2:
-                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 2+random.random(), 0.3, False, 1,weapon = 'lanka', enemyType =2,avoidance=430+random.randint(-5,60),shootRange = 500,health=60))
-def makeNewLevel(levelLength):#Where the magic happens
+                enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 45, 45, 0, 0, 2+random.random(), 0.3, False, 1,weapon = 'lanka', enemyType =2,avoidance=430+random.randint(-5,40),shootRange = 500+random.randint(0,100),health=60))
+def makeNewLevel(levelLength):#Where the level making magic happens
     levelOut = []
     tileH = 0
     levelSeq = [0]
@@ -762,7 +622,7 @@ def makeNewLevel(levelLength):#Where the magic happens
         tileH += tileSizes[levelSeq[i]][1]
         # Placing rects together
     for i in stitchedLevel:
-        if i[1] == 0: #or i[1] == 2:
+        if i[1] == 0:
             checkPlatList.append([[i[0][1],i[0][0],i[0][2],i[0][3]],i[1]])#Because adjacent tiles should have same height first
         else:
             levelOut.append(i)
@@ -770,7 +630,7 @@ def makeNewLevel(levelLength):#Where the magic happens
     while len(checkPlatList)>1:
         pCheck = [checkPlatList[1][0][1],checkPlatList[1][0][0],checkPlatList[1][0][2],checkPlatList[1][0][3]]#Change back to original after it's been sorted
         previousPlat = [checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]
-        if (previousPlat[0]+previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and pCheck[1] == previousPlat[1]: #and previousPlat[3] == pCheck[3] and pCheck[1] == previousPlat[1]:
+        if (previousPlat[0]+previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and pCheck[1] == previousPlat[1]:
                 unionedRect=Rect(previousPlat).union(Rect(pCheck))
                 checkPlatList.insert(2,[[unionedRect[1],unionedRect[0],unionedRect[2],unionedRect[3]],0])#Change back into height prioritized format
                 del checkPlatList[0]
@@ -933,8 +793,7 @@ def reloadTime():
         transferAmmo = min(weaponList[currentWeapon][2],player.reserveAmmo[weaponList[currentWeapon][9]])
         player.mag = transferAmmo
         player.reserveAmmo[weaponList[currentWeapon][9]] -= transferAmmo
-        #
-        #player.mag = weaponList[currentWeapon][2]
+
 def startGame():
     global spawnX,spawnY,menuAnimation,animationStatus,enemyList,pickupList,regenTimer,bulletList
     playTile = makeTile(fixLevel(makeNewLevel(10)))
@@ -953,15 +812,172 @@ def startGame():
     player.mag = weaponList[currentWeapon][2]
     drawUpperSprite()
     return (playTile,drawnMap,minimap)
+#Fonts
+hudFont=font.Font('fonts/Roboto-Light.ttf',30)
+descFont = font.Font('fonts/Roboto-Light.ttf',20)
+lisetSprite = image.load('images/levels/liset.png')
+lisetSprite = transform.smoothscale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
+#Sounds
+    #Shooting
+bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
+deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
+boarShoot = mixer.Sound('sfx/weapons/orokin/boarP.ogg')
+laserShoot = mixer.Sound('sfx/weapons/factionless/moaGun.ogg')
+hekShoot = mixer.Sound('sfx/weapons/grineer/hekShoot.ogg')
+rubicoShoot = mixer.Sound('sfx/weapons/tenno/rubico.ogg')
+tigrisShoot = mixer.Sound('sfx/weapons/tenno/tigris.ogg')
+gorgonShoot = mixer.Sound('sfx/weapons/grineer/gorgon.ogg')
+grakataShoot = mixer.Sound('sfx/weapons/grineer/grakataShoot.ogg')
+twinviperShoot = mixer.Sound('sfx/weapons/grineer/twinviper.ogg')
+vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
+lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
+    #Reloading
+laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
+bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
+deraReload = mixer.Sound('sfx/weapons/corpus/deraReload.ogg')
+boarReload = mixer.Sound('sfx/weapons/orokin/boarPreload.ogg')
+hekReload = mixer.Sound('sfx/weapons/grineer/hekReload.ogg')
+rubicoReload = mixer.Sound('sfx/weapons/tenno/rubicoReload.ogg')
+tigrisReload = mixer.Sound('sfx/weapons/tenno/tigrisReload.ogg')
+gorgonReload = mixer.Sound('sfx/weapons/grineer/gorgonReload.ogg')
+grakataReload = mixer.Sound('sfx/weapons/grineer/grakataReload.ogg')
+twinviperReload = mixer.Sound('sfx/weapons/grineer/twinviperReload.ogg')
+vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
+lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
+    #Other
+ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
+healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
+sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
+sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
+enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
+weaponList = {'braton':[ 25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
+              'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0],
+              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3],'lanka':[70,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+screen = display.set_mode((1280, 720))
+display.set_icon(image.load('images/deco/icon.png'))
+idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
+beginShieldRegen = mixer.Sound('sfx/warframes/shield/shieldRegen.ogg')
+openMenu = mixer.Sound('sfx/misc/openMenu.ogg')
+closeMenu = mixer.Sound('sfx/misc/closeMenu.ogg')
+levelAtlas = image.load('images/levels/tileTextures.png')
+hudCredit = image.load('images/drops/lifeSupport/hudCredits.png')
+#Guns
+braton = image.load('images/weapons/corpus/braton.png')
+dera = image.load('images/weapons/corpus/dera.png')
+boarP = image.load('images/weapons/orokin/boarP.png')
+laser = image.load('images/weapons/corpus/moaGun.png')
+rubico = image.load('images/weapons/tenno/rubico.png')
+tigris = image.load('images/weapons/tenno/tigris.png')
+hek = image.load('images/weapons/grineer/hek.png')
+gorgon = image.load('images/weapons/grineer/gorgon.png')
+grakata = image.load('images/weapons/grineer/grakata.png')
+twinviper = image.load('images/weapons/grineer/twinviper.png')
+vulkar = image.load('images/weapons/grineer/vulkar.png')
+lanka = image.load('images/weapons/corpus/lanka.png')
+
+frostUpper = image.load('images/warframes/frost/frostUpper.png')
+frostArms = image.load('images/warframes/frost/frostArms.png')
+frostLower = image.load('images/warframes/frost/frostLower.png')
+currentWeapon = 'dera'
+
+pic = Surface((20,30))
+pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'),image.load('images/drops/ammo/laserAmmo.png') ,image.load('images/drops/ammo/sniperAmmo.png'),image.load('images/drops/lifeSupport/health.png'),image.load('images/drops/lifeSupport/credits.png')]#money is now required to live
+pickupList=[]
+encouragement =['Go Again','Keep Trying','Finish the Job',"You're making progress",'Finish them off','Finish the job']
+encouragementText=''
+# Animations
+moaFrames = [[[image.load('images/enemies/moa/Moa001.png')],1], [[image.load('images/enemies/moa/Moa002.png'),image.load('images/enemies/moa/Moa003.png'),image.load('images/enemies/moa/Moa004.png'),image.load('images/enemies/moa/Moa005.png'),image.load('images/enemies/moa/Moa006.png'),image.load('images/enemies/moa/Moa007.png')],7], [[image.load('images/enemies/moa/Moa008.png'),image.load('images/enemies/moa/Moa009.png')],7], [[image.load('images/enemies/moa/Moa010.png'),image.load('images/enemies/moa/Moa011.png'),image.load('images/enemies/moa/Moa012.png'),image.load('images/enemies/moa/Moa013.png'),image.load('images/enemies/moa/Moa014.png'),image.load('images/enemies/moa/Moa015.png'),image.load('images/enemies/moa/Moa016.png')],7]]
+crewmanFrames = [[[image.load('images/enemies/crewman/crewman001.png')],1], [[image.load('images/enemies/crewman/crewman002.png'), image.load('images/enemies/crewman/crewman003.png'), image.load('images/enemies/crewman/crewman004.png'), image.load('images/enemies/crewman/crewman005.png'), image.load('images/enemies/crewman/crewman006.png'), image.load('images/enemies/crewman/crewman007.png'), image.load('images/enemies/crewman/crewman008.png'), image.load('images/enemies/crewman/crewman009.png')], 9], [[image.load('images/enemies/crewman/crewman010.png'), image.load('images/enemies/crewman/crewman011.png'), image.load('images/enemies/crewman/crewman012.png'), image.load('images/enemies/crewman/crewman013.png')], 5], [[image.load('images/enemies/crewman/crewman014.png'), image.load('images/enemies/crewman/crewman015.png'), image.load('images/enemies/crewman/crewman016.png'), image.load('images/enemies/crewman/crewman017.png'), image.load('images/enemies/crewman/crewman018.png'), image.load('images/enemies/crewman/crewman019.png'), image.load('images/enemies/crewman/crewman020.png')], 5]]
+sCrewmanFrames = [[[image.load('images/enemies/sniperCrewman/sCrewman001.png')],1],[[image.load('images/enemies/sniperCrewman/sCrewman002.png'),image.load('images/enemies/sniperCrewman/sCrewman003.png'),image.load('images/enemies/sniperCrewman/sCrewman004.png'),image.load('images/enemies/sniperCrewman/sCrewman005.png'),image.load('images/enemies/sniperCrewman/sCrewman006.png'),image.load('images/enemies/sniperCrewman/sCrewman007.png'),image.load('images/enemies/sniperCrewman/sCrewman008.png'),image.load('images/enemies/sniperCrewman/sCrewman009.png')],7],[[image.load('images/enemies/sniperCrewman/sCrewman010.png')],1],[[image.load('images/enemies/sniperCrewman/sCrewman014.png'),image.load('images/enemies/sniperCrewman/sCrewman015.png'),image.load('images/enemies/sniperCrewman/sCrewman016.png'),image.load('images/enemies/sniperCrewman/sCrewman017.png'),image.load('images/enemies/sniperCrewman/sCrewman018.png'),image.load('images/enemies/sniperCrewman/sCrewman019.png'),image.load('images/enemies/sniperCrewman/sCrewman020.png')],5]]
+playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [[image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"), image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"), image.load("images/warframes/frost/frost007.png"), image.load("images/warframes/frost/frost008.png")], 7], [[image.load("images/warframes/frost/frost015.png"), image.load("images/warframes/frost/frost016.png"), image.load("images/warframes/frost/frost017.png"), image.load("images/warframes/frost/frost018.png"), image.load("images/warframes/frost/frost019.png"), image.load("images/warframes/frost/frost020.png"), image.load("images/warframes/frost/frost021.png")], 5],[[image.load('images/warframes/frost/frostMelee001.png'),image.load('images/warframes/frost/frostMelee002.png'),image.load('images/warframes/frost/frostMelee003.png'),image.load("images/warframes/frost/frostMelee004.png")],15],[[image.load('images/warframes/frost/frost022.png'),image.load('images/warframes/frost/frost023.png'),image.load('images/warframes/frost/frost024.png'),image.load('images/warframes/frost/frost025.png'),image.load('images/warframes/frost/frost026.png'),image.load('images/warframes/frost/frost027.png')],7]]
+flippedFrame = Surface((0, 0))
+
+#Player frames
+playerFrames=completeFrames(playerFrames, [0,2,4,6,8,10], [1,3,5,7,9,11])
+crewmanFrames = completeFrames(crewmanFrames, [0,2, 4, 6], [1,3, 5, 7])
+moaFrames = flipFrames(completeFrames(moaFrames, [0,2,4,6], [1,3,5,7]))
+sCrewmanFrames = completeFrames(sCrewmanFrames,[0,2,4,6],[1,3,5,7])
+globalTicks = 0
+mobSpawnY=0
+idle = idleRight
+jump = jumpRight
+additionalOffsets=[[0],[0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[-20,-20,0,0],[-49,-19,-19,-7],[0,0,0,0,0,0],[0,0,0,0,0,0]]#[-6,-6,-19,-10]]
+
+#Particles
+particleList=[]
+
+
+#Physics
+friction = 0.2111
+airFriction = 0.02111
+gravity = 0.25
+
+#Tiles
+currentTile = 0
+tileSetRects = glob.glob('tileset/plat?.txt')
+canClick=True
+drawTiles = []
+tileRects = []
+tileSizes = []
+movedTiles = []
+tileIO = []
+visualOff = 0
+movedTileTops=[]
+#Get information from tileset files
+for i in range(len(tileSetRects)):
+    tileFile = open(tileSetRects[i]).readlines()
+    currentTileSize = [int(i) for i in tileFile[0].split()[0:2]]
+    tileEntrance = tileFile[0].split()[2]
+    tileExit = tileFile[0].split()[3]
+    tileIO.append([tileEntrance, tileExit])
+    tileSizes.append(currentTileSize)
+    tileRects.append([])
+    drawTiles.append(Surface((currentTileSize)))
+    drawTiles[i].fill((255, 255, 255))
+    for j in range(1, len(tileFile)):
+        platInfo = tileFile[j].split()
+        newPlat = [int(platInfo[i]) for i in range(4)]
+        draw.rect(drawTiles[i], (0, 0, 0), newPlat)
+        tileRects[i].append([Rect(newPlat), int(platInfo[4])])
+playTile=((0,0),Surface((0,0)),[[Rect(0,0,0,0)],0])
+minimap = Surface((0,0))
+drawMap=playTile[1]
+#Player
+player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
+currentFrame = 0
+
+#Store
+purchasedWeapons =[[1,0,0],[0,0,0],[0,0],[0,0]]
+weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000,17500],[20000,25000]]
+bulletTrailList=[]
+counter = 0
+shooting = False
+paused = False
+caseNumber = random.randint(0,999999)
+regenTimer = 0
+deathAnimation =0
+canRegenShields = False
+selectedWeaponType=0
+
+
+
+
+# Getting information from the level files
+
+# Other
+running = True
+playerStanding = Surface((player.W, player.H))
+playerStanding.fill((255, 0, 0))
+gameClock = time.Clock()
+
 animationStatus=-1#positive for opening, negative for closing
-#player.Y = visualOff
 menuOn = 0
 menuAnimation=0
 canUseSword = True
 gameState = 'ship'
-playTile=((0,0),Surface((0,0)),[[Rect(0,0,0,0)],0])
-minimap = Surface((0,0))
-drawMap=playTile[1]
+enemyList =[]
+bulletList = []
+
 drawUpperSprite()
 while running:
     for e in event.get():
@@ -988,8 +1004,6 @@ while running:
                 if player.reloading == 0:
                     weaponList[currentWeapon][8].play()
                     player.reloading+=1
-            if e.key == K_u:
-                gameState = 'ship' 
         if e.type == MOUSEBUTTONDOWN:
             if e.button == 1:
                 shooting = True
