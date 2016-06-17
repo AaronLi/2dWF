@@ -214,8 +214,8 @@ sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
 sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 weaponList = {'braton':[ 23, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
-              'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[100, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0],
-              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[80,100,6,100,vulkarShoot,(200,150,0),1,1,vulkarReload,3],'lanka':[70,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+              'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0],
+              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3],'lanka':[70,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -733,7 +733,7 @@ def moveParticles():
 def spawnEnemies():
     mobSpawnY = player.Y-500
     if len(enemyList)<2:
-        for i in range(4):
+        for i in range(3):
             newEnemyType = random.randint(0,2)
             if newEnemyType == 0:
                 enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 30, 45, 0, 0, 3+random.random(), 0.3, False, 1, weapon = 'dera',avoidance=50+random.randint(-5,60)))
@@ -810,7 +810,7 @@ def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding
             spawnX,spawnY = newTile[-1][0].topleft
     newTile.append([Rect(-16,min(movedTileTops)-720,20000,32),2]  )
     newTile.append([Rect(-16,min(movedTileTops)-720,32,newTile[0][1]),1]  )
-    newTile.append([Rect(newTile[0][0]+32,min(movedTileTops)-720,32,newTile[0][1]),1]  )
+    newTile.append([Rect(newTile[0][0]-16,min(movedTileTops)-720,32,newTile[0][1]),1]  )
     return newTile
 def pauseMenu():
     global running,animationStatus,menuAnimation,mx,my,mb,gameState,canClick
@@ -971,7 +971,7 @@ while running:
             if e.key == K_w and player.jumps > 0:
                 player.vY = -7
                 player.jumps -= 1
-            if e.key == K_BACKQUOTE:
+            if e.key == K_ESCAPE:
                 if gameState == 'game':
                     animationStatus *=-1
                     if animationStatus>0:
@@ -984,8 +984,6 @@ while running:
             if e.key==K_c:
                 if len(enemyList)>0:
                     del enemyList[-1]
-            if e.key==K_ESCAPE:
-                running=False
             if e.key == K_r:
                 if player.reloading == 0:
                     weaponList[currentWeapon][8].play()
