@@ -813,12 +813,49 @@ def startGame():
     player.mag = weaponList[currentWeapon][2]
     drawUpperSprite()
     return (playTile,drawnMap,minimap)
+
+def mainMenu():
+    global mx,my,mb,gameState,running
+    options = ['Play', 'Instructions'] 
+    screen.blit(mainPic,(-150,0))
+    screen.blit(title,(750,50))
+    buttons=[Rect(1000,500,200,60),Rect(1000,600,200,60)]
+    for r,v in zip(buttons,options):
+        draw.rect(screen,(150,150,150),r)
+        draw.rect(screen,(255,255,255),r,2)
+        for i in range(len(options)):
+            optionText = hudFont.render(options[i], True, (255,255,255))
+            screen.blit(optionText, (1100-optionText.get_width()//2,100*i+530-optionText.get_height()//2))
+        if r.collidepoint(mx,my):
+            draw.rect(screen,(255,0,0),r,2)
+        if mb[0]==1 and buttons[0].collidepoint(mx,my):
+            gameState = 'ship'
+        if mb[0]==1 and buttons[1].collidepoint(mx,my):
+            gameState = 'instructions'
+        
+def instructions():
+    global mb, gameState
+    screen.blit(mainPic,(-150,0))
+    screen.blit(title,(750,50))
+    screen.blit(controls,(640-controls.get_width()//2,360-controls.get_height()//2))
+    if mb[0]==1:
+        gameState="menu"
+        mainMenu()
+#Main Menu
+mainPic = image.load('images/menu/Mainpic.jpg')
+title = image.load('images/menu/title.png')
+title = transform.scale(title,(500,160))
+#instructions
+controls = image.load('images/menu/instructions.png')
+controls = transform.scale(controls,(controls.get_width()*2,controls.get_height()*2))        
 #Fonts
 hudFont=font.Font('fonts/Roboto-Light.ttf',30)
 descFont = font.Font('fonts/Roboto-Light.ttf',20)
 lisetSprite = image.load('images/levels/liset.png')
 lisetSprite = transform.smoothscale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
 #Sounds
+#Music
+mixer.music.load('sfx/music/theme.ogg') #loads music
     #Shooting
 bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
 deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
@@ -975,10 +1012,10 @@ animationStatus=-1#positive for opening, negative for closing
 menuOn = 0
 menuAnimation=0
 canUseSword = True
-gameState = 'ship'
+gameState = 'menu'
 enemyList =[]
 bulletList = []
-
+mixer.music.play(-1) #plays music on repeat
 drawUpperSprite()
 while running:
     for e in event.get():
@@ -1016,11 +1053,14 @@ while running:
     mx,my=mouse.get_pos()
     playerRect = Rect(player.X,player.Y,player.W,player.H)
     screen.fill((0, 0, 0))                
-    display.set_caption('%d, (%d %d), (%d,%d) - Dev Build' %(int(gameClock.get_fps()),player.X,player.Y,mx,my))
+    display.set_caption('pyFrame - %d fps' %(int(gameClock.get_fps())))
     keysIn = key.get_pressed()
     if gameState == 'ship':
         shipMenu()
-
+    if gameState == 'menu':
+        mainMenu()
+    if gameState == 'instructions':
+        instructions()
     if gameState == 'game':
         if menuAnimation <= 0 and player.health >0:
             spawnEnemies()
