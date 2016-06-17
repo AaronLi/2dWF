@@ -248,7 +248,7 @@ visualOff = 0
 currentFrame = 0
 pic = Surface((20,30))
 pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'),image.load('images/drops/ammo/laserAmmo.png') ,image.load('images/drops/ammo/sniperAmmo.png'),image.load('images/drops/lifeSupport/health.png'),image.load('images/drops/lifeSupport/credits.png')]#money is now required to live
-encouragement =['UNACCEPTABLE!!!','Go Again','Keep Trying','Finish the Job',"You're making progress",'Finish them off','Finish the job']
+encouragement =['Go Again','Keep Trying','Finish the Job',"You're making progress",'Finish them off','Finish the job']
 encouragementText=''
 # Animations
 moaFrames = [[[image.load('images/enemies/moa/Moa001.png')],1], [[image.load('images/enemies/moa/Moa002.png'),image.load('images/enemies/moa/Moa003.png'),image.load('images/enemies/moa/Moa004.png'),image.load('images/enemies/moa/Moa005.png'),image.load('images/enemies/moa/Moa006.png'),image.load('images/enemies/moa/Moa007.png')],7], [[image.load('images/enemies/moa/Moa008.png'),image.load('images/enemies/moa/Moa009.png')],7], [[image.load('images/enemies/moa/Moa010.png'),image.load('images/enemies/moa/Moa011.png'),image.load('images/enemies/moa/Moa012.png'),image.load('images/enemies/moa/Moa013.png'),image.load('images/enemies/moa/Moa014.png'),image.load('images/enemies/moa/Moa015.png'),image.load('images/enemies/moa/Moa016.png')],7]]
@@ -1049,13 +1049,16 @@ while running:
             if player.health<=0 and deathAnimation == 0:
                 encouragementText=random.choice(encouragement)
             deathAnimation +=1
-            screen.fill((min(200,deathAnimation*3),0,0))
-            if deathAnimation in range(50,350):
+            if deathAnimation<350:
+                screen.fill((min(200,deathAnimation*3),0,0))
+            elif deathAnimation >=350:
+                screen.fill((min(200,max(200-((deathAnimation-350)*3),0)),0,0))
+            if deathAnimation in range(50,500):
                 screen.blit(hudFont.render('You Died', True, (0,0,0)),(580,300))
-            if deathAnimation in range(200,350):
+            if deathAnimation in range(200,500):
                 encouragementRender=hudFont.render(encouragementText, True, (0,0,0))
                 screen.blit(encouragementRender,(640-encouragementRender.get_width()//2,350))
-            if deathAnimation >350:
+            if deathAnimation >500:
                 gameState = 'ship'
                 deathAnimation =0
                 
