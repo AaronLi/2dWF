@@ -192,18 +192,7 @@ def swordHit():#check for sword hits
             if enemyRect.colliderect(swingBox.move(player.W,0)):
                 i.health -=50
                 break
-    #reflecting bullets
-    for i in bulletList:#go through list of enemy bullets
-        if player.fA:#if player is facing left
-            if i.hitRect.colliderect(swingBox.move(-swingBox.w,0)):#check if bullet is hitting sword
-                i.fA = not player.fA#changes direction to player's
-                i.faction = 1#change bullet into player's bullet
-                break
-        elif not player.fA:
-            if i.hitRect.colliderect(swingBox.move(player.W,0)):
-                i.fA = not player.fA
-                i.faction = 1
-                break
+
 def drawUpperSprite():#creates a new surface for when the player is standing around and aiming
     global currentWeapon, upperSurf, lUpperSurf
     upperSurf=Surface((22,20),SRCALPHA)
@@ -463,6 +452,19 @@ def keysDown(keys):#check what keys are being held
                 swordHit()#check if the sword hit anything
                 sword1.play() #make sword swinging sound
                 canUseSword=False#can only hit one target per swing
+                #reflecting bullets
+            swingBox = Rect(player.X, player.Y, 40,player.H)#sword area
+            for i in bulletList:#go through list of enemy bullets
+                if player.fA:#if player is facing left
+                    if i.hitRect.colliderect(swingBox.move(-swingBox.w,0)):#check if bullet is hitting sword
+                        i.fA = not player.fA#changes direction to player's
+                        i.faction = 1#change bullet into player's bullet
+                        break
+                elif not player.fA:
+                    if i.hitRect.colliderect(swingBox.move(player.W,0)):
+                        i.fA = not player.fA
+                        i.faction = 1
+                        break
         elif currentFrame == 1 or currentFrame == 3:#frames that no longer have the sword swipe
             canUseSword = True
     elif player.oG:#if the player isn't doing anything and is stationary
