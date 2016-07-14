@@ -20,7 +20,7 @@ class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
         self.fR = fadeRate#Amount it's colour fades per iteration
         self.live = True
         self.length = length#Length of particle tail
-        
+
     def moveParticle(self):#Move the particle based on it's speed and remove it if it's dead
         if self.live:
             draw.line(self.surf, self.col, (640-player.X+int(self.X), 360-player.Y+int(self.Y)), (640-player.X+int(self.X-self.length*cosd(self.rot)), 360-player.Y+int(self.Y-self.length*sind(self.rot))))
@@ -47,10 +47,10 @@ class Mob:#Class used for the player and enemies
         self.maxHealth= health#Won't be changed, only read to find the limit
         self.maxShield = shield#same as maxHealth
         self.money = 0#Credits, for purchasing weapons
-        
+
         self.health = health#current Health
         self.shield = shield#current shields
-        
+
         self.shieldTimer = 300#Time until shield begins regenerating
         self.animation = animation#current frame set the mob is on
         self.weapon = weapon#current weapon the mob is using (Used more with enemies)
@@ -175,7 +175,7 @@ def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of fra
     for i in range(len(frameList)):
         for j in range(len(frameList[i][0])):
             workFrame = frameList[i][0][j]
-            frameList[i][0][j] = transform.smoothscale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5))).convert_alpha()#go through framelist scaling everything up 1.5x
+            frameList[i][0][j] = transform.scale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5))).convert_alpha()#go through framelist scaling everything up 1.5x
     return frameList
 
 def swordHit():#check for sword hits
@@ -199,7 +199,7 @@ def drawUpperSprite():#creates a new surface for when the player is standing aro
     upperSurf.blit(frostUpper,(1, 0))#regular upper half of body
     upperSurf.blit(eval(currentWeapon),(5, 8))#weapon
     upperSurf.blit(frostArms, (0, 10))#arms
-    upperSurf = transform.smoothscale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))#scale it all up
+    upperSurf = transform.scale(upperSurf, (int(upperSurf.get_width()*1.5), int(upperSurf.get_height()*1.5)))#scale it all up
     lUpperSurf = transform.flip(upperSurf, False, True)#left version
 def miniMap():#draws minimap in top left of hud
     mMapSurf=Surface((200,100),SRCALPHA)
@@ -232,7 +232,7 @@ def drawHud():#Draw hud, credits, health, shields, minimap, ammo
     screen.blit(rotatedCreditHud,(10,690))
     screen.blit(rotatedAmmoHud, (1270-rotatedAmmoHud.get_width(), 685))
     miniMap()
-    
+
 def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
     #bullAngle is the angle of the bullet
     #x, y is the position the player is at
@@ -270,7 +270,7 @@ def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
 
 def calcBullets():#check if the enemy bullets hit anything
     global regenTimer, playerRect
-    
+
     for i in range(len(bulletList)-1,-1,-1):
         nextBullet = False#will stop checking things if the bullet no longer exists
         for j in playTile[2]:
@@ -311,7 +311,7 @@ def drawUpper(playerX, playerY):# Also includes shooting
     else:
         rotUpper=transform.rotate(lUpperSurf,angle)#rotate upper body
         screen.blit(rotUpper, (playerX-5-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
-    
+
     if mb[0] and player.shootCooldown == 0 and player.mag>0:#if player can shoot and is trying to shoot
         player.shootCooldown= weaponList[currentWeapon][1] #fire rate timer
         for i in range(10):#add particles at muzzle of gun
@@ -325,7 +325,7 @@ def drawUpper(playerX, playerY):# Also includes shooting
     elif mb[0] and not player.mag and not player.reloading:#if you have no ammo but are trying to shoot
         weaponList[currentWeapon][8].play()
         player.reloading+=1
-                
+
     player.fA =-270 < angle < -90   #change player direction if they are aiming on the left or right
 def enemyLogic():#enemy AI
     global enemyList, playerRect
@@ -355,7 +355,7 @@ def enemyLogic():#enemy AI
                         pickupList.append(Pickup(enemyInfo.X+enemyInfo.W//2, enemyInfo.Y+enemyInfo.H-pickupSprites[dropType].get_height(), dropType, dropAmounts[dropType]))
         elif distY>1000 or distX>1200: #if enemy is too far away then despawn it
             del enemyList[i]
-        else:          
+        else:
             # Jumping over obstacles
             if enemyInfo.oW and enemyInfo.oG:#if there's a wall and the enemy is on the ground
                 enemyList[i].jumps -= 1
@@ -447,7 +447,7 @@ def keysDown(keys):#check what keys are being held
             player.animation = 7#melee animation
         elif not player.fA:
             player.animation = 6
-        if (currentFrame == 0 or currentFrame == 2):#frames that have the sword swipe 
+        if (currentFrame == 0 or currentFrame == 2):#frames that have the sword swipe
             if canUseSword:
                 swordHit()#check if the sword hit anything
                 sword1.play() #make sword swinging sound
@@ -544,7 +544,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
         player.animation = idleLeft
     elif not player.fA and player.oG and player.animation!= 6 and player.animation !=9:
         player.animation = idleRight
-   
+
     pic = playerFrames[player.animation][0][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])]#current frame to show
     player.frame += 1
     screen.blit(tileSurf, (640 - player.X, 360 - player.Y))#blit the level
@@ -556,13 +556,13 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
         draw.line(screen,weaponList[currentWeapon][5],(640-player.X+bulletTrailList[i][0],360-player.Y+bulletTrailList[i][1]),(640-player.X+bulletTrailList[i][2],360-player.Y+bulletTrailList[i][3]))
         del bulletTrailList[i]
     for i in enemyList:
-        
+
         if i.enemyType == 0:#draw the enemies based on their type
             enemyPic = crewmanFrames[i.animation][0][i.frame // crewmanFrames[i.animation][1]  % len(crewmanFrames[i.animation][0])]
         elif i.enemyType == 1:
             enemyPic = moaFrames[i.animation][0][i.frame // moaFrames[i.animation][1]  % len(moaFrames[i.animation][0])]
         elif  i.enemyType == 2:
-            enemyPic = sCrewmanFrames[i.animation][0][i.frame // sCrewmanFrames[i.animation][1]  % len(sCrewmanFrames[i.animation][0])]            
+            enemyPic = sCrewmanFrames[i.animation][0][i.frame // sCrewmanFrames[i.animation][1]  % len(sCrewmanFrames[i.animation][0])]
         i.frame+=1
         screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y+(25-enemyPic.get_height())))
         draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
@@ -579,7 +579,7 @@ def moveParticles():
 def spawnEnemies():
     mobSpawnY = player.Y-500#height at which the mob should spawn
     if len(enemyList)<2:#if there are less than 2 enemies
-        for i in range(3):#spawn 3 
+        for i in range(3):#spawn 3
             newEnemyType = random.randint(0,2)#pick random enemy type
             if newEnemyType == 0:#refer to mob
                 enemyList.append(Mob(player.X+random.choice([-1200,1200]), mobSpawnY+50, 30, 45, 0, 0, 3+random.random(), 0.3, False, 1, weapon = 'dera',avoidance=50+random.randint(-5,60),shootRange = 150+random.randint(-10,10)))
@@ -710,7 +710,7 @@ def shipMenu():#menu for the store
         screen.blit(weaponTypeName,i.move(0,10).topleft)
     for i,j,k in zip(typeSortedWeapons[selectedWeaponType],purchasedWeapons[selectedWeaponType],weaponCosts[selectedWeaponType]):
         wepSpr = eval(i)#weapon Sprite, shorter than eval(i) by a bit
-        scaledSprite = transform.smoothscale(wepSpr,(wepSpr.get_width()*5,wepSpr.get_height()*5))
+        scaledSprite = transform.scale(wepSpr,(wepSpr.get_width()*5,wepSpr.get_height()*5))
         if j:#if weapon is purchased
             draw.rect(screen,(0,255,0),Rect(weaponOffX+395,270,120,85),2)
         else:
@@ -721,8 +721,8 @@ def shipMenu():#menu for the store
         creditCost=descFont.render(str(k),True,(255,255,255))
         screen.blit(creditCost,(weaponOffX+513-creditCost.get_width(),330))
         screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337))
-        
-        
+
+
         if mb[0]==1 and canClick:
             if Rect(weaponOffX+400,270,120,85).collidepoint(mx,my):
                 if player.money >=k and not j:#if player has enough money and hasn't already purchased weapon
@@ -767,7 +767,7 @@ def shipMenu():#menu for the store
             deathAnimation = 0
             gameState = 'game'
             playTile,drawnmap,minimap=startGame()
-            
+
 def reloadTime():
     global weaponList
     if player.reloading >0:
@@ -783,7 +783,7 @@ def startGame():#reset all game related variables
     global spawnX,spawnY,menuAnimation,animationStatus,enemyList,pickupList,regenTimer,bulletList
     playTile = makeTile(fixLevel(makeNewLevel(10)))
     drawnMap = playTile[1]
-    minimap = transform.smoothscale(drawnMap, [drawnMap.get_width()//7,drawnMap.get_height()//7])
+    minimap = transform.scale(drawnMap, [drawnMap.get_width()//7,drawnMap.get_height()//7])
     player.health,player.shield = player.maxHealth,player.maxShield
     player.reserveAmmo = [500,200,2500,60]
     player.X,player.Y = spawnX,spawnY
@@ -800,7 +800,7 @@ def startGame():#reset all game related variables
 
 def mainMenu():
     global mx,my,mb,gameState,running
-    options = ['Play', 'Instructions'] 
+    options = ['Play', 'Instructions']
     screen.blit(mainPic,(-150,0))
     screen.blit(title,(750,50))
     buttons=[Rect(1000,500,200,60),Rect(1000,600,200,60)]
@@ -816,7 +816,7 @@ def mainMenu():
             gameState = 'ship'
         if mb[0]==1 and buttons[1].collidepoint(mx,my):
             gameState = 'instructions'
-        
+
 def instructions():#draw the instructoins
     global mb, gameState
     screen.blit(mainPic,(-150,0))
@@ -831,12 +831,12 @@ title = image.load('images/menu/title.png')
 title = transform.scale(title,(500,160))
 #instructions
 controls = image.load('images/menu/instructions.png')
-controls = transform.scale(controls,(controls.get_width()*2,controls.get_height()*2))        
+controls = transform.scale(controls,(controls.get_width()*2,controls.get_height()*2))
 #Fonts
 hudFont=font.Font('fonts/Roboto-Light.ttf',30)
 descFont = font.Font('fonts/Roboto-Light.ttf',20)
 lisetSprite = image.load('images/levels/liset.png')
-lisetSprite = transform.smoothscale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
+lisetSprite = transform.scale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
 #Sounds
 #Music
 mixer.music.load('sfx/music/theme.ogg') #loads music
@@ -1033,7 +1033,7 @@ while running:
     mb = mouse.get_pressed()
     mx,my=mouse.get_pos()
     playerRect = Rect(player.X,player.Y,player.W,player.H)
-    screen.fill((0, 0, 0))                
+    screen.fill((0, 0, 0))
     display.set_caption('pyFrame - %d fps' %(int(gameClock.get_fps())))
     keysIn = key.get_pressed()
     if gameState == 'ship':
@@ -1058,7 +1058,7 @@ while running:
                 enemyList[i] = applyFriction(enemyList[i])
             canRegenShields = player.shield < player.maxShield
             calcBullets()
-            
+
             #Shield regen and sfx
             if int(player.shield) == 0 and regenTimer == 0:#play sound only if player has hit 0 health
                 beginShieldRegen.play()
@@ -1096,7 +1096,7 @@ while running:
             if deathAnimation >500:
                 gameState = 'ship'
                 deathAnimation =0
-                
+
         menuAnimation+=animationStatus
     display.flip()
     gameClock.tick(60)
