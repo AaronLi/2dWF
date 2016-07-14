@@ -826,7 +826,7 @@ def instructions():#draw the instructoins
         gameState="menu"
         mainMenu()
 #Main Menu
-mainPic = image.load('images/menu/Mainpic.jpg')
+mainPic = image.load('images/menu/mainpic.jpg')
 title = image.load('images/menu/title.png')
 title = transform.scale(title,(500,160))
 #instructions
