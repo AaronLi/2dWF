@@ -1,6 +1,7 @@
 # Base Platformer
 from pygame import *
 init()
+
 import glob, random, math
 def sind(deg):
     return math.sin(math.radians(deg))
@@ -145,7 +146,7 @@ def flipFrames(frameList):#Reflects the sprites in a spritelist if they're all f
         flippedList[i].append(frameList[i][1])#Append the rate at which the frames should be played
     return flippedList
 class Bullet:#Enemy bullets
-    def __init__(self,bulletRect,direction,speed,damage,colour,faction = 0):#0 is enemy, 1 is friendly
+    def __init__(self,bulletRect,direction,speed,damage,colour,faction = 0,gravity = 0.5):#0 is enemy, 1 is friendly
         self.hitRect = bulletRect
         self.fA = direction
         self.vX = speed
@@ -153,11 +154,13 @@ class Bullet:#Enemy bullets
         self.life = 400#Iterations before it is deleted
         self.faction = faction#0 will hit the player, 1 will hit enemies
         self.colour = colour
+        self.gravity=gravity
+        self.y=self.hitRect.y
     def moveBullet(self):#Move a bullet
         if self.fA:
-            self.hitRect.move_ip(self.vX,0)
+            self.hitRect.move_ip(self.vX,self.gravity)
         else:
-            self.hitRect.move_ip(-self.vX,0)
+            self.hitRect.move_ip(-self.vX,self.gravity)
 def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of frames that contains the frames and their reflected form for use
     for i in range(len(frameList)):
         #frameList is the actual frames
@@ -177,7 +180,14 @@ def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of fra
             workFrame = frameList[i][0][j]
             frameList[i][0][j] = transform.scale(workFrame,(int(workFrame.get_width() * 1.5), int(workFrame.get_height() * 1.5))).convert_alpha()#go through framelist scaling everything up 1.5x
     return frameList
-
+def readyController():
+    if joystick.get_count() > 0:
+        global controllerMode
+        mouse.set_visible(False)
+        controllerMode = True
+        xb360Cont = joystick.Joystick(0)
+        xb360Cont.init()
+    print("Controller mode initialised")
 def swordHit():#check for sword hits
     global playerRect
     swingBox = Rect(player.X, player.Y, 40,player.H)#sword area
@@ -241,7 +251,6 @@ def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
     startX,startY = x,y
     endX, endY = x, y
     retVal = None
-    mx, my=mouse.get_pos()
     while not hit:#loop while the bullet hasn't reached anything
         if math.hypot(startX-x,startY-y)>=900:#if bullet has checked 900 pixels distance
             hit = True
@@ -302,8 +311,8 @@ def calcBullets():#check if the enemy bullets hit anything
 
 def drawUpper(playerX, playerY):# Also includes shooting
     global upperSurf, currentWeapon, particleList
-    mx, my = mouse.get_pos()
-    mb = mouse.get_pressed()
+
+
     angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
     if not player.fA:
         rotUpper=transform.rotate(upperSurf,angle)#rotate upper body
@@ -389,11 +398,11 @@ def enemyLogic():#enemy AI
                                 if enemyInfo.shootCounter % weaponList[enemyInfo.weapon][1] == 0:
                                     #different bullet based on different enemy type
                                     if enemyInfo.enemyType == 0:
-                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
+                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0]//2,weaponList[enemyInfo.weapon][5]))
                                     elif enemyInfo.enemyType ==1:
-                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
+                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0]//2,weaponList[enemyInfo.weapon][5]))
                                     elif enemyInfo.enemyType == 2:
-                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 7, weaponList[enemyInfo.weapon][0],weaponList[enemyInfo.weapon][5]))
+                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 7, weaponList[enemyInfo.weapon][0]//2,weaponList[enemyInfo.weapon][5]))
                                     weaponList[enemyInfo.weapon][4].play()
                                 break
                             if player.X>enemyInfo.X:#check 3 pixels along the line of sight
@@ -428,8 +437,6 @@ def makeTile(tileInfo):#draw the tile
 
 def keysDown(keys):#check what keys are being held
     global player, canUseSword, currentFrame
-    mx, my = mouse.get_pos()
-    mb=mouse.get_pressed()
     if keys[K_a]:
         player.vX -= player.vAx#moves left
         player.fA = True #player is facing left
@@ -571,6 +578,8 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
     if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG or player.animation == 7 or player.animation == 6):#if the player isn't moving or meleeing
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
+    if controllerMode:
+        draw.circle(screen,(255,255,255),(mx,my),5)
 def moveParticles():
     for i in range(len(particleList)-1,-1,-1):
         particleList[i].moveParticle()
@@ -872,9 +881,10 @@ healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
 sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
 sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
-weaponList = {'braton':[ 25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[16, 17, 30, 80, deraShoot,(50,170,255),1,3,deraReload,0],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
+#Weapons damagePerShot, fireRate, magSize, reload speed, fire sound, bullet colour, bulletsPErShot, inaccuracy, reload sound, ammo type
+weaponList = {'braton':[ 25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0], 'dera':[18, 15, 30, 80, deraShoot,(50,170,255),1,2,deraReload,0],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2],
               'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1], 'rubico':[150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0],
-              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3],'lanka':[70,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0],'vulkar':[120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3],'lanka':[170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -991,6 +1001,12 @@ running = True
 playerStanding = Surface((player.W, player.H))
 playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
+controllerMode=False
+mx, my = 640, 360
+mb = [0,0,0]
+joyInputX,joyInputY = 0,0
+keysIn = [0 for i in range(323)]
+canJump = True
 
 animationStatus=-1#positive for opening, negative for closing
 menuOn = 0
@@ -1001,6 +1017,7 @@ enemyList =[]
 bulletList = []
 mixer.music.play(-1) #plays music on repeat
 drawUpperSprite()
+readyController()
 while running:
     for e in event.get():
         if e.type == QUIT:
@@ -1030,12 +1047,79 @@ while running:
             canClick=True
             if e.button == 1:
                 shooting = False
-    mb = mouse.get_pressed()
-    mx,my=mouse.get_pos()
+        if controllerMode:
+            if e.type == JOYAXISMOTION:
+                if e.axis==0:
+                    joyInputX=int(e.value*10)
+                elif e.axis==1:
+                    joyInputY=int(e.value*10)
+                if abs(math.hypot(joyInputX,joyInputY))-1<1:
+                    joyInputX,joyInputY = 0,0
+                if e.axis == 2:
+                    if e.value < -0.3:
+                        mb[0]=1
+                        shooting = True
+                    elif e.value > -0.3:
+                        mb[0] = 0
+                        shooting = False
+                if e.axis == 4:
+                    if abs(e.value) > 0.2:
+                        if e.value <0:
+                            keysIn[K_a] = True
+                        elif e.value > 0:
+                            keysIn[K_d] = True
+                    else:
+                        keysIn[K_a], keysIn[K_d] = False, False
+                if e.axis == 3:
+                    if e.value<-0.5 and player.jumps > 0 and canJump:
+                        canJump = False
+                        keysIn[K_w] = True
+                        player.vY = -7
+                        player.jumps -= 1
+                    elif e.value <-0.5 and player.oW:
+                        keysIn[K_w] = True
+                    elif 0>e.value >-0.5:
+                        keysIn[K_w] = False
+                        canJump = True
+            if e.type == JOYBUTTONDOWN:
+                if e.button == 0:
+                    mb[0]=1
+                    shooting = True
+                print(e.joy, e.button)
+                if e.button == 2:
+                    if player.reloading == 0:
+                        weaponList[currentWeapon][8].play()
+                        player.reloading+=1
+                if e.button == 5:
+                    keysIn[K_e] = True
+                if e.button == 6:
+                    if gameState == 'game':
+                        animationStatus *= -1
+                        if animationStatus > 0:
+                            menuAnimation = 0
+                            openMenu.play()
+                            pauseScreen = screen.copy()
+                        elif animationStatus < 0:
+                            closeMenu.play()
+                            menuAnimation = 20
+            if e.type == JOYBUTTONUP:
+                if e.button == 0:
+                    shooting = False
+                    mb[0]=0
+                if e.button == 5:
+                    keysIn[K_e] = False
+    if not controllerMode:
+        mb = mouse.get_pressed()
+        mx,my=mouse.get_pos()
+        keysIn = key.get_pressed()
+    elif controllerMode:
+        mx = max(min(mx+joyInputX,1279),0)
+        my = max(min(my+joyInputY,719),0)
+
     playerRect = Rect(player.X,player.Y,player.W,player.H)
     screen.fill((0, 0, 0))
     display.set_caption('pyFrame - %d fps' %(int(gameClock.get_fps())))
-    keysIn = key.get_pressed()
+
     if gameState == 'ship':
         shipMenu()
     if gameState == 'menu':
@@ -1098,6 +1182,10 @@ while running:
                 deathAnimation =0
 
         menuAnimation+=animationStatus
+    if controllerMode:
+        draw.circle(screen, (255,255,255), (int(mx), int(my)), 3)
+        draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
+        screen.set_at((int(mx),int(my)),(255,255,255))
     display.flip()
     gameClock.tick(60)
 quit()
