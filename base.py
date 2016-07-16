@@ -1,7 +1,7 @@
 # Base Platformer
 from pygame import *
 init()
-
+mixer.music.set_volume(0.3)
 import glob, random, math
 def sind(deg):
     return math.sin(math.radians(deg))
@@ -189,7 +189,7 @@ def readyController():
         controllerMode = True
         xb360Cont = joystick.Joystick(0)
         xb360Cont.init()
-    print("Controller mode initialised")
+        print("Controller mode initialised")
 def swordHit():#check for sword hits
     global playerRect
     swingBox = Rect(player.X, player.Y, 40,player.H)#sword area
@@ -1024,31 +1024,32 @@ while running:
     for e in event.get():
         if e.type == QUIT:
             running = False
-        if e.type == KEYDOWN:
-            if e.key == K_w and player.jumps > 0:#if player can jump
-                player.vY = -7
-                player.jumps -= 1
-            if e.key == K_ESCAPE:#pausing the game
-                if gameState == 'game':
-                    animationStatus *=-1
-                    if animationStatus>0:
-                        menuAnimation = 0
-                        openMenu.play()
-                        pauseScreen=screen.copy()
-                    elif animationStatus<0:
-                        closeMenu.play()
-                        menuAnimation = 20
-            if e.key == K_r:#reload
-                if player.reloading == 0:
-                    weaponList[currentWeapon][8].play()
-                    player.reloading+=1
-        if e.type == MOUSEBUTTONDOWN:#shooting
-            if e.button == 1:
-                shooting = True
-        if e.type == MOUSEBUTTONUP:#not shooting
-            canClick=True
-            if e.button == 1:
-                shooting = False
+        if not controllerMode:
+            if e.type == KEYDOWN:
+                if e.key == K_w and player.jumps > 0:#if player can jump
+                    player.vY = -7
+                    player.jumps -= 1
+                if e.key == K_ESCAPE:#pausing the game
+                    if gameState == 'game':
+                        animationStatus *=-1
+                        if animationStatus>0:
+                            menuAnimation = 0
+                            openMenu.play()
+                            pauseScreen=screen.copy()
+                        elif animationStatus<0:
+                            closeMenu.play()
+                            menuAnimation = 20
+                if e.key == K_r:#reload
+                    if player.reloading == 0:
+                        weaponList[currentWeapon][8].play()
+                        player.reloading+=1
+            if e.type == MOUSEBUTTONDOWN:#shooting
+                if e.button == 1:
+                    shooting = True
+            if e.type == MOUSEBUTTONUP:#not shooting
+                canClick=True
+                if e.button == 1:
+                    shooting = False
         if controllerMode:
             if e.type == JOYAXISMOTION:
                 if e.axis==0:
@@ -1084,10 +1085,11 @@ while running:
                         keysIn[K_w] = False
                         canJump = True
             if e.type == JOYBUTTONDOWN:
+                print(menuAnimation)
                 if e.button == 0:
-                    mb[0]=1
-                    shooting = True
-                print(e.joy, e.button)
+                    if gameState != 'game' or menuAnimation > 0:
+                        mb[0]=1
+                        shooting = True
                 if e.button == 2:
                     if player.reloading == 0:
                         weaponList[currentWeapon][8].play()
