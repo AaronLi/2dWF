@@ -670,7 +670,7 @@ def moveParticles():
             del particleList[i]
 def spawnEnemies():
     mobSpawnY = player.Y-500#height at which the mob should spawn
-    if len(enemyList)<3:#if there are less than 2 enemies
+    if len(enemyList)<10:#if there are less than 2 enemies
         for i in range(3):#spawn 3
             newEnemyType = random.randint(0,2)#pick random enemy type
             if newEnemyType == 0:#refer to mob
@@ -778,6 +778,7 @@ def shipMenu():#menu for the store
     global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick
     screen.fill((0,0,0))
     weaponOffX=0
+    weaponOffY=0
     startGameButton = Rect(1130,640,140,70)
     riflesButton = Rect(95,20,264,50)
     shotgunsButton = Rect(369,20,264,50)
@@ -801,33 +802,36 @@ def shipMenu():#menu for the store
                 selectedWeaponType = listPos
         screen.blit(weaponTypeName,i.move(0,10).topleft)
     for i,j,k in zip(typeSortedWeapons[selectedWeaponType],purchasedWeapons[selectedWeaponType],weaponCosts[selectedWeaponType]):
-        wepSpr = eval(i)#weapon Sprite, shorter than eval(i) by a bit
+        if weaponOffX >=450:
+            weaponOffX = 0
+            weaponOffY += 100
+        wepSpr = eval(i)#weapon Sprite
         scaledSprite = transform.scale(wepSpr,(wepSpr.get_width()*5,wepSpr.get_height()*5))
         if j:#if weapon is purchased
-            draw.rect(screen,(0,255,0),Rect(weaponOffX+395,270,120,85),2)
+            draw.rect(screen,(0,255,0),Rect(weaponOffX+395,270+weaponOffY,120,85),2)
         else:
-            draw.rect(screen,(150,150,150),Rect(weaponOffX+395,270,120,85),2)
+            draw.rect(screen,(150,150,150),Rect(weaponOffX+395,270+weaponOffY,120,85),2)
         #draw weapon name and cost
-        screen.blit(descFont.render(i.title(),True,(255,255,255)),(weaponOffX+400,270))
-        screen.blit(scaledSprite,(weaponOffX+400,300))
+        screen.blit(descFont.render(i.title(),True,(255,255,255)),(weaponOffX+400,270+weaponOffY))
+        screen.blit(scaledSprite,(weaponOffX+400,300+weaponOffY))
         creditCost=descFont.render(str(k),True,(255,255,255))
-        screen.blit(creditCost,(weaponOffX+513-creditCost.get_width(),330))
-        screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337))
+        screen.blit(creditCost,(weaponOffX+513-creditCost.get_width(),330+weaponOffY))
+        screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337+weaponOffY))
 
 
         if mb[0]==1 and canClick:
-            if Rect(weaponOffX+400,270,120,85).collidepoint(mx,my):
+            if Rect(weaponOffX+400,270+weaponOffY,120,85).collidepoint(mx,my):
                 if player.money >=k and not j:#if player has enough money and hasn't already purchased weapon
                     player.money-=k
                     purchasedWeapons[selectedWeaponType][typeSortedWeapons[selectedWeaponType].index(i)]=1
                 elif j:
                     currentWeapon=typeSortedWeapons[selectedWeaponType][typeSortedWeapons[selectedWeaponType].index(i)]
         if currentWeapon == i:#status of weapon
-            draw.circle(screen,(0,255,0),(weaponOffX+505,280),7)
+            draw.circle(screen,(0,255,0),(weaponOffX+505,280+weaponOffY),7)
         elif j:
-            draw.circle(screen,(0,0,255),(weaponOffX+505,280),7)
+            draw.circle(screen,(0,0,255),(weaponOffX+505,280+weaponOffY),7)
         elif player.money<k:
-            draw.circle(screen,(255,0,0),(weaponOffX+505,280),7)
+            draw.circle(screen,(255,0,0),(weaponOffX+505,280+weaponOffY),7)
         weaponOffX+=150
     #draw store legend and start button
     startGameButtonText = hudFont.render('Start',True,(0,0,0))
