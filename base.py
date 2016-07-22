@@ -136,6 +136,31 @@ class Pickup:#Class for ammo, health, and credit drops
                 player.money += 50*random.randint(100,200)#Add a random amount of credits
                 return True
         return False
+class Bullet2:
+    def __init__(self,x,y,angle,damage,faction,range,speed,colour,hitColour,length,gravity,slowdown,thickness):#Gravity reduces vY, slowdown decreases vX
+        self.x,self.y = x,y
+        self.angle = angle
+        self.vX, self.vY = speed * cosd(angle), speed * sind(angle)
+        self.damage = damage
+        self.faction = faction
+        self.range = range
+        self.speed = speed
+        self.colour = colour
+        self.hitColour=hitColour
+        self.length = length
+        self.gravity = gravity
+        self.slowdown = slowdown
+        self.thickness = thickness
+    def move(self):
+        self.vX, self.vY = self.speed * cosd(self.angle), self.speed * sind(self.angle)
+        self.x+=self.vX
+        self.y+=self.vY
+        self.vX -= self.slowdown
+        self.vY -= self.gravity
+        self.range -= 1
+    def draw(self,surface):
+        screen.set_at((int(self.x),int(self.y)),self.colour)
+        draw.line(surface,self.colour,(self.x+640-player.X,self.y+360-player.Y),(int((self.length * cosd(self.angle))+self.x+(640-player.X)), int((self.length * sind(self.angle))+self.y+(360-player.Y))),self.thickness)
 def flipFrames(frameList):#Reflects the sprites in a spritelist if they're all facing the wrong direction
     flippedList=[]#output
     for i in range(len(frameList)):
@@ -285,30 +310,29 @@ def calcBullets():#check if the enemy bullets hit anything
     for i in range(len(bulletList)-1,-1,-1):
         nextBullet = False#will stop checking things if the bullet no longer exists
         for j in playTile[2]:
-            if bulletList[i].hitRect.colliderect(j[0]):#if bullet hit a platform or wall
+            if j[0].collidepoint(bulletList[i].x,bulletList[i].y):#if bullet hit a platform or wall
                 del bulletList[i]
                 nextBullet = True
                 break
         if not nextBullet:
             for j in range(len(enemyList)-1,-1,-1):#checking player bullets
                 enemyRect = Rect(enemyList[j].X,enemyList[j].Y,enemyList[j].W,enemyList[j].H)
-                if enemyRect.colliderect(bulletList[i].hitRect) and bulletList[i].faction == 1 and enemyList[j].dying == 0:#if bullet hits an enemy that's not dying
+                if enemyRect.collidepoint(bulletList[i].x,bulletList[i].y) and bulletList[i].faction == 1 and enemyList[j].dying == 0:#if bullet hits an enemy that's not dying
                     enemyList[j].health -= bulletList[i].damage
-                    bulletList[i].life = 0
+                    bulletList[i].range = 0
         if not nextBullet:
             if len(bulletList)>0:
-                if bulletList[i].hitRect.colliderect(playerRect) and bulletList[i].faction == 0 and bulletList[i].life >0:#if bullet is still alive and it hit the player
+                if playerRect.collidepoint(bulletList[i].x,bulletList[i].y) and bulletList[i].faction == 0 and bulletList[i].range >0:#if bullet is still alive and it hit the player
                     if player.shield != player.maxShield:
                         regenTimer = 200#begin shield regen
                     if player.shield>0:#if the player has shields
                         player.shield-=bulletList[i].damage#hit shields
                     else:
                         player.health=max(0,player.health-bulletList[i].damage)#hit health
-                    bulletList[i].life=0
+                    bulletList[i].range=0
                 else:
-                    bulletList[i].moveBullet()
-                    bulletList[i].life-=1
-                if bulletList[i].life<=0:
+                    bulletList[i].move()
+                if bulletList[i].range<=0:
                     del bulletList[i]
 
 def drawUpper(playerX, playerY):# Also includes shooting
@@ -400,11 +424,35 @@ def enemyLogic():#enemy AI
                                 if enemyInfo.shootCounter % weaponList[enemyInfo.weapon][1] == 0:
                                     #different bullet based on different enemy type
                                     if enemyInfo.enemyType == 0:
-                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0]//2,weaponList[enemyInfo.weapon][5],0,0))
+                                        if enemyInfo.fA:
+                                            bulletList.append(Bullet2(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,0,weaponList[enemyInfo.weapon][0]//2,0,400,3,weaponList[enemyInfo.weapon][5],(255,0,0),5,0,0,4))
+                                        else:
+                                            bulletList.append(
+                                                Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
+                                                        weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
+                                                        weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
                                     elif enemyInfo.enemyType ==1:
-                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y,10,2), enemyInfo.fA, 3, weaponList[enemyInfo.weapon][0]//2,weaponList[enemyInfo.weapon][5],0,0))
+                                            if enemyInfo.fA:
+                                                bulletList.append(
+                                                    Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 0,
+                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
+                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 1, 0, 0, 4))
+                                            else:
+                                                bulletList.append(
+                                                    Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 180,
+                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
+                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 1, 0, 0, 4))
                                     elif enemyInfo.enemyType == 2:
-                                        bulletList.append(Bullet(Rect(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,10,2), enemyInfo.fA, 7, weaponList[enemyInfo.weapon][0]//2,weaponList[enemyInfo.weapon][5],0,0))
+                                            if enemyInfo.fA:
+                                                bulletList.append(
+                                                    Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 0,
+                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 7,
+                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
+                                            else:
+                                                bulletList.append(
+                                                    Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
+                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 7,
+                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
                                     weaponList[enemyInfo.weapon][4].play()
                                 break
                             if player.X>enemyInfo.X:#check 3 pixels along the line of sight
@@ -465,13 +513,13 @@ def keysDown(keys):#check what keys are being held
             swingBox = Rect(player.X, player.Y, 40,player.H)#sword area
             for i in bulletList:#go through list of enemy bullets
                 if player.fA:#if player is facing left
-                    if i.hitRect.colliderect(swingBox.move(-swingBox.w,0)):#check if bullet is hitting sword
-                        i.fA = not player.fA#changes direction to player's
+                    if swingBox.move(-swingBox.w,0).collidepoint(i.x,i.y):#check if bullet is hitting sword
+                        i.angle = 180
                         i.faction = 1#change bullet into player's bullet
                         break
                 elif not player.fA:
-                    if i.hitRect.colliderect(swingBox.move(player.W,0)):
-                        i.fA = not player.fA
+                    if swingBox.move(player.W,0).collidepoint(i.x,i.y):#i.hitRect.colliderect(swingBox.move(player.W,0)):
+                        i.angle = 0
                         i.faction = 1
                         break
         elif currentFrame == 1 or currentFrame == 3:#frames that no longer have the sword swipe
@@ -558,7 +606,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
     player.frame += 1
     screen.blit(tileSurf, (640 - player.X, 360 - player.Y))#blit the level
     for i in bulletList:
-        draw.rect(screen,i.colour,i.hitRect.move(640-player.X,360-player.Y))#render the bullets
+        i.draw(screen)
     for i in range(len(pickupList)):
         screen.blit(pickupSprites[pickupList[i].dropType], (640-player.X+pickupList[i].X,360-player.Y+pickupList[i].Y))#draw the pickups/drops
     for i in range(len(bulletTrailList)-1,-1,-1):#draw the bullet trails from the player
