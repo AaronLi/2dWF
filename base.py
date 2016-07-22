@@ -263,7 +263,7 @@ def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
                 hit = True
                 endX, endY = x,y
                 for i in range(5):#make particles on the environment at the hit location
-                    particleList.append(Particle(screen, endX,endY,180+bullAngle, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
+                    particleList.append(Particle(screen, endX,endY,-bullAngle+180, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in range(len(enemyList)):#if bullet hits enemy
             eInfo=enemyList[i]
@@ -1193,10 +1193,10 @@ while running:
                 deathAnimation =0
 
         menuAnimation+=animationStatus
-    if controllerMode:
-        draw.circle(screen, (255,255,255), (int(mx), int(my)), 3)
-        draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
-        screen.set_at((int(mx),int(my)),(255,255,255))
+
+    draw.circle(screen, (255,255,255), (int(mx), int(my)), 3)
+    draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
+    screen.set_at((int(mx),int(my)),(255,255,255))
     display.flip()
     gameClock.tick(60)
 quit()
