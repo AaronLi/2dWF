@@ -47,7 +47,7 @@ class Mob:#Class used for the player and enemies
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
         self.maxHealth= health#Won't be changed, only read to find the limit
         self.maxShield = shield#same as maxHealth
-        self.money = 0#Credits, for purchasing weapons
+        self.money = 100000#Credits, for purchasing weapons
 
         self.health = health#current Health
         self.shield = shield#current shields
@@ -152,11 +152,13 @@ class Bullet2:
         self.slowdown = slowdown
         self.thickness = thickness
     def move(self):
-        self.vX, self.vY = self.speed * cosd(self.angle), self.speed * sind(self.angle)
         self.x+=self.vX
         self.y+=self.vY
-        self.vX -= self.slowdown
-        self.vY -= self.gravity
+        if self.vX>0:
+            self.vX-=self.slowdown
+        elif self.vX<0:
+            self.vX+=self.slowdown
+        self.vY += self.gravity
         self.range -= 1
     def draw(self,surface):
         screen.set_at((int(self.x),int(self.y)),self.colour)
@@ -170,24 +172,42 @@ def flipFrames(frameList):#Reflects the sprites in a spritelist if they're all f
            flippedList[i][0].append(transform.flip(j,True,False))#append to the new list the flipped frame
         flippedList[i].append(frameList[i][1])#Append the rate at which the frames should be played
     return flippedList
-class Bullet:#Enemy bullets
-    def __init__(self,bulletRect,direction,speed,damage,colour,faction = 0,gravity = 0.1):#0 is enemy, 1 is friendly
-        self.hitRect = bulletRect
-        self.fA = direction
-        self.vX = speed
-        self.vY = 0
+class Weapon:
+    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0):
         self.damage = damage
-        self.life = 400#Iterations before it is deleted
-        self.faction = faction#0 will hit the player, 1 will hit enemies
-        self.colour = colour
-        self.gravity=gravity
-        self.y=self.hitRect.y
-    def moveBullet(self):#Move a bullet
-        self.vY+=self.gravity
-        if self.fA:
-            self.hitRect.move_ip(self.vX,self.vY)
-        else:
-            self.hitRect.move_ip(-self.vX,self.vY)
+        self.firerate = firerate
+        self.magSize = magSize
+        self.reloadSpeed = reloadSpeed
+        self.fireSound = fireSound
+        self.bulletColour = bulletColour
+        self.bulletsPerShot = bulletsPerShot
+        self.inaccuracy = inaccuracy
+        self.reloadSound = reloadSound
+        self.ammoType = ammoType
+        self.bulletType = bulletType
+        self.bulletGravity = bulletGravity
+        self.bulletSpeed = bulletSpeed
+        self.bulletLength = bulletLength
+        self.bulletThickness = bulletThickness
+        self.bulletRange = bulletRange
+# class Bullet:#Enemy bullets
+#     def __init__(self,bulletRect,direction,speed,damage,colour,faction = 0,gravity = 0.1):#0 is enemy, 1 is friendly
+#         self.hitRect = bulletRect
+#         self.fA = direction
+#         self.vX = speed
+#         self.vY = 0
+#         self.damage = damage
+#         self.life = 400#Iterations before it is deleted
+#         self.faction = faction#0 will hit the player, 1 will hit enemies
+#         self.colour = colour
+#         self.gravity=gravity
+#         self.y=self.hitRect.y
+#     def moveBullet(self):#Move a bullet
+#         self.vY+=self.gravity
+#         if self.fA:
+#             self.hitRect.move_ip(self.vX,self.vY)
+#         else:
+#             self.hitRect.move_ip(-self.vX,self.vY)
 def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of frames that contains the frames and their reflected form for use
     for i in range(len(frameList)):
         #frameList is the actual frames
@@ -251,7 +271,7 @@ def drawHud():#Draw hud, credits, health, shields, minimap, ammo
     ammoHud = Surface((165,25),SRCALPHA)
     creditHud = Surface((200,25),SRCALPHA)
     creditDisplay = descFont.render(str(player.money),True,(255,255,255))#render current money
-    ammoCounter=descFont.render('%10s: %-3d/ %2d' % (currentWeapon, player.mag, player.reserveAmmo[weaponList[currentWeapon][9]]),True, (255,255,255))#render current ammo / ammo reserve
+    ammoCounter=descFont.render('%10s: %-3d/ %2d' % (currentWeapon, player.mag, player.reserveAmmo[weaponList[currentWeapon].ammoType]),True, (255,255,255))#render current ammo / ammo reserve
     healthCounter = hudFont.render(str(max(0,player.health)), True, (255,40,40))#render health
     shieldCounter = hudFont.render(str(max(0,int(player.shield))), True, (100,170,255))#render shields
     angledHudSec.blit(healthCounter, (300-healthCounter.get_width(), 10))
@@ -288,7 +308,7 @@ def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
                 hit = True
                 endX, endY = x,y
                 for i in range(5):#make particles on the environment at the hit location
-                    particleList.append(Particle(screen, endX,endY,-bullAngle+180, 5, weaponList[currentWeapon][5], 4, 0.2, 0.2, 0.4, 1, 10))
+                    particleList.append(Particle(screen, endX,endY,-bullAngle+180, 5, weaponList[currentWeapon].bulletColour, 4, 0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in range(len(enemyList)):#if bullet hits enemy
             eInfo=enemyList[i]
@@ -310,7 +330,7 @@ def calcBullets():#check if the enemy bullets hit anything
     for i in range(len(bulletList)-1,-1,-1):
         nextBullet = False#will stop checking things if the bullet no longer exists
         for j in playTile[2]:
-            if j[0].collidepoint(bulletList[i].x,bulletList[i].y):#if bullet hit a platform or wall
+            if j[0].collidepoint(bulletList[i].x,bulletList[i].y) and j[1]!=3:#if bullet hit a platform or wall
                 del bulletList[i]
                 nextBullet = True
                 break
@@ -337,8 +357,6 @@ def calcBullets():#check if the enemy bullets hit anything
 
 def drawUpper(playerX, playerY):# Also includes shooting
     global upperSurf, currentWeapon, particleList
-
-
     angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
     if not player.fA:
         rotUpper=transform.rotate(upperSurf,angle)#rotate upper body
@@ -348,17 +366,30 @@ def drawUpper(playerX, playerY):# Also includes shooting
         screen.blit(rotUpper, (playerX-5-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
 
     if mb[0] and player.shootCooldown == 0 and player.mag>0:#if player can shoot and is trying to shoot
-        player.shootCooldown= weaponList[currentWeapon][1] #fire rate timer
+        player.shootCooldown= weaponList[currentWeapon].firerate #fire rate timer
         for i in range(10):#add particles at muzzle of gun
-            particleList.append(Particle(screen, player.X+(player.W//2)+20*cosd(angle), player.Y+20-20*sind(angle), -angle, 5, weaponList[currentWeapon][5], 4, 0.1, 0.1,7, 2, 20))
-        weaponList[currentWeapon][4].play()
+            particleList.append(Particle(screen, player.X+(player.W//2)+20*cosd(angle), player.Y+20-20*sind(angle), -angle, 5, weaponList[currentWeapon].bulletColour, 4, 0.1, 0.1,7, 2, 20))
+        weaponList[currentWeapon].fireSound.play()
         player.mag-=1
-        for i in range(weaponList[currentWeapon][6]):#check if the bullet hit an enemy
-            enemyHit = playerShoot(weaponList[currentWeapon])
-            if type(enemyHit) == int:#if it hit an enemy
-                enemyList[enemyHit].health -= weaponList[currentWeapon][0]
+        for i in range(weaponList[currentWeapon].bulletsPerShot):#check if the bullet hit an enemy
+            shotAngle = math.degrees(math.atan2(mx - 660, my - 376 + (36 - pic.get_height()))) - 90 + random.randint(
+                -weaponList[currentWeapon].inaccuracy,
+                weaponList[currentWeapon].inaccuracy)  # angle from player's upper body to mouse
+            if weaponList[currentWeapon].bulletType == 0:
+                enemyHit = playerShoot(weaponList[currentWeapon],shotAngle)
+                if type(enemyHit) == int:#if it hit an enemy
+                    enemyList[enemyHit].health -= weaponList[currentWeapon].damage
+            elif weaponList[currentWeapon].bulletType == 1:
+                if currentWeapon == 'ignis':
+                    bulletList.append(
+                        Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle, weaponList[currentWeapon].damage,
+                                1, weaponList[currentWeapon].bulletRange, weaponList[currentWeapon].bulletSpeed+random.randint(-2,2),(255,random.randint(0,255),0), weaponList[currentWeapon].bulletColour,
+                                weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
+                                weaponList[currentWeapon].bulletThickness))
+                else:
+                    bulletList.append(Bullet2(player.X+player.W//2, player.Y+20,-shotAngle,weaponList[currentWeapon].damage,1,weaponList[currentWeapon].bulletRange,weaponList[currentWeapon].bulletSpeed,weaponList[currentWeapon].bulletColour,weaponList[currentWeapon].bulletColour,weaponList[currentWeapon].bulletLength,weaponList[currentWeapon].bulletGravity,0,weaponList[currentWeapon].bulletThickness))
     elif mb[0] and not player.mag and not player.reloading:#if you have no ammo but are trying to shoot
-        weaponList[currentWeapon][8].play()
+        weaponList[currentWeapon].reloadSound.play()
         player.reloading+=1
 
     player.fA =-270 < angle < -90   #change player direction if they are aiming on the left or right
@@ -421,39 +452,39 @@ def enemyLogic():#enemy AI
                                     enemyList[i].animation = 4
                                 else:
                                     enemyList[i].animation = 5
-                                if enemyInfo.shootCounter % weaponList[enemyInfo.weapon][1] == 0:
+                                if enemyInfo.shootCounter % weaponList[enemyInfo.weapon].firerate == 0:
                                     #different bullet based on different enemy type
                                     if enemyInfo.enemyType == 0:
                                         if enemyInfo.fA:
-                                            bulletList.append(Bullet2(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,0,weaponList[enemyInfo.weapon][0]//2,0,400,3,weaponList[enemyInfo.weapon][5],(255,0,0),7,0,0,2))
+                                            bulletList.append(Bullet2(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,0,weaponList[enemyInfo.weapon].damage//2,0,400,3,weaponList[enemyInfo.weapon].bulletColour,(255,0,0),7,0,0,2))
                                         else:
                                             bulletList.append(
                                                 Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
-                                                        weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
-                                                        weaponList[enemyInfo.weapon][5], (255, 0, 0), 7, 0, 0, 2))
+                                                        weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
+                                                        weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 7, 0, 0, 2))
                                     elif enemyInfo.enemyType ==1:
                                             if enemyInfo.fA:
                                                 bulletList.append(
                                                     Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 0,
-                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
-                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
+                                                            weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
+                                                            weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
                                             else:
                                                 bulletList.append(
                                                     Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 180,
-                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
-                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
+                                                            weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
+                                                            weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
                                     elif enemyInfo.enemyType == 2:
                                             if enemyInfo.fA:
                                                 bulletList.append(
                                                     Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 0,
-                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 7,
-                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
+                                                            weaponList[enemyInfo.weapon].damage // 2, 0, 400, 7,
+                                                            weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
                                             else:
                                                 bulletList.append(
                                                     Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
-                                                            weaponList[enemyInfo.weapon][0] // 2, 0, 400, 7,
-                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
-                                    weaponList[enemyInfo.weapon][4].play()
+                                                            weaponList[enemyInfo.weapon].damage // 2, 0, 400, 7,
+                                                            weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
+                                    weaponList[enemyInfo.weapon].fireSound.play()
                                 break
                             if player.X>enemyInfo.X:#check 3 pixels along the line of sight
                                 losX+=3
@@ -515,11 +546,13 @@ def keysDown(keys):#check what keys are being held
                 if player.fA:#if player is facing left
                     if swingBox.move(-swingBox.w,0).collidepoint(i.x,i.y):#check if bullet is hitting sword
                         i.angle = 180
+                        i.vX, i.vY = i.speed * cosd(i.angle), i.speed * sind(i.angle)
                         i.faction = 1#change bullet into player's bullet
                         break
                 elif not player.fA:
                     if swingBox.move(player.W,0).collidepoint(i.x,i.y):#i.hitRect.colliderect(swingBox.move(player.W,0)):
                         i.angle = 0
+                        i.vX, i.vY = i.speed * cosd(i.angle), i.speed * sind(i.angle)
                         i.faction = 1
                         break
         elif currentFrame == 1 or currentFrame == 3:#frames that no longer have the sword swipe
@@ -610,7 +643,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
     for i in range(len(pickupList)):
         screen.blit(pickupSprites[pickupList[i].dropType], (640-player.X+pickupList[i].X,360-player.Y+pickupList[i].Y))#draw the pickups/drops
     for i in range(len(bulletTrailList)-1,-1,-1):#draw the bullet trails from the player
-        draw.line(screen,weaponList[currentWeapon][5],(640-player.X+bulletTrailList[i][0],360-player.Y+bulletTrailList[i][1]),(640-player.X+bulletTrailList[i][2],360-player.Y+bulletTrailList[i][3]))
+        draw.line(screen,weaponList[currentWeapon].bulletColour,(640-player.X+bulletTrailList[i][0],360-player.Y+bulletTrailList[i][1]),(640-player.X+bulletTrailList[i][2],360-player.Y+bulletTrailList[i][3]))
         del bulletTrailList[i]
     for i in enemyList:
 
@@ -637,7 +670,7 @@ def moveParticles():
             del particleList[i]
 def spawnEnemies():
     mobSpawnY = player.Y-500#height at which the mob should spawn
-    if len(enemyList)<2:#if there are less than 2 enemies
+    if len(enemyList)<3:#if there are less than 2 enemies
         for i in range(3):#spawn 3
             newEnemyType = random.randint(0,2)#pick random enemy type
             if newEnemyType == 0:#refer to mob
@@ -689,10 +722,9 @@ def makeNewLevel(levelLength):#stitches the rects from different tiles together
     levelOut.insert(0, (xOff, tileH))#insert information about tile width and height
     return levelOut
 
-def playerShoot(weapon):#finds what the player hit
+def playerShoot(weapon,angle):#finds what the player hit
     global pic, movedTileTops,mx,my
 
-    angle = math.degrees(math.atan2(mx-660,my-376 + (36 - pic.get_height())))-90+random.randint(-weaponList[currentWeapon][7],weaponList[currentWeapon][7])#angle from player's upper body to mouse
     return checkBullTrajectory(angle, player.X+player.W//2, player.Y+20)
 def fixLevel(levelIn): #Moves the level so that it isn't outside of the bounding box
     global visualOff, mobSpawnY,spawnX,spawnY,movedTileTops
@@ -752,7 +784,7 @@ def shipMenu():#menu for the store
     snipersButton = Rect(643,20,264,50)
     heavyButton = Rect(917,20,264,50)
     weaponTypeButtons = [riflesButton,shotgunsButton,snipersButton,heavyButton]
-    typeSortedWeapons = [['dera','braton','grakata'],['tigris','hek','boarP'],['rubico','vulkar','lanka'],['gorgon','laser']]
+    typeSortedWeapons = [['dera','braton','grakata'],['tigris','hek','boarP'],['rubico','vulkar','lanka'],['gorgon','laser','ignis']]
     weaponTypes = ['Rifles', 'Shotguns', 'Snipers', 'Heavy']
     weapons=list(weaponList.keys())#list of weapon names from the dictionary that contains the weapon information
     weapons.sort()#sort alphabetically
@@ -832,12 +864,12 @@ def reloadTime():
     global weaponList
     if player.reloading >0:
         player.reloading+=1
-    if player.reloading == weaponList[currentWeapon][3]:
+    if player.reloading == weaponList[currentWeapon].reloadSpeed:
         player.reloading = 0
-        player.reserveAmmo[weaponList[currentWeapon][9]]+=player.mag#move ammo from mag to reserve
-        transferAmmo = min(weaponList[currentWeapon][2],player.reserveAmmo[weaponList[currentWeapon][9]])#prepare to move one mag worth of ammo back
+        player.reserveAmmo[weaponList[currentWeapon].ammoType]+=player.mag#move ammo from mag to reserve
+        transferAmmo = min(weaponList[currentWeapon].magSize,player.reserveAmmo[weaponList[currentWeapon].ammoType])#prepare to move one mag worth of ammo back
         player.mag = transferAmmo
-        player.reserveAmmo[weaponList[currentWeapon][9]] -= transferAmmo
+        player.reserveAmmo[weaponList[currentWeapon].ammoType] -= transferAmmo
 
 def startGame():#reset all game related variables
     global spawnX,spawnY,menuAnimation,animationStatus,enemyList,pickupList,regenTimer,bulletList
@@ -854,7 +886,7 @@ def startGame():#reset all game related variables
     regenTimer = 0
     menuAnimation = 0
     animationStatus =-1
-    player.mag = weaponList[currentWeapon][2]
+    player.mag = weaponList[currentWeapon].magSize
     drawUpperSprite()
     return (playTile,drawnMap,minimap)
 
@@ -913,6 +945,7 @@ grakataShoot = mixer.Sound('sfx/weapons/grineer/grakataShoot.ogg')
 twinviperShoot = mixer.Sound('sfx/weapons/grineer/twinviper.ogg')
 vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
 lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
+ignisShoot = mixer.Sound('sfx/weapons/grineer/ignisShoot.ogg')
     #Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
@@ -926,6 +959,7 @@ grakataReload = mixer.Sound('sfx/weapons/grineer/grakataReload.ogg')
 twinviperReload = mixer.Sound('sfx/weapons/grineer/twinviperReload.ogg')
 vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
 lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
+ignisReload = mixer.Sound('sfx/weapons/grineer/ignisReload.ogg')
     #Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
@@ -933,9 +967,19 @@ sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
 sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 #Weapons damagePerShot, fireRate, magSize, reload speed, fire sound, bullet colour, bulletsPErShot, inaccuracy, reload sound, ammo type,bullet type,bulletgravity,bulletspeed
-weaponList = {'braton':[ 25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0], 'dera':[18, 15, 30, 80, deraShoot,(50,170,255),1,2,deraReload,0,1,0,10],'boarP':[5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1,0,0,0],'laser':[3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0],
-              'hek':[19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0], 'tigris':[25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0], 'rubico':[150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3,0,0,0],'gorgon':[20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0],
-              'grakata':[14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0], 'twinviper':[13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0,0,0,0],'vulkar':[120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0],'lanka':[170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15]}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0),
+              'dera':Weapon(18, 15, 30, 80, deraShoot,(50,170,255),1,1,deraReload,0,1,0,10,5,3,500),
+              'boarP':Weapon(5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1,0,0,0),
+              'laser':Weapon(3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0),
+              'hek':Weapon(19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0),
+              'tigris':Weapon(25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0),
+              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3,0,0,0),
+              'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0),
+              'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0),
+              'twinviper':Weapon(13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0,0,0,0),
+              'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0),
+              'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700),
+              'ignis':Weapon(0.5,2,150,100,ignisShoot,(255,200,0),20,4,ignisReload,2,1,0.1,8,5,5,60)}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -957,6 +1001,7 @@ grakata = image.load('images/weapons/grineer/grakata.png')
 twinviper = image.load('images/weapons/grineer/twinviper.png')
 vulkar = image.load('images/weapons/grineer/vulkar.png')
 lanka = image.load('images/weapons/corpus/lanka.png')
+ignis = image.load('images/weapons/grineer/ignis.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
@@ -1030,8 +1075,8 @@ player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 currentFrame = 0
 
 #Store info
-purchasedWeapons =[[1,0,0],[0,0,0],[0,0,0],[0,0]]
-weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000,17500,17500],[20000,25000]]
+purchasedWeapons =[[1,0,0],[0,0,0],[0,0,0],[0,0,0]]
+weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000,17500,17500],[20000,25000,20000]]
 bulletTrailList=[]
 counter = 0
 shooting = False
@@ -1089,7 +1134,7 @@ while running:
                             menuAnimation = 20
                 if e.key == K_r:#reload
                     if player.reloading == 0:
-                        weaponList[currentWeapon][8].play()
+                        weaponList[currentWeapon].reloadSound.play()
                         player.reloading+=1
             if e.type == MOUSEBUTTONDOWN:#shooting
                 if e.button == 1:
