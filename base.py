@@ -425,23 +425,23 @@ def enemyLogic():#enemy AI
                                     #different bullet based on different enemy type
                                     if enemyInfo.enemyType == 0:
                                         if enemyInfo.fA:
-                                            bulletList.append(Bullet2(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,0,weaponList[enemyInfo.weapon][0]//2,0,400,3,weaponList[enemyInfo.weapon][5],(255,0,0),5,0,0,4))
+                                            bulletList.append(Bullet2(enemyInfo.X+enemyInfo.W//2,enemyInfo.Y+25,0,weaponList[enemyInfo.weapon][0]//2,0,400,3,weaponList[enemyInfo.weapon][5],(255,0,0),7,0,0,2))
                                         else:
                                             bulletList.append(
                                                 Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
                                                         weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
-                                                        weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
+                                                        weaponList[enemyInfo.weapon][5], (255, 0, 0), 7, 0, 0, 2))
                                     elif enemyInfo.enemyType ==1:
                                             if enemyInfo.fA:
                                                 bulletList.append(
                                                     Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 0,
                                                             weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
-                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 1, 0, 0, 4))
+                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
                                             else:
                                                 bulletList.append(
                                                     Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 180,
                                                             weaponList[enemyInfo.weapon][0] // 2, 0, 400, 3,
-                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 1, 0, 0, 4))
+                                                            weaponList[enemyInfo.weapon][5], (255, 0, 0), 5, 0, 0, 4))
                                     elif enemyInfo.enemyType == 2:
                                             if enemyInfo.fA:
                                                 bulletList.append(
