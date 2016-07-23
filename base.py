@@ -1,7 +1,7 @@
 # Base Platformer
 from pygame import *
 init()
-mixer.music.set_volume(0.3)
+mixer.music.set_volume(0.1)
 import glob, random, math
 def sind(deg):
     return math.sin(math.radians(deg))
@@ -47,7 +47,7 @@ class Mob:#Class used for the player and enemies
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
         self.maxHealth= health#Won't be changed, only read to find the limit
         self.maxShield = shield#same as maxHealth
-        self.money = 100000#Credits, for purchasing weapons
+        self.money = 5000#Credits, for purchasing weapons
 
         self.health = health#current Health
         self.shield = shield#current shields
@@ -58,7 +58,6 @@ class Mob:#Class used for the player and enemies
         self.shootCooldown = 0#Fire rate timer
         self.mag = 45#Current magazine size, changes with weapon
         self.reloading = 0#Reload timer
-        self.reserveAmmo = [500,200,2500,60] #Rifle Ammo, Shotgun Ammo, laser Ammo, sniperAmmo
         #Enemy Related things
         self.enemyType = enemyType
         self.attacking = False
@@ -658,7 +657,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
         draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
     currentFrame = player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])#the current frame for use in other functions
     screen.blit(pic, (640+additionalOffsets[player.animation][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])], 360 + (36 - pic.get_height())))#blit the player on the center of the screen
-    if not (keys[K_a] or keys[K_w] or keys[K_d] or not player.oG or player.animation == 7 or player.animation == 6):#if the player isn't moving or meleeing
+    if not (keys[K_a]  or keys[K_d] or not player.oG or player.animation == 7 or player.animation == 6):#if the player isn't moving or meleeing
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
     if controllerMode:
@@ -670,7 +669,7 @@ def moveParticles():
             del particleList[i]
 def spawnEnemies():
     mobSpawnY = player.Y-500#height at which the mob should spawn
-    if len(enemyList)<10:#if there are less than 2 enemies
+    if len(enemyList)<3:#if there are less than 2 enemies
         for i in range(3):#spawn 3
             newEnemyType = random.randint(0,2)#pick random enemy type
             if newEnemyType == 0:#refer to mob
@@ -785,7 +784,7 @@ def shipMenu():#menu for the store
     snipersButton = Rect(643,20,264,50)
     heavyButton = Rect(917,20,264,50)
     weaponTypeButtons = [riflesButton,shotgunsButton,snipersButton,heavyButton]
-    typeSortedWeapons = [['dera','braton','grakata'],['tigris','hek','boarP'],['rubico','vulkar','lanka'],['gorgon','laser','ignis']]
+    typeSortedWeapons = [['dera','braton','grakata','twinviper'],['tigris','hek','boarP'],['rubico','vulkar','lanka'],['gorgon','laser','ignis','zhuge']]
     weaponTypes = ['Rifles', 'Shotguns', 'Snipers', 'Heavy']
     weapons=list(weaponList.keys())#list of weapon names from the dictionary that contains the weapon information
     weapons.sort()#sort alphabetically
@@ -950,6 +949,7 @@ twinviperShoot = mixer.Sound('sfx/weapons/grineer/twinviper.ogg')
 vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
 lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
 ignisShoot = mixer.Sound('sfx/weapons/grineer/ignisShoot.ogg')
+zhugeShoot = mixer.Sound('sfx/weapons/tenno/zhuge.ogg')
     #Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
@@ -964,11 +964,13 @@ twinviperReload = mixer.Sound('sfx/weapons/grineer/twinviperReload.ogg')
 vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
 lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
 ignisReload = mixer.Sound('sfx/weapons/grineer/ignisReload.ogg')
+zhugeReload = mixer.Sound('sfx/weapons/tenno/zhugeReload.ogg')
     #Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
 sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
 sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
+noSound = mixer.Sound('sfx/misc/none.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 #Weapons damagePerShot, fireRate, magSize, reload speed, fire sound, bullet colour, bulletsPErShot, inaccuracy, reload sound, ammo type,bullet type,bulletgravity,bulletspeed
 weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0),
@@ -980,10 +982,12 @@ weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bra
               'rubico':Weapon(150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3,0,0,0),
               'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0),
               'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0),
-              'twinviper':Weapon(13,2,28,80,twinviperShoot,(255,255,255),1,8,twinviperReload,0,0,0,0),
+              'twinviper':Weapon(6,3,28,80,twinviperShoot,(255,255,255),1,7,twinviperReload,0,0,0,0),
               'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0),
               'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700),
-              'ignis':Weapon(0.5,2,150,100,ignisShoot,(255,200,0),20,4,ignisReload,2,1,0.1,8,5,5,60)}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+              'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80),
+              'zhuge':Weapon(70,20,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500),
+              'none':Weapon(0,0,0,10,noSound,(0,0,0),0,0,noSound,0,0)}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -993,6 +997,7 @@ closeMenu = mixer.Sound('sfx/misc/closeMenu.ogg')
 levelAtlas = image.load('images/levels/tileTextures.png')
 hudCredit = image.load('images/drops/lifeSupport/hudCredits.png')
 #Guns
+none = Surface((1,1),SRCALPHA)
 braton = image.load('images/weapons/corpus/braton.png')
 dera = image.load('images/weapons/corpus/dera.png')
 boarP = image.load('images/weapons/orokin/boarP.png')
@@ -1006,11 +1011,12 @@ twinviper = image.load('images/weapons/grineer/twinviper.png')
 vulkar = image.load('images/weapons/grineer/vulkar.png')
 lanka = image.load('images/weapons/corpus/lanka.png')
 ignis = image.load('images/weapons/grineer/ignis.png')
+zhuge = image.load('images/weapons/tenno/zhuge.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
 frostLower = image.load('images/warframes/frost/frostLower.png')
-currentWeapon = 'dera'
+currentWeapon = 'none'
 
 pic = Surface((20,30))
 pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'),image.load('images/drops/ammo/shotgunAmmo.png'),image.load('images/drops/ammo/laserAmmo.png') ,image.load('images/drops/ammo/sniperAmmo.png'),image.load('images/drops/lifeSupport/health.png'),image.load('images/drops/lifeSupport/credits.png')]#money is now required to live
@@ -1079,8 +1085,8 @@ player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 currentFrame = 0
 
 #Store info
-purchasedWeapons =[[1,0,0],[0,0,0],[0,0,0],[0,0,0]]
-weaponCosts = [[0,5000,10000],[15000,20000,25000],[20000,17500,17500],[20000,25000,20000]]
+purchasedWeapons =[[0,0,0,0],[0,0,0],[0,0,0],[0,0,0,0]]
+weaponCosts = [[5000,5000,10000,5000],[15000,20000,25000],[20000,17500,17500],[20000,25000,20000,20000]]
 bulletTrailList=[]
 counter = 0
 shooting = False
@@ -1182,14 +1188,13 @@ while running:
                         keysIn[K_w] = False
                         canJump = True
             if e.type == JOYBUTTONDOWN:
-                print(menuAnimation)
                 if e.button == 0:
                     if gameState != 'game' or menuAnimation > 0:
                         mb[0]=1
                         shooting = True
                 if e.button == 2:
                     if player.reloading == 0:
-                        weaponList[currentWeapon][8].play()
+                        weaponList[currentWeapon].reloadSound.play()
                         player.reloading+=1
                 if e.button == 4:
                     if gameState == 'ship':
