@@ -1,15 +1,12 @@
 # Base Platformer
 from pygame import *
+import glob, random, math
 init()
 mixer.music.set_volume(0.1)
-import glob, random, math
 startTime=time.get_ticks()
-def sind(deg):
-    return math.sin(math.radians(deg))
-def cosd(deg):
-    return math.cos(math.radians(deg))
+
 class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
-    def __init__(self,surface,x,y,rotation, lifetime, colour, speed, gravity, airResistance,fadeRate, length=1, variation = 10):
+    def __init__(self,surface,x,y,rotation, lifetime, colour, speed, gravity, airResistance,fadeRate, length=1, variation = 10, size = 1):
         colourOff=random.randint(0,255-max(colour))
         self.surf=surface
         self.X, self.Y=x,y#position
@@ -22,10 +19,11 @@ class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
         self.fR = fadeRate#Amount it's colour fades per iteration
         self.live = True
         self.length = length#Length of particle tail
+        self.size = size
 
     def moveParticle(self):#Move the particle based on it's speed and remove it if it's dead
         if self.live:
-            draw.line(self.surf, self.col, (640-player.X+int(self.X), 360-player.Y+int(self.Y)), (640-player.X+int(self.X-self.length*cosd(self.rot)), 360-player.Y+int(self.Y-self.length*sind(self.rot))))
+            draw.line(self.surf, self.col, (640-player.X+int(self.X), 360-player.Y+int(self.Y)), (640-player.X+int(self.X-self.length*cosd(self.rot)), 360-player.Y+int(self.Y-self.length*sind(self.rot))),self.size)
             self.X+=self.speed*cosd(self.rot)
             self.Y+=self.speed*sind(self.rot)
             self.col=(max(self.col[0]-self.fR, 0), max(self.col[1]-self.fR, 0), max(self.col[2]-self.fR, 0))
@@ -34,7 +32,6 @@ class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
             self.Y=max(self.Y+self.fG, 0)
         if self.life <= 0:
             self.live = False
-
 class Mob:#Class used for the player and enemies
     def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton',avoidance = 50,shootRange = 200):
         self.X, self.Y = x, y
@@ -163,15 +160,6 @@ class Bullet2:
     def draw(self,surface):
         screen.set_at((int(self.x),int(self.y)),self.colour)
         draw.line(surface,self.colour,(self.x+640-player.X,self.y+360-player.Y),(int((self.length * cosd(self.angle))+self.x+(640-player.X)), int((self.length * sind(self.angle))+self.y+(360-player.Y))),self.thickness)
-def flipFrames(frameList):#Reflects the sprites in a spritelist if they're all facing the wrong direction
-    flippedList=[]#output
-    for i in range(len(frameList)):
-        flippedList.append([])#Create a new list in the output
-        flippedList[-1].append([])#Create a new list in the new list
-        for j in frameList[i][0]:
-           flippedList[i][0].append(transform.flip(j,True,False))#append to the new list the flipped frame
-        flippedList[i].append(frameList[i][1])#Append the rate at which the frames should be played
-    return flippedList
 class Weapon:
     def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0):
         self.damage = damage
@@ -191,6 +179,19 @@ class Weapon:
         self.bulletThickness = bulletThickness
         self.bulletRange = bulletRange
 
+def sind(deg):
+    return math.sin(math.radians(deg))
+def cosd(deg):
+    return math.cos(math.radians(deg))
+def flipFrames(frameList):#Reflects the sprites in a spritelist if they're all facing the wrong direction
+    flippedList=[]#output
+    for i in range(len(frameList)):
+        flippedList.append([])#Create a new list in the output
+        flippedList[-1].append([])#Create a new list in the new list
+        for j in frameList[i][0]:
+           flippedList[i][0].append(transform.flip(j,True,False))#append to the new list the flipped frame
+        flippedList[i].append(frameList[i][1])#Append the rate at which the frames should be played
+    return flippedList
 def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of frames that contains the frames and their reflected form for use
     for i in range(len(frameList)):
         #frameList is the actual frames
@@ -232,7 +233,6 @@ def swordHit():#check for sword hits
             if enemyRect.colliderect(swingBox.move(player.W,0)):
                 i.health -=50
                 break
-
 def drawUpperSprite():#creates a new surface for when the player is standing around and aiming
     global currentWeapon, upperSurf, lUpperSurf
     upperSurf=Surface((22,20),SRCALPHA)
@@ -272,7 +272,6 @@ def drawHud():#Draw hud, credits, health, shields, minimap, ammo
     screen.blit(rotatedCreditHud,(10,690))
     screen.blit(rotatedAmmoHud, (1270-rotatedAmmoHud.get_width(), 685))
     miniMap()
-
 def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
     #bullAngle is the angle of the bullet
     #x, y is the position the player is at
@@ -306,7 +305,6 @@ def checkBullTrajectory(bullAngle, x, y):#check trajectory of player shots
         y+=7*sind(-bullAngle)
     bulletTrailList.append([startX,startY,endX,endY])#queue bullet trail for drawing
     return retVal
-
 def calcBullets():#check if the enemy bullets hit anything
     global regenTimer, playerRect
 
@@ -337,7 +335,6 @@ def calcBullets():#check if the enemy bullets hit anything
                     bulletList[i].move()
                 if bulletList[i].range<=0:
                     del bulletList[i]
-
 def drawUpper(playerX, playerY):# Also includes shooting
     global upperSurf, currentWeapon, particleList
     angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
@@ -497,8 +494,6 @@ def makeTile(tileInfo):#draw the tile
         elif i[1]==3:# if the tile is a spawn box the draw the liset (ship)
             tileVisual.blit(lisetSprite,i[0].move(-50,-20).topleft)
     return (tileSize, tileVisual, tileInfo)
-
-
 def keysDown(keys):#check what keys are being held
     global player, canUseSword, currentFrame
     if keys[K_a]:
@@ -568,8 +563,6 @@ def applyFriction(mob):
     elif mob.vX in range(1, -1):
         mob.vX = 0
     return mob
-
-
 def hitSurface(mob, tilePlats):#player colliding with the level
     global gravity
     mobRect = Rect(mob.X, mob.Y, mob.W, mob.H)
@@ -601,10 +594,8 @@ def hitSurface(mob, tilePlats):#player colliding with the level
         mob.vY += gravity
     if not (mobRect.move(0, 1).colliderect(mob.hW[0]) or mobRect.move(0, -1).colliderect(mob.hW[0])):#if player isn't hitting a wall
         mob.oW = False
-
-
 def drawStuff(tileSurf, tileSize, keys):#render everything
-    global player, frames, animation, visualOff, pic, currentFrame
+    global player, frames, animation, visualOff, pic, currentFrame, bulletTrailList
     if keys[K_a] and player.oG:#conditional animations
         player.animation = left
     elif keys[K_d] and player.oG:
@@ -627,7 +618,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
         screen.blit(pickupSprites[pickupList[i].dropType], (640-player.X+pickupList[i].X,360-player.Y+pickupList[i].Y))#draw the pickups/drops
     for i in range(len(bulletTrailList)-1,-1,-1):#draw the bullet trails from the player
         draw.line(screen,weaponList[currentWeapon].bulletColour,(640-player.X+bulletTrailList[i][0],360-player.Y+bulletTrailList[i][1]),(640-player.X+bulletTrailList[i][2],360-player.Y+bulletTrailList[i][3]))
-        del bulletTrailList[i]
+    bulletTrailList = []
     for i in enemyList:
 
         if i.enemyType == 0:#draw the enemies based on their type
@@ -644,8 +635,6 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
     if not (keys[K_a]  or keys[K_d] or not player.oG or player.animation == 7 or player.animation == 6):#if the player isn't moving or meleeing
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
-    if controllerMode:
-        draw.circle(screen,(255,255,255),(mx,my),5)
 def moveParticles():
     for i in range(len(particleList)-1,-1,-1):
         particleList[i].moveParticle()
@@ -704,7 +693,6 @@ def makeNewLevel(levelLength):#stitches the rects from different tiles together
     levelOut.append([Rect([checkPlatList[0][0][1],checkPlatList[0][0][0],checkPlatList[0][0][2],checkPlatList[0][0][3]]),0])#add last platform
     levelOut.insert(0, (xOff, tileH))#insert information about tile width and height
     return levelOut
-
 def playerShoot(weapon,angle):#finds what the player hit
     global pic, movedTileTops,mx,my
 
@@ -846,7 +834,6 @@ def shipMenu():#menu for the store
             deathAnimation = 0
             gameState = 'game'
             playTile,drawnmap,minimap=startGame()
-
 def reloadTime():
     global weaponList
     if player.reloading >0:
@@ -857,7 +844,6 @@ def reloadTime():
         transferAmmo = min(weaponList[currentWeapon].magSize,player.reserveAmmo[weaponList[currentWeapon].ammoType])#prepare to move one mag worth of ammo back
         player.mag = transferAmmo
         player.reserveAmmo[weaponList[currentWeapon].ammoType] -= transferAmmo
-
 def startGame():#reset all game related variables
     global spawnX,spawnY,menuAnimation,animationStatus,enemyList,pickupList,regenTimer,bulletList
     playTile = makeTile(fixLevel(makeNewLevel(10)))
@@ -876,31 +862,33 @@ def startGame():#reset all game related variables
     player.mag = weaponList[currentWeapon].magSize
     drawUpperSprite()
     return (playTile,drawnMap,minimap)
-
 def mainMenu():
-    global mx,my,mb,gameState,running,selectionY
+    global mx,my,mb,gameState,running,selectionY,canClick
     screen.fill((0,0,0))
     screen.blit(wfLogo,(180,10))
+    colouredTriangle = selectionTriangle
+    flippedColouredTriangle = flippedTriangle
     if my > selectionY:
         selectionY += math.ceil(abs(my-selectionY)/15)
     elif my < selectionY:
         selectionY -= math.ceil(abs(my-selectionY)/15)
     darkenedSurf = Surface((426,250))
-    darkenedSurf.set_alpha(105)
+    darkenedSurf.set_alpha(140)
     #Play Button
     playRect = Rect(426,250,426,120)
     playSurf = Surface((playRect.width,playRect.height))
     playSurf.fill((255,255,255))
     if playRect.collidepoint(mx,my):
-        if selectionY in range(290,330):
+        if selectionY in range(290,340):
+            colouredTriangle = selectionTriangleB
+            flippedColouredTriangle = flippedTriangleB
             selectionY = 310
         if mb[0]:
+            canClick = False
             gameState = 'ship'
         playSurf.blit(playButton, (163,10))
-        #playSurf.blit(frost, (0, 0), (460, 100, playRect.width, playRect.height))
     else:
         playSurf.blit(playButtonG, (163,10))
-        #playSurf.blit(frostG, (0, 0), (460, 100, playRect.width, playRect.height))
         playSurf.blit(darkenedSurf, (0, 0))
     screen.blit(playSurf,playRect)
 
@@ -910,6 +898,8 @@ def mainMenu():
     settingsSurf.fill((255,255,255))
     if settingsRect.collidepoint(mx,my):
         if selectionY in range(430,450):
+            colouredTriangle = selectionTriangleG
+            flippedColouredTriangle = flippedTriangleG
             selectionY = 440
         if mb[0]:
             gameState = 'instructions'
@@ -924,7 +914,9 @@ def mainMenu():
     exitSurf = Surface((exitRect.width,exitRect.height))
     exitSurf.fill((255,255,255))
     if exitRect.collidepoint(mx,my):
-        if selectionY in range(570,590):
+        if selectionY in range(560,590):
+            colouredTriangle = selectionTriangleR
+            flippedColouredTriangle = flippedTriangleR
             selectionY = 570
         if mb[0]:
             event.post(event.Event(QUIT))
@@ -935,16 +927,24 @@ def mainMenu():
     screen.blit(exitSurf,exitRect)
 
     #Selection Triangles
-    screen.blit(selectionTriangle,(391,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
-    screen.blit(flippedTriangle,(862,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
+    screen.blit(colouredTriangle,(391,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
+    screen.blit(flippedColouredTriangle,(862,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
 def instructions():#draw the instructoins
     global mb, gameState
     screen.blit(controls,(640-controls.get_width()//2,360-controls.get_height()//2))
-    if mb[0]==1:
-        gameState="menu"
+    if my > 500:
+        if mb[0]==1:
+            gameState="menu"
+
 #Main Menu
 selectionTriangle = image.load('images/menu/selectionTriangle.png')
 flippedTriangle = transform.flip(selectionTriangle,True,False)
+selectionTriangleR = image.load('images/menu/selectionTriangleR.png')
+flippedTriangleR = transform.flip(selectionTriangleR,True,False)
+selectionTriangleG = image.load('images/menu/selectionTriangleG.png')
+flippedTriangleG = transform.flip(selectionTriangleG,True,False)
+selectionTriangleB = image.load('images/menu/selectionTriangleB.png')
+flippedTriangleB = transform.flip(selectionTriangleB,True,False)
 wfLogo = image.load('images/menu/wfLogo.png')
 settingsGear = image.load('images/menu/gear.png')
 settingsGearG = image.load('images/menu/gearG.png')
