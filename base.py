@@ -336,8 +336,20 @@ def calcBullets():#check if the enemy bullets hit anything
                 if bulletList[i].range<=0:
                     del bulletList[i]
 def drawUpper(playerX, playerY):# Also includes shooting
-    global upperSurf, currentWeapon, particleList
-    angle = math.degrees(math.atan2(mx-playerX, my-playerY))-90
+    global upperSurf, currentWeapon, particleList,keysIn
+    smallestLimit = -180
+    largestLimit = 180
+    if keysIn[K_a]:
+        smallestLimit = -225
+        largestLimit = -135
+    elif keysIn[K_d]:
+        smallestLimit = -45
+        largestLimit = 45
+    else:
+        smallestLimit = -270
+        largestLimit = 90
+    angle = min(max(math.degrees(math.atan2(mx - playerX, my - playerY)) - 90, smallestLimit), largestLimit)
+    print(angle)
     if not player.fA:
         rotUpper=transform.rotate(upperSurf,angle)#rotate upper body
         screen.blit(rotUpper, (playerX-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
@@ -633,7 +645,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
         draw.line(screen,(255,40,40),(640-player.X+i.X+(30*max(0,i.health)//i.maxHealth),360-player.Y+i.Y+(25-enemyPic.get_height())), (640-player.X+i.X,360-player.Y+i.Y+(25-enemyPic.get_height())))
     currentFrame = player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])#the current frame for use in other functions
     screen.blit(pic, (640+additionalOffsets[player.animation][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])], 360 + (36 - pic.get_height())))#blit the player on the center of the screen
-    if not (keys[K_a]  or keys[K_d] or not player.oG or player.animation == 7 or player.animation == 6):#if the player isn't moving or meleeing
+    if not (not player.oG or player.animation == 7 or player.animation == 6):#if the player isn't moving or meleeing
         drawUpper(660,376 + (36 - pic.get_height()))
     drawHud()
 def moveParticles():
