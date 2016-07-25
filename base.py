@@ -874,7 +874,6 @@ def mainMenu():
         xShift +=shiftAmountX
         yShift +=shiftAmountY
         screen.blit(wfLogo, (180, 10))
-        print(startBlitX+xShift,startBlitY+yShift)
         if xShift >= abs(1280-mainMenuBackDrops[currentBackDrop].get_width()) or yShift >= abs(720-mainMenuBackDrops[currentBackDrop].get_height()):
             xShift = 0
             yShift = 0
