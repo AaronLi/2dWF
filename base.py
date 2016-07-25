@@ -3,6 +3,7 @@ from pygame import *
 init()
 mixer.music.set_volume(0.1)
 import glob, random, math
+startTime=time.get_ticks()
 def sind(deg):
     return math.sin(math.radians(deg))
 def cosd(deg):
@@ -47,7 +48,7 @@ class Mob:#Class used for the player and enemies
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
         self.maxHealth= health#Won't be changed, only read to find the limit
         self.maxShield = shield#same as maxHealth
-        self.money = 5000#Credits, for purchasing weapons
+        self.money = 50000#Credits, for purchasing weapons
 
         self.health = health#current Health
         self.shield = shield#current shields
@@ -189,24 +190,7 @@ class Weapon:
         self.bulletLength = bulletLength
         self.bulletThickness = bulletThickness
         self.bulletRange = bulletRange
-# class Bullet:#Enemy bullets
-#     def __init__(self,bulletRect,direction,speed,damage,colour,faction = 0,gravity = 0.1):#0 is enemy, 1 is friendly
-#         self.hitRect = bulletRect
-#         self.fA = direction
-#         self.vX = speed
-#         self.vY = 0
-#         self.damage = damage
-#         self.life = 400#Iterations before it is deleted
-#         self.faction = faction#0 will hit the player, 1 will hit enemies
-#         self.colour = colour
-#         self.gravity=gravity
-#         self.y=self.hitRect.y
-#     def moveBullet(self):#Move a bullet
-#         self.vY+=self.gravity
-#         if self.fA:
-#             self.hitRect.move_ip(self.vX,self.vY)
-#         else:
-#             self.hitRect.move_ip(-self.vX,self.vY)
+
 def completeFrames(frameList,ogFrames,flipFrameOrder):#will return a list of frames that contains the frames and their reflected form for use
     for i in range(len(frameList)):
         #frameList is the actual frames
@@ -894,36 +878,81 @@ def startGame():#reset all game related variables
     return (playTile,drawnMap,minimap)
 
 def mainMenu():
-    global mx,my,mb,gameState,running
-    options = ['Play', 'Instructions']
-    screen.blit(mainPic,(-150,0))
-    screen.blit(title,(750,50))
-    buttons=[Rect(1000,500,200,60),Rect(1000,600,200,60)]
-    for r,v in zip(buttons,options):
-        draw.rect(screen,(150,150,150),r)
-        draw.rect(screen,(255,255,255),r,2)
-        for i in range(len(options)):#check what option you clicked
-            optionText = hudFont.render(options[i], True, (255,255,255))
-            screen.blit(optionText, (1100-optionText.get_width()//2,100*i+530-optionText.get_height()//2))
-        if r.collidepoint(mx,my):
-            draw.rect(screen,(255,0,0),r,2)
-        if mb[0]==1 and buttons[0].collidepoint(mx,my):
+    global mx,my,mb,gameState,running,selectionY
+    screen.fill((0,0,0))
+    screen.blit(wfLogo,(180,10))
+    if my > selectionY:
+        selectionY += math.ceil(abs(my-selectionY)/15)
+    elif my < selectionY:
+        selectionY -= math.ceil(abs(my-selectionY)/15)
+    darkenedSurf = Surface((426,250))
+    darkenedSurf.set_alpha(105)
+    #Play Button
+    playRect = Rect(426,250,426,120)
+    playSurf = Surface((playRect.width,playRect.height))
+    playSurf.fill((255,255,255))
+    if playRect.collidepoint(mx,my):
+        if selectionY in range(290,330):
+            selectionY = 310
+        if mb[0]:
             gameState = 'ship'
-        if mb[0]==1 and buttons[1].collidepoint(mx,my):
-            gameState = 'instructions'
+        playSurf.blit(playButton, (163,10))
+        #playSurf.blit(frost, (0, 0), (460, 100, playRect.width, playRect.height))
+    else:
+        playSurf.blit(playButtonG, (163,10))
+        #playSurf.blit(frostG, (0, 0), (460, 100, playRect.width, playRect.height))
+        playSurf.blit(darkenedSurf, (0, 0))
+    screen.blit(playSurf,playRect)
 
+    #Settings Button
+    settingsRect = Rect(426,380,426,120)
+    settingsSurf = Surface((settingsRect.width,settingsRect.height))
+    settingsSurf.fill((255,255,255))
+    if settingsRect.collidepoint(mx,my):
+        if selectionY in range(430,450):
+            selectionY = 440
+        if mb[0]:
+            gameState = 'instructions'
+        settingsSurf.blit(settingsGear,(163,10))
+    else:
+        settingsSurf.blit(settingsGearG, (163, 10))
+        settingsSurf.blit(darkenedSurf, (0, 0))
+    screen.blit(settingsSurf,settingsRect)
+
+    #Exit Button
+    exitRect = Rect(426,510,426,120)
+    exitSurf = Surface((exitRect.width,exitRect.height))
+    exitSurf.fill((255,255,255))
+    if exitRect.collidepoint(mx,my):
+        if selectionY in range(570,590):
+            selectionY = 570
+        if mb[0]:
+            event.post(event.Event(QUIT))
+        exitSurf.blit(closeButton,(163,10))
+    else:
+        exitSurf.blit(closeButtonG, (163, 10))
+        exitSurf.blit(darkenedSurf, (0, 0))
+    screen.blit(exitSurf,exitRect)
+
+    #Selection Triangles
+    screen.blit(selectionTriangle,(391,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
+    screen.blit(flippedTriangle,(862,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
 def instructions():#draw the instructoins
     global mb, gameState
-    screen.blit(mainPic,(-150,0))
-    screen.blit(title,(750,50))
     screen.blit(controls,(640-controls.get_width()//2,360-controls.get_height()//2))
     if mb[0]==1:
         gameState="menu"
-        mainMenu()
 #Main Menu
-mainPic = image.load('images/menu/mainpic.jpg')
-title = image.load('images/menu/title.png')
-title = transform.scale(title,(500,160))
+selectionTriangle = image.load('images/menu/selectionTriangle.png')
+flippedTriangle = transform.flip(selectionTriangle,True,False)
+wfLogo = image.load('images/menu/wfLogo.png')
+settingsGear = image.load('images/menu/gear.png')
+settingsGearG = image.load('images/menu/gearG.png')
+playButton = image.load('images/menu/playButton.png')
+playButtonG = image.load('images/menu/playButtonG.png')
+closeButton = image.load('images/menu/closeButton.png')
+closeButtonG = image.load('images/menu/closeButtonG.png')
+selectionY = 360
 #instructions
 controls = image.load('images/menu/instructions.png')
 controls = transform.scale(controls,(controls.get_width()*2,controls.get_height()*2))
@@ -986,7 +1015,7 @@ weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bra
               'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0),
               'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700),
               'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80),
-              'zhuge':Weapon(70,20,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500),
+              'zhuge':Weapon(60,23,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500),
               'none':Weapon(0,0,0,10,noSound,(0,0,0),0,0,noSound,0,0)}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1123,6 +1152,7 @@ bulletList = []
 mixer.music.play(-1) #plays music on repeat
 drawUpperSprite()
 readyController()
+print("Loaded in ",time.get_ticks()-startTime,"ms",sep='')
 while running:
     for e in event.get():
         if e.type == QUIT:
