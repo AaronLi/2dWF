@@ -243,20 +243,20 @@ def drawUpperSprite():#creates a new surface for when the player is standing aro
     lUpperSurf = transform.flip(upperSurf, False, True)#left version
 def miniMap():#draws minimap in top left of hud
     mMapSurf=Surface((200,100),SRCALPHA)
-    mMapSurf.fill((255,255,255))#fill with white
+    mMapSurf.fill(WHITE)#fill with white
     mMapSurf.blit(minimap,(100-player.X//7,50-player.Y//7))#blit scaled down tile
     mMapSurf = transform.rotate(mMapSurf, -1)#tilt it so it looks like the warframe minimap
 
     screen.blit(mMapSurf,(5,5))
 def drawHud():#Draw hud, credits, health, shields, minimap, ammo
-    global currentWeapon, weaponList,hudFont, screen
+    global currentWeapon, weaponList,largeRoboto, screen
     angledHudSec=Surface((300,43),SRCALPHA)
     ammoHud = Surface((165,25),SRCALPHA)
     creditHud = Surface((200,25),SRCALPHA)
-    creditDisplay = descFont.render(str(player.money),True,(255,255,255))#render current money
-    ammoCounter=descFont.render('%10s: %-3d/ %2d' % (currentWeapon, player.mag, player.reserveAmmo[weaponList[currentWeapon].ammoType]),True, (255,255,255))#render current ammo / ammo reserve
-    healthCounter = hudFont.render(str(max(0,player.health)), True, (255,40,40))#render health
-    shieldCounter = hudFont.render(str(max(0,int(player.shield))), True, (100,170,255))#render shields
+    creditDisplay = smallRoboto.render(str(player.money),True,WHITE)#render current money
+    ammoCounter=smallRoboto.render('%10s: %-3d/ %2d' % (currentWeapon, player.mag, player.reserveAmmo[weaponList[currentWeapon].ammoType]),True, WHITE)#render current ammo / ammo reserve
+    healthCounter = largeRoboto.render(str(max(0,player.health)), True, (255,40,40))#render health
+    shieldCounter = largeRoboto.render(str(max(0,int(player.shield))), True, (100,170,255))#render shields
     angledHudSec.blit(healthCounter, (300-healthCounter.get_width(), 10))
     creditHud.blit(hudCredit, (0,5))
     creditHud.blit(creditDisplay, (20,0))
@@ -499,7 +499,7 @@ def keysDown(keys):#check what keys are being held
     if keys[K_a]:
         player.vX -= player.vAx#moves left
         player.fA = True #player is facing left
-    if keys[K_w] and player.oW and (keys[K_a] or keys[K_d]):#if player is wall running
+    if (keys[K_w] or keys[K_SPACE]) and player.oW and (keys[K_a] or keys[K_d]):#if player is wall running
         player.vY = max(-4, player.vY - 0.5)#move player up
         if player.fA:#wall running animation
             player.animation = 9
@@ -724,9 +724,9 @@ def pauseMenu():
     for i in range(len(options)):#draw the options
         optionRect= Rect(500,70*i+160,340,60)
         if optionRect.collidepoint((mx,my)):#if mouse is colliding with an option
-            draw.rect(screen,(255,255,255),optionRect)#highlight it
+            draw.rect(screen,WHITE,optionRect)#highlight it
             draw.rect(screen,(0,0,255),optionRect,2)
-            optionText = hudFont.render(options[i], True, (0,0,0))
+            optionText = largeRoboto.render(options[i], True, (0,0,0))
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
             if mb[0]==1:
                 draw.rect(screen,(255,0,0),optionRect,2)
@@ -743,7 +743,7 @@ def pauseMenu():
         else:#draw the boxes with regular colouring
             draw.rect(screen,(0,0,0),optionRect)
             draw.rect(screen,(0,0,255),optionRect,2)
-            optionText = hudFont.render(options[i], True, (255,255,255))
+            optionText = largeRoboto.render(options[i], True, WHITE)
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
 def shipMenu():#menu for the store
     global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick
@@ -763,12 +763,12 @@ def shipMenu():#menu for the store
     draw.rect(screen,(150,150,150),(0,25,1280,50))
     for i,j in zip(weaponTypeButtons,weaponTypes):
         listPos=weaponTypes.index(j)
-        weaponTypeName = hudFont.render(j,True,(255,255,255))
+        weaponTypeName = largeRoboto.render(j,True,WHITE)
         screen.blit(weaponTypeName,i.move(0,10).topleft)
         if selectedWeaponType == listPos:#draw a line under the selected weapon type
-            draw.line(screen,(255,255,255),i.bottomleft,i.bottomright,2)
+            draw.line(screen,WHITE,i.bottomleft,i.bottomright,2)
         if i.collidepoint((mx,my)):#if mouse is hovering over the weapon button
-            weaponTypeName = hudFont.render(j,True,(255,255,190))
+            weaponTypeName = largeRoboto.render(j,True,(255,255,190))
             if mb[0]==1:
                 selectedWeaponType = listPos
         screen.blit(weaponTypeName,i.move(0,10).topleft)
@@ -783,9 +783,9 @@ def shipMenu():#menu for the store
         else:
             draw.rect(screen,(150,150,150),Rect(weaponOffX+395,270+weaponOffY,120,85),2)
         #draw weapon name and cost
-        screen.blit(descFont.render(i.title(),True,(255,255,255)),(weaponOffX+400,270+weaponOffY))
+        screen.blit(smallRoboto.render(i.title(),True,WHITE),(weaponOffX+400,270+weaponOffY))
         screen.blit(scaledSprite,(weaponOffX+400,300+weaponOffY))
-        creditCost=descFont.render(str(k),True,(255,255,255))
+        creditCost=smallRoboto.render(str(k),True,WHITE)
         screen.blit(creditCost,(weaponOffX+513-creditCost.get_width(),330+weaponOffY))
         screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337+weaponOffY))
 
@@ -805,30 +805,30 @@ def shipMenu():#menu for the store
             draw.circle(screen,(255,0,0),(weaponOffX+505,280+weaponOffY),7)
         weaponOffX+=150
     #draw store legend and start button
-    startGameButtonText = hudFont.render('Start',True,(0,0,0))
-    draw.rect(screen,(255,255,255),startGameButton)
+    startGameButtonText = largeRoboto.render('Start',True,(0,0,0))
+    draw.rect(screen,WHITE,startGameButton)
     screen.blit(startGameButtonText,(1167,660,140,70))
     creditHud = Surface((200,25),SRCALPHA)
-    creditDisplay = descFont.render(str(player.money),True,(255,255,255))
+    creditDisplay = smallRoboto.render(str(player.money),True,WHITE)
     creditHud.blit(hudCredit, (0,5))
     creditHud.blit(creditDisplay, (20,0))
     screen.blit(creditHud,(10,690))
-    legendText=descFont.render('Buyable',True,(255,255,255))
+    legendText=smallRoboto.render('Buyable',True,WHITE)
     screen.blit(legendText,(19,588))
-    legendText=descFont.render('Not Enough Money',True,(255,255,255))
+    legendText=smallRoboto.render('Not Enough Money',True,WHITE)
     screen.blit(legendText,(19,608))
-    legendText=descFont.render('Purchased',True,(255,255,255))
+    legendText=smallRoboto.render('Purchased',True,WHITE)
     screen.blit(legendText,(19,628))
-    legendText=descFont.render('Equipped',True,(255,255,255))
+    legendText=smallRoboto.render('Equipped',True,WHITE)
     screen.blit(legendText,(19,648))
-    draw.circle(screen,(255,255,255),(10,600),7,1)
+    draw.circle(screen,WHITE,(10,600),7,1)
     draw.circle(screen,(255,0,0),(10,620),7)
     draw.circle(screen,(0,0,255),(10,640),7)
     draw.circle(screen,(0,255,0),(10,660),7)
     if startGameButton.collidepoint(mx,my):#if player presses the start button
-        startGameButtonText = hudFont.render('Start',True,(255,255,255))
+        startGameButtonText = largeRoboto.render('Start',True,WHITE)
         draw.rect(screen,(0,0,0),startGameButton)
-        draw.rect(screen,(255,255,255),startGameButton,2)
+        draw.rect(screen,WHITE,startGameButton,2)
         screen.blit(startGameButtonText,(1167,660,140,70))
         if mb[0]==1:
             deathAnimation = 0
@@ -864,7 +864,8 @@ def startGame():#reset all game related variables
     return (playTile,drawnMap,minimap)
 def mainMenu():
     global mx,my,mb,gameState,running,selectionY,canClick
-    screen.fill((0,0,0))
+    screen.fill(WHITE)
+    draw.rect(screen,(140,140,140),(416,240,446,400))
     screen.blit(wfLogo,(180,10))
     colouredTriangle = selectionTriangle
     flippedColouredTriangle = flippedTriangle
@@ -877,7 +878,7 @@ def mainMenu():
     #Play Button
     playRect = Rect(426,250,426,120)
     playSurf = Surface((playRect.width,playRect.height))
-    playSurf.fill((255,255,255))
+    playSurf.fill(WHITE)
     if playRect.collidepoint(mx,my):
         if selectionY in range(290,340):
             colouredTriangle = selectionTriangleB
@@ -886,6 +887,7 @@ def mainMenu():
         if mb[0]:
             canClick = False
             gameState = 'ship'
+        draw.circle(playSurf,(200,200,200),(218,62),50)
         playSurf.blit(playButton, (163,10))
     else:
         playSurf.blit(playButtonG, (163,10))
@@ -895,7 +897,7 @@ def mainMenu():
     #Settings Button
     settingsRect = Rect(426,380,426,120)
     settingsSurf = Surface((settingsRect.width,settingsRect.height))
-    settingsSurf.fill((255,255,255))
+    settingsSurf.fill(WHITE)
     if settingsRect.collidepoint(mx,my):
         if selectionY in range(430,450):
             colouredTriangle = selectionTriangleG
@@ -903,6 +905,7 @@ def mainMenu():
             selectionY = 440
         if mb[0]:
             gameState = 'instructions'
+        draw.circle(settingsSurf,(200,200,200),(218,62),50)
         settingsSurf.blit(settingsGear,(163,10))
     else:
         settingsSurf.blit(settingsGearG, (163, 10))
@@ -912,14 +915,15 @@ def mainMenu():
     #Exit Button
     exitRect = Rect(426,510,426,120)
     exitSurf = Surface((exitRect.width,exitRect.height))
-    exitSurf.fill((255,255,255))
+    exitSurf.fill(WHITE)
     if exitRect.collidepoint(mx,my):
         if selectionY in range(560,590):
             colouredTriangle = selectionTriangleR
             flippedColouredTriangle = flippedTriangleR
             selectionY = 570
-        if mb[0]:
+        if mb[0] and canClick:
             event.post(event.Event(QUIT))
+        draw.circle(exitSurf,(200,200,200),(218,62),50)
         exitSurf.blit(closeButton,(163,10))
     else:
         exitSurf.blit(closeButtonG, (163, 10))
@@ -930,12 +934,37 @@ def mainMenu():
     screen.blit(colouredTriangle,(391,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
     screen.blit(flippedColouredTriangle,(862,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
 def instructions():#draw the instructoins
-    global mb, gameState
-    screen.blit(controls,(640-controls.get_width()//2,360-controls.get_height()//2))
+    global mb, gameState, canClick
+    functionLine = 450
+    boundKeyLine = functionLine+120
+    boundKeyLine1 = boundKeyLine+120
+    functionRender = Surface((0,0))
+    boundKey = Surface((0,0))
+    boundKey1 = Surface((0,0))
+    startingYOff = 200
+    yOff = 0
+    for keyFunction,key1,key2 in zip(keyFunctionList,boundKeyList,boundKeyList2):
+        functionRender = smallRoboto.render(keyFunction,True,WHITE)
+        boundKey = smallRoboto.render(key1,True,WHITE)
+        boundKey1 = smallRoboto.render(key2,True,WHITE)
+        screen.blit(functionRender,(functionLine,startingYOff+yOff))
+        screen.blit(boundKey,(boundKeyLine,startingYOff+yOff))
+        screen.blit(boundKey1,(boundKeyLine1,startingYOff+yOff))
+        yOff += 20
+    functionRender = midRoboto.render('Function',True,WHITE)
+    boundKey = midRoboto.render('Key',True,WHITE)
+    screen.blit(functionRender,(functionLine,startingYOff-30))
+    screen.blit(boundKey,(boundKeyLine-7,startingYOff-30))
+    screen.blit(boundKey, (boundKeyLine1 - 7, startingYOff - 30))
+    draw.line(screen,WHITE,(boundKeyLine-5,startingYOff),(boundKeyLine-5,startingYOff+yOff))
+    draw.line(screen,WHITE,(boundKeyLine1-5,startingYOff),(boundKeyLine1-5,startingYOff+yOff))
     if my > 500:
         if mb[0]==1:
+            canClick = False
             gameState="menu"
-
+    print(my)
+# Colours
+WHITE = (255, 255, 255)
 #Main Menu
 selectionTriangle = image.load('images/menu/selectionTriangle.png')
 flippedTriangle = transform.flip(selectionTriangle,True,False)
@@ -956,9 +985,13 @@ selectionY = 360
 #instructions
 controls = image.load('images/menu/instructions.png')
 controls = transform.scale(controls,(controls.get_width()*2,controls.get_height()*2))
+keyFunctionList = ['Right','Left','Jump','Shoot','Melee','Reload']
+boundKeyList = ['D','A','W','LMB','E','R']
+boundKeyList2 = ['','','Space','','','']
 #Fonts
-hudFont=font.Font('fonts/Roboto-Light.ttf',30)
-descFont = font.Font('fonts/Roboto-Light.ttf',20)
+largeRoboto=font.Font('fonts/Roboto-Light.ttf',30)
+midRoboto = font.Font('fonts/Roboto-Light.ttf',25)
+smallRoboto = font.Font('fonts/Roboto-Light.ttf',20)
 lisetSprite = image.load('images/levels/liset.png')
 lisetSprite = transform.scale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
 #Sounds
@@ -1008,10 +1041,10 @@ weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bra
               'laser':Weapon(3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0),
               'hek':Weapon(19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0),
               'tigris':Weapon(25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0),
-              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,(255,255,255),1,0,rubicoReload,3,0,0,0),
+              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,WHITE,1,0,rubicoReload,3,0,0,0),
               'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0),
               'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0),
-              'twinviper':Weapon(6,3,28,80,twinviperShoot,(255,255,255),1,7,twinviperReload,0,0,0,0),
+              'twinviper':Weapon(6,3,28,80,twinviperShoot,WHITE,1,7,twinviperReload,0,0,0,0),
               'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0),
               'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700),
               'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80),
@@ -1126,10 +1159,6 @@ canRegenShields = False
 selectedWeaponType=0
 
 
-
-
-# Getting information from the level files
-
 # Other
 running = True
 playerStanding = Surface((player.W, player.H))
@@ -1156,10 +1185,14 @@ print("Loaded in ",time.get_ticks()-startTime,"ms",sep='')
 while running:
     for e in event.get():
         if e.type == QUIT:
-            running = False
+            if gameState == 'menu':
+                running = False
+            else:
+                gameState = 'menu'
+                canClick =False
         if not controllerMode:
             if e.type == KEYDOWN:
-                if e.key == K_w and player.jumps > 0:#if player can jump
+                if (e.key == K_w or e.key == K_SPACE) and player.jumps > 0:#if player can jump
                     player.vY = -7
                     player.jumps -= 1
                 if e.key == K_ESCAPE:#pausing the game
@@ -1304,7 +1337,7 @@ while running:
                 player.shootCooldown-=1
         elif menuAnimation >= 1:#if paused
             screen.blit(pauseScreen,(0,0))
-            draw.rect(screen,(255,255,255),(670-min(menuAnimation*10,180),350-min(menuAnimation*20,200),2*min(menuAnimation*10,180),2*min(menuAnimation*10,110)))
+            draw.rect(screen,WHITE,(670-min(menuAnimation*10,180),350-min(menuAnimation*20,200),2*min(menuAnimation*10,180),2*min(menuAnimation*10,110)))
             if menuAnimation>=20:
                 pauseMenu()
         elif player.health <=0:#if dead
@@ -1316,9 +1349,9 @@ while running:
             elif deathAnimation >=350:
                 screen.fill((min(200,max(200-((deathAnimation-350)*3),0)),0,0))
             if deathAnimation in range(50,500):
-                screen.blit(hudFont.render('You Died', True, (0,0,0)),(580,300))
+                screen.blit(largeRoboto.render('You Died', True, (0,0,0)),(580,300))
             if deathAnimation in range(200,500):
-                encouragementRender=hudFont.render(encouragementText, True, (0,0,0))
+                encouragementRender=largeRoboto.render(encouragementText, True, (0,0,0))
                 screen.blit(encouragementRender,(640-encouragementRender.get_width()//2,350))
             if deathAnimation >500:
                 gameState = 'ship'
@@ -1326,9 +1359,9 @@ while running:
 
         menuAnimation+=animationStatus
 
-    draw.circle(screen, (255,255,255), (int(mx), int(my)), 3)
+    draw.circle(screen, WHITE, (int(mx), int(my)), 3)
     draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
-    screen.set_at((int(mx),int(my)),(255,255,255))
+    screen.set_at((int(mx),int(my)),WHITE)
     display.flip()
     gameClock.tick(60)
 quit()
