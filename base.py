@@ -596,6 +596,7 @@ def hitSurface(mob, tilePlats):#player colliding with the level
         mob.oW = False
 def drawStuff(tileSurf, tileSize, keys):#render everything
     global player, frames, animation, visualOff, pic, currentFrame, bulletTrailList
+    screen.fill((0, 0, 0))
     if keys[K_a] and player.oG:#conditional animations
         player.animation = left
     elif keys[K_d] and player.oG:
@@ -746,7 +747,7 @@ def pauseMenu():
             optionText = largeRoboto.render(options[i], True, WHITE)
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
 def shipMenu():#menu for the store
-    global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick
+    global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick,typeSortedWeapons
     screen.fill((0,0,0))
     weaponOffX=0
     weaponOffY=0
@@ -756,7 +757,7 @@ def shipMenu():#menu for the store
     snipersButton = Rect(643,20,264,50)
     heavyButton = Rect(917,20,264,50)
     weaponTypeButtons = [riflesButton,shotgunsButton,snipersButton,heavyButton]
-    typeSortedWeapons = [['dera','braton','grakata','twinviper'],['tigris','hek','boarP'],['rubico','vulkar','lanka'],['gorgon','laser','ignis','zhuge']]
+
     weaponTypes = ['Rifles', 'Shotguns', 'Snipers', 'Heavy']
     weapons=list(weaponList.keys())#list of weapon names from the dictionary that contains the weapon information
     weapons.sort()#sort alphabetically
@@ -863,10 +864,39 @@ def startGame():#reset all game related variables
     drawUpperSprite()
     return (playTile,drawnMap,minimap)
 def mainMenu():
-    global mx,my,mb,gameState,running,selectionY,canClick
-    screen.fill(WHITE)
-    draw.rect(screen,(140,140,140),(416,240,446,400))
-    screen.blit(wfLogo,(180,10))
+    global mx,my,mb,gameState,running,selectionY,canClick,currentMenuButton,animationStatus,xShift,yShift,currentBackDrop,shiftAmountX,shiftAmountY,startBlitX,startBlitY
+    #screen.set_clip((0,0,1280,720))
+
+    if animationStatus%15 == 0:
+        #screen.blit(mainMenuBackDrop,(animationStatus // 4 - 640, animationStatus // 10 - 360))
+        screen.blit(mainMenuBackDrops[currentBackDrop],(startBlitX+xShift,startBlitY+yShift))
+        #mainMenuBackDrops[currentBackDrop].scroll(shiftAmountX,shiftAmountY)
+        xShift +=shiftAmountX
+        yShift +=shiftAmountY
+        screen.blit(wfLogo, (180, 10))
+        print(startBlitX+xShift,startBlitY+yShift)
+        if xShift >= abs(1280-mainMenuBackDrops[currentBackDrop].get_width()) or yShift >= abs(720-mainMenuBackDrops[currentBackDrop].get_height()):
+            xShift = 0
+            yShift = 0
+            shiftAmountX*=-1
+            shiftAmountY*=-1
+            startBlitX=0
+            startBlitY=0
+            currentBackDrop = (currentBackDrop +1)%3
+        elif xShift <= 1280-mainMenuBackDrops[currentBackDrop].get_width() or yShift <= 720-mainMenuBackDrops[currentBackDrop].get_height():
+            xShift = 0
+            yShift = 0
+            shiftAmountX*=-1
+            shiftAmountY*=-1
+            startBlitX=-640
+            startBlitY=-360
+            currentBackDrop = (currentBackDrop +1)%3
+    draw.circle(screen,(140,140,140),(423,272),32)
+    draw.circle(screen,(140,140,140),(855,272),32)
+    draw.circle(screen,(140,140,140),(423,608),32)
+    draw.circle(screen,(140,140,140),(855,608),32)
+    draw.rect(screen,(140,140,140),(391,270,496,345))
+    draw.rect(screen,(100,100,100),(416,240,446,400))
     colouredTriangle = selectionTriangle
     flippedColouredTriangle = flippedTriangle
     if my > selectionY:
@@ -875,16 +905,20 @@ def mainMenu():
         selectionY -= math.ceil(abs(my-selectionY)/15)
     darkenedSurf = Surface((426,250))
     darkenedSurf.set_alpha(140)
+    #Controller Stuff
+    controllerMenuCoords = [310,440,570]
+    if controllerMode:
+        mx,my = 640,controllerMenuCoords[currentMenuButton]
     #Play Button
     playRect = Rect(426,250,426,120)
     playSurf = Surface((playRect.width,playRect.height))
     playSurf.fill(WHITE)
     if playRect.collidepoint(mx,my):
-        if selectionY in range(290,340):
+        if selectionY in range(290,320):
             colouredTriangle = selectionTriangleB
             flippedColouredTriangle = flippedTriangleB
             selectionY = 310
-        if mb[0]:
+        if mb[0] and canClick:
             canClick = False
             gameState = 'ship'
         draw.circle(playSurf,(200,200,200),(218,62),50)
@@ -893,7 +927,7 @@ def mainMenu():
         playSurf.blit(playButtonG, (163,10))
         playSurf.blit(darkenedSurf, (0, 0))
     screen.blit(playSurf,playRect)
-
+    animationStatus+=1
     #Settings Button
     settingsRect = Rect(426,380,426,120)
     settingsSurf = Surface((settingsRect.width,settingsRect.height))
@@ -903,7 +937,7 @@ def mainMenu():
             colouredTriangle = selectionTriangleG
             flippedColouredTriangle = flippedTriangleG
             selectionY = 440
-        if mb[0]:
+        if mb[0] and canClick:
             gameState = 'instructions'
         draw.circle(settingsSurf,(200,200,200),(218,62),50)
         settingsSurf.blit(settingsGear,(163,10))
@@ -935,6 +969,7 @@ def mainMenu():
     screen.blit(flippedColouredTriangle,(862,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
 def instructions():#draw the instructoins
     global mb, gameState, canClick
+    screen.fill((0,0,0))
     functionLine = 450
     boundKeyLine = functionLine+120
     boundKeyLine1 = boundKeyLine+120
@@ -962,7 +997,6 @@ def instructions():#draw the instructoins
         if mb[0]==1:
             canClick = False
             gameState="menu"
-    print(my)
 # Colours
 WHITE = (255, 255, 255)
 #Main Menu
@@ -981,6 +1015,12 @@ playButton = image.load('images/menu/playButton.png')
 playButtonG = image.load('images/menu/playButtonG.png')
 closeButton = image.load('images/menu/closeButton.png')
 closeButtonG = image.load('images/menu/closeButtonG.png')
+#Adds backdrops to a list for main menu slideshow
+mainMenuBackDrops = []
+backdropGlob = glob.glob('images/backdrops/backdrop*')
+for i in backdropGlob:
+    mainMenuBackDrops.append(image.load(i))
+random.shuffle(mainMenuBackDrops)
 selectionY = 360
 #instructions
 controls = image.load('images/menu/instructions.png')
@@ -1147,6 +1187,8 @@ player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 currentFrame = 0
 
 #Store info
+typeSortedWeapons = [['dera', 'braton', 'grakata', 'twinviper'], ['tigris', 'hek', 'boarP'],
+                     ['rubico', 'vulkar', 'lanka'], ['gorgon', 'laser', 'ignis', 'zhuge']]
 purchasedWeapons =[[0,0,0,0],[0,0,0],[0,0,0],[0,0,0,0]]
 weaponCosts = [[5000,5000,10000,5000],[15000,20000,25000],[20000,17500,17500],[20000,25000,20000,20000]]
 bulletTrailList=[]
@@ -1170,6 +1212,15 @@ mb = [0,0,0]
 joyInputX,joyInputY = 0,0
 keysIn = [0 for i in range(323)]
 canJump = True
+currentMenuButton = 0
+canChangeButton = True
+currentBackDrop = 0
+xShift = 0
+yShift = 0
+shiftAmountX = 1
+shiftAmountY = 1
+startBlitX = -640
+startBlitY = -360
 
 animationStatus=-1#positive for opening, negative for closing
 menuOn = 0
@@ -1185,11 +1236,7 @@ print("Loaded in ",time.get_ticks()-startTime,"ms",sep='')
 while running:
     for e in event.get():
         if e.type == QUIT:
-            if gameState == 'menu':
-                running = False
-            else:
-                gameState = 'menu'
-                canClick =False
+            running=False
         if not controllerMode:
             if e.type == KEYDOWN:
                 if (e.key == K_w or e.key == K_SPACE) and player.jumps > 0:#if player can jump
@@ -1221,7 +1268,17 @@ while running:
                 if e.axis==0:
                     joyInputX=int(e.value*10)
                 elif e.axis==1:
-                    joyInputY=int(e.value*10)
+                    if gameState !='menu':
+                        joyInputY=int(e.value*10)
+                    elif gameState == 'menu':
+                        if e.value>0.5 and canChangeButton:
+                            currentMenuButton = (currentMenuButton+1)%3
+                            canChangeButton = False
+                        elif e.value < -0.5 and canChangeButton:
+                            currentMenuButton = (currentMenuButton-1)%3
+                            canChangeButton = False
+                        elif 0.5>e.value>-0.5:
+                            canChangeButton = True
                 if abs(math.hypot(joyInputX,joyInputY))-1<1:
                     joyInputX,joyInputY = 0,0
                 if e.axis == 2:
@@ -1255,6 +1312,9 @@ while running:
                     if gameState != 'game' or menuAnimation > 0:
                         mb[0]=1
                         shooting = True
+                if e.button == 1:
+                    if gameState == 'ship':
+                        gameState = 'menu'
                 if e.button == 2:
                     if player.reloading == 0:
                         weaponList[currentWeapon].reloadSound.play()
@@ -1289,11 +1349,11 @@ while running:
         mx,my=mouse.get_pos()
         keysIn = key.get_pressed()
     elif controllerMode:
-        mx = max(min(mx+joyInputX,1279),0)
-        my = max(min(my+joyInputY,719),0)
+        if gameState !='menu':
+            mx = max(min(mx+joyInputX,1279),0)
+            my = max(min(my+joyInputY,719),0)
 
     playerRect = Rect(player.X,player.Y,player.W,player.H)
-    screen.fill((0, 0, 0))
     display.set_caption('pyFrame - %d fps' %(int(gameClock.get_fps())))
 
     if gameState == 'ship':
@@ -1303,6 +1363,7 @@ while running:
     if gameState == 'instructions':
         instructions()
     if gameState == 'game':
+
         if menuAnimation <= 0 and player.health >0:#go through all game related functions if not in the pause menu and if alive
             spawnEnemies()
             keysDown(keysIn)
@@ -1358,10 +1419,10 @@ while running:
                 deathAnimation =0
 
         menuAnimation+=animationStatus
-
-    draw.circle(screen, WHITE, (int(mx), int(my)), 3)
-    draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
-    screen.set_at((int(mx),int(my)),WHITE)
+    if not gameState == 'menu':
+        draw.circle(screen, WHITE, (int(mx), int(my)), 3)
+        draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
+        screen.set_at((int(mx),int(my)),WHITE)
     display.flip()
     gameClock.tick(60)
 quit()
