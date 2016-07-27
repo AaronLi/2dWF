@@ -4,7 +4,7 @@ import glob, random, math
 init()
 mixer.music.set_volume(0.1)
 startTime=time.get_ticks()
-
+startingMoney = 500000
 class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
     def __init__(self,surface,x,y,rotation, lifetime, colour, speed, gravity, airResistance,fadeRate, length=1, variation = 10, size = 1):
         colourOff=random.randint(0,255-max(colour))
@@ -33,7 +33,7 @@ class Particle:#Class used for simulating particles (Guns, 'blood', bullet hits)
         if self.life <= 0:
             self.live = False
 class Mob:#Class used for the player and enemies
-    def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton',avoidance = 50,shootRange = 200):
+    def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health = 100,shield = 100, enemyType = 0, animation = 0, weapon = 'braton',avoidance = 50,shootRange = 200,money = 5000):
         self.X, self.Y = x, y
         self.W, self.H = w, h
         self.vX, self.vY = vX, vY
@@ -45,7 +45,7 @@ class Mob:#Class used for the player and enemies
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
         self.maxHealth= health#Won't be changed, only read to find the limit
         self.maxShield = shield#same as maxHealth
-        self.money = 5000#Credits, for purchasing weapons
+        self.money = money#Credits, for purchasing weapons
 
         self.health = health#current Health
         self.shield = shield#current shields
@@ -134,7 +134,7 @@ class Pickup:#Class for ammo, health, and credit drops
                 return True
         return False
 class Bullet2:
-    def __init__(self,x,y,angle,damage,faction,range,speed,colour,hitColour,length,gravity,slowdown,thickness):#Gravity reduces vY, slowdown decreases vX
+    def __init__(self,x,y,angle,damage,faction,range,speed,colour,hitColour,length,gravity,slowdown,thickness,isExplosive = 0,explosiveRadius = 0, explosiveFalloff = 0, fuse = 0):#Gravity reduces vY, slowdown decreases vX
         self.x,self.y = x,y
         self.angle = angle
         self.vX, self.vY = speed * cosd(angle), speed * sind(angle)
@@ -148,6 +148,10 @@ class Bullet2:
         self.gravity = gravity
         self.slowdown = slowdown
         self.thickness = thickness
+        self.isExplosive = isExplosive
+        self.explosiveRadius = explosiveRadius
+        self.explosiveFalloff = explosiveFalloff
+        self.fuse = fuse
     def move(self):
         self.x+=self.vX
         self.y+=self.vY
@@ -161,7 +165,7 @@ class Bullet2:
         screen.set_at((int(self.x),int(self.y)),self.colour)
         draw.line(surface,self.colour,(self.x+640-player.X,self.y+360-player.Y),(int((self.length * cosd(self.angle))+self.x+(640-player.X)), int((self.length * sind(self.angle))+self.y+(360-player.Y))),self.thickness)
 class Weapon:
-    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0,cost = 0,wepType = 0):
+    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0,cost = 0,wepType = 0,isExplosive = 0,explosiveRadius = 0, explosiveFalloff = 0, fuse = 0):
         self.damage = damage
         self.firerate = firerate
         self.magSize = magSize
@@ -180,6 +184,34 @@ class Weapon:
         self.bulletRange = bulletRange
         self.cost = cost
         self.wepType = wepType
+        self.isExplosive = isExplosive
+        self.explosiveRadius = explosiveRadius
+        self.explosiveFalloff = explosiveFalloff
+        self.fuse = fuse
+class explosion:
+    def __init__(self,x,y,damage,falloff,radius,colour,smokeColour,fuse):
+        self.x,self.y = x,y
+        self.damage = damage
+        self.falloff = falloff
+        self.radius = radius
+        self.colour = colour
+        self.smokeColour = smokeColour
+        self.fuse = fuse
+    def detonate(self):
+        global enemyList,particleList
+        hitByExplosive = [False for i in range(len(enemyList))]
+        for i in range(0,self.radius,7):
+            for j in range(0,360,15):
+                for k,j in zip(enemyList,range(len(enemyList))):
+                    checkPoint = (int(self.x+(i*cosd(j))),int(self.y+(i*sind(j))))
+                    enemyRect = Rect(k.X,k.Y,k.W,k.H)
+                    if enemyRect.collidepoint(checkPoint) and not hitByExplosive[j]:
+                        k.health -= max(self.damage - (7*(i*self.falloff)),0)
+                        hitByExplosive[j] = True
+        explosionSfx.play()
+        for i in range(0,360,10):
+            particleList.append(Particle(screen, self.x, self.y, i, self.radius//5, (255,random.randint(0,255),0), 3+random.random(), 0, 0, 0,2,20,2))
+            particleList.append(Particle(screen, self.x, self.y, i, self.radius//5, self.smokeColour, 3+random.random(), 0, 0, 0,2,20,2))
 
 def sind(deg):
     return math.sin(math.radians(deg))
@@ -314,6 +346,8 @@ def calcBullets():#check if the enemy bullets hit anything
         nextBullet = False#will stop checking things if the bullet no longer exists
         for j in playTile[2]:
             if j[0].collidepoint(bulletList[i].x,bulletList[i].y) and j[1]!=3:#if bullet hit a platform or wall
+                if bulletList[i].isExplosive:
+                    explosiveList.append(explosion(bulletList[i].x,bulletList[i].y, bulletList[i].damage, bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius, weaponList[currentWeapon].bulletColour, (140,140,140), 0))
                 del bulletList[i]
                 nextBullet = True
                 break
@@ -321,7 +355,12 @@ def calcBullets():#check if the enemy bullets hit anything
             for j in range(len(enemyList)-1,-1,-1):#checking player bullets
                 enemyRect = Rect(enemyList[j].X,enemyList[j].Y,enemyList[j].W,enemyList[j].H)
                 if enemyRect.collidepoint(bulletList[i].x,bulletList[i].y) and bulletList[i].faction == 1 and enemyList[j].dying == 0:#if bullet hits an enemy that's not dying
-                    enemyList[j].health -= bulletList[i].damage
+                    if bulletList[i].isExplosive:
+                        explosiveList.append(explosion(bulletList[i].x, bulletList[i].y, bulletList[i].damage,
+                                                       bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
+                                                       weaponList[currentWeapon].bulletColour, (140, 140, 140), 0))
+                    else:
+                        enemyList[j].health -= bulletList[i].damage
                     bulletList[i].range = 0
         if not nextBullet:
             if len(bulletList)>0:
@@ -380,7 +419,7 @@ def drawUpper(playerX, playerY):# Also includes shooting
                                 weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
                                 weaponList[currentWeapon].bulletThickness))
                 else:
-                    bulletList.append(Bullet2(player.X+player.W//2, player.Y+20,-shotAngle,weaponList[currentWeapon].damage,1,weaponList[currentWeapon].bulletRange,weaponList[currentWeapon].bulletSpeed,weaponList[currentWeapon].bulletColour,weaponList[currentWeapon].bulletColour,weaponList[currentWeapon].bulletLength,weaponList[currentWeapon].bulletGravity,0,weaponList[currentWeapon].bulletThickness))
+                    bulletList.append(Bullet2(player.X+player.W//2, player.Y+20,-shotAngle,weaponList[currentWeapon].damage,1,weaponList[currentWeapon].bulletRange,weaponList[currentWeapon].bulletSpeed,weaponList[currentWeapon].bulletColour,weaponList[currentWeapon].bulletColour,weaponList[currentWeapon].bulletLength,weaponList[currentWeapon].bulletGravity,0,weaponList[currentWeapon].bulletThickness,weaponList[currentWeapon].isExplosive,weaponList[currentWeapon].explosiveRadius,weaponList[currentWeapon].explosiveFalloff,weaponList[currentWeapon].fuse))
     elif mb[0] and not player.mag and not player.reloading:#if you have no ammo but are trying to shoot
         weaponList[currentWeapon].reloadSound.play()
         player.reloading+=1
@@ -626,6 +665,7 @@ def drawStuff(tileSurf, tileSize, keys):#render everything
     pic = playerFrames[player.animation][0][player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])]#current frame to show
     player.frame += 1
     screen.blit(tileSurf, (640 - player.X, 360 - player.Y))#blit the level
+    moveParticles()
     for i in bulletList:
         i.draw(screen)
     for i in range(len(pickupList)):
@@ -759,100 +799,6 @@ def pauseMenu():
             draw.rect(screen,(0,0,255),optionRect,2)
             optionText = largeRoboto.render(options[i], True, WHITE)
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
-def shipMenu0():#menu for the store
-    global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick,typeSortedWeapons
-    screen.fill(BLACK)
-    draw.rect(screen,(140,140,140),(385,260,440,305))
-    draw.line(screen,(255,255,255),(380,412),(830,412))
-    weaponOffX=0
-    weaponOffY=0
-    startGameButton = Rect(1130,640,140,70)
-    riflesButton = Rect(364,260,20,76)
-    shotgunsButton = Rect(364,336,32,76)
-    snipersButton = Rect(643,20,30,152)
-    heavyButton = Rect(917,20,30,152)
-    weaponTypeButtons = [riflesButton,shotgunsButton,snipersButton,heavyButton]
-    weaponNameOffsetX = [0,0,0,0]
-    weaponNameOffsetY = [25,0,0,0]
-    weaponTypes = ['Rifles', 'Shotguns', 'Snipers', 'Heavy']
-    weapons=list(weaponList.keys())#list of weapon names from the dictionary that contains the weapon information
-    weapons.sort()#sort alphabetically
-    draw.rect(screen,(150,150,150),(0,25,1280,50))
-    for i,j,k,l,m in zip(weaponTypeButtons,weaponTypes,range(4),weaponNameOffsetX,weaponNameOffsetY):
-        if selectedWeaponType == k:#draw a line under the selected weapon type
-            draw.line(screen,WHITE,i.bottomleft,i.bottomright,2)
-        if i.collidepoint((mx,my)):#if mouse is hovering over the weapon button
-            weaponTypeName = smallRoboto.render(j,True,(255,255,190))
-            if mb[0]==1:
-                selectedWeaponType = k
-        else:
-            weaponTypeName = smallRoboto.render(j, True, WHITE)
-        weaponTypeName = transform.rotate(weaponTypeName, 90)
-        screen.blit(weaponTypeName,i.move(l,m).topleft)
-    for i,j,k in zip(typeSortedWeapons[selectedWeaponType],purchasedWeapons[selectedWeaponType],weaponCosts[selectedWeaponType]):
-        if weaponOffX >=450:
-            weaponOffX = 0
-            weaponOffY += 100
-        wepSpr = eval(i)#weapon Sprite
-        scaledSprite = transform.scale(wepSpr,(wepSpr.get_width()*5,wepSpr.get_height()*5))
-        if j:#if weapon is purchased
-            draw.rect(screen,(0,255,0),Rect(weaponOffX+395,270+weaponOffY,120,85),2)
-        else:
-            draw.rect(screen,(150,150,150),Rect(weaponOffX+395,270+weaponOffY,120,85),2)
-        #draw weapon name and cost
-        screen.blit(smallRoboto.render(i.title(),True,WHITE),(weaponOffX+400,270+weaponOffY))
-        screen.set_clip(Rect(weaponOffX+395,270+weaponOffY,119,85))
-        screen.blit(scaledSprite,(weaponOffX+400,300+weaponOffY))
-        screen.set_clip(None)
-        creditCost=smallRoboto.render(str(k),True,WHITE)
-        screen.blit(creditCost,(weaponOffX+513-creditCost.get_width(),330+weaponOffY))
-        screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337+weaponOffY))
-
-
-        if mb[0]==1 and canClick:
-            if Rect(weaponOffX+400,270+weaponOffY,120,85).collidepoint(mx,my):
-                if player.money >=k and not j:#if player has enough money and hasn't already purchased weapon
-                    player.money-=k
-                    purchasedWeapons[selectedWeaponType][typeSortedWeapons[selectedWeaponType].index(i)]=1
-                elif j:
-                    currentWeapon=typeSortedWeapons[selectedWeaponType][typeSortedWeapons[selectedWeaponType].index(i)]
-        if currentWeapon == i:#status of weapon
-            draw.circle(screen,(0,255,0),(weaponOffX+505,280+weaponOffY),7)
-        elif j:
-            draw.circle(screen,(0,0,255),(weaponOffX+505,280+weaponOffY),7)
-        elif player.money<k:
-            draw.circle(screen,(255,0,0),(weaponOffX+505,280+weaponOffY),7)
-        weaponOffX+=150
-    #draw store legend and start button
-    startGameButtonText = largeRoboto.render('Start',True,BLACK)
-    draw.rect(screen,WHITE,startGameButton)
-    screen.blit(startGameButtonText,(1167,660,140,70))
-    creditHud = Surface((200,25),SRCALPHA)
-    creditDisplay = smallRoboto.render(str(player.money),True,WHITE)
-    creditHud.blit(hudCredit, (0,5))
-    creditHud.blit(creditDisplay, (20,0))
-    screen.blit(creditHud,(10,690))
-    legendText=smallRoboto.render('Buyable',True,WHITE)
-    screen.blit(legendText,(19,588))
-    legendText=smallRoboto.render('Not Enough Money',True,WHITE)
-    screen.blit(legendText,(19,608))
-    legendText=smallRoboto.render('Purchased',True,WHITE)
-    screen.blit(legendText,(19,628))
-    legendText=smallRoboto.render('Equipped',True,WHITE)
-    screen.blit(legendText,(19,648))
-    draw.circle(screen,WHITE,(10,600),7,1)
-    draw.circle(screen,(255,0,0),(10,620),7)
-    draw.circle(screen,(0,0,255),(10,640),7)
-    draw.circle(screen,(0,255,0),(10,660),7)
-    if startGameButton.collidepoint(mx,my):#if player presses the start button
-        startGameButtonText = largeRoboto.render('Start',True,WHITE)
-        draw.rect(screen,BLACK,startGameButton)
-        draw.rect(screen,WHITE,startGameButton,2)
-        screen.blit(startGameButtonText,(1167,660,140,70))
-        if mb[0]==1:
-            deathAnimation = 0
-            gameState = 'game'
-            playTile,drawnmap,minimap=startGame()
 def shipMenu():
     global gameState,playTile,drawnmap,minimap,mb,typeSortedWeapons,purchasedWeapons,weaponCosts,rotPos,selectedStoreProduct,currentWeapon,canClick
     screen.blit(storeBackdrop,(0,0))
@@ -1196,6 +1142,8 @@ vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
 lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
 ignisShoot = mixer.Sound('sfx/weapons/grineer/ignisShoot.ogg')
 zhugeShoot = mixer.Sound('sfx/weapons/tenno/zhuge.ogg')
+supraShoot = mixer.Sound('sfx/weapons/corpus/supraShoot.ogg')
+ogrisShoot = mixer.Sound('sfx/weapons/grineer/ogrisShoot.ogg')
     #Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
@@ -1211,12 +1159,15 @@ vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
 lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
 ignisReload = mixer.Sound('sfx/weapons/grineer/ignisReload.ogg')
 zhugeReload = mixer.Sound('sfx/weapons/tenno/zhugeReload.ogg')
+supraReload = mixer.Sound('sfx/weapons/corpus/supraReload.ogg')
+ogrisReload = mixer.Sound('sfx/weapons/grineer/ogrisReload.ogg')
     #Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
 sword1 = mixer.Sound('sfx/weapons/tenno/nikana1.ogg')
 sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
 noSound = mixer.Sound('sfx/misc/none.ogg')
+explosionSfx = mixer.Sound('sfx/misc/explosion.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 #Weapons damagePerShot, fireRate, magSize, reload speed, fire sound, bullet colour, bulletsPErShot, inaccuracy, reload sound, ammo type,bullet type,bulletgravity,bulletspeed
 weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0,cost = 5000,wepType = 0),
@@ -1233,6 +1184,8 @@ weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bra
               'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700,cost = 17500, wepType = 2),
               'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80, cost = 20000, wepType = 3),
               'zhuge':Weapon(60,23,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500, cost = 20000, wepType = 3),
+              'supra':Weapon(8,5,180,180,supraShoot,(0,255,0),1,2,supraReload,0,1,0,10,2,1,500,20000,3),
+              'ogris':Weapon(150,120,5,150,ogrisShoot,(255,200,0),1,1,ogrisReload,3,1,0,5,5,3,500,22500,3,1,100,0,0),
               'none':Weapon(0,0,0,10,noSound,BLACK,0,0,noSound,0,0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1258,6 +1211,8 @@ vulkar = image.load('images/weapons/grineer/vulkar.png')
 lanka = image.load('images/weapons/corpus/lanka.png')
 ignis = image.load('images/weapons/grineer/ignis.png')
 zhuge = image.load('images/weapons/tenno/zhuge.png')
+supra = image.load('images/weapons/corpus/supra.png')
+ogris = image.load('images/weapons/grineer/ogris.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
@@ -1327,7 +1282,7 @@ playTile=((0,0),Surface((0,0)),[[Rect(0,0,0,0)],0])
 minimap = Surface((0,0))
 drawMap=playTile[1]
 #Player
-player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)#refer to mob
+player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100,money = startingMoney)#refer to mob
 currentFrame = 0
 
 #Store info
@@ -1371,9 +1326,10 @@ shiftAmountY = 1
 startBlitX = -640
 startBlitY = -360
 rotPos = [0,0,0,0]
-selectedStoreProduct = 'lanka'
+selectedStoreProduct = ''
 weaponStatNames = ['Damage','Fire Rate','Magazine','Reload Speed','Accuracy','Projectiles']
 weaponStatIDs = ['damage','firerate','magSize','reloadSpeed','inaccuracy','bulletsPerShot']
+explosiveList=[]
 
 animationStatus=-1#positive for opening, negative for closing
 menuOn = 0
@@ -1530,9 +1486,14 @@ while running:
                 enemyList[i].enemyMove()
                 hitSurface(enemyList[i], playTile[2])
                 enemyList[i] = applyFriction(enemyList[i])
+            for i in range(len(explosiveList)-1,0,-1):
+                if explosiveList[i].fuse<=0:
+                    explosiveList[i].detonate()
+                    del explosiveList[i]
+                else:
+                    explosiveList[i].fuse-=1
             canRegenShields = player.shield < player.maxShield
             calcBullets()
-
             #Shield regen and sfx
             if int(player.shield) == 0 and regenTimer == 0:#play sound only if player has hit 0 health
                 beginShieldRegen.play()
@@ -1545,7 +1506,7 @@ while running:
                 pickupList[i].fallToGround()
                 if pickupList[i].checkCollide():
                     del pickupList[i]
-            moveParticles()
+
             drawStuff(playTile[1], playTile[0], keysIn)
             if player.shootCooldown >0:#fire rate
                 player.shootCooldown-=1
