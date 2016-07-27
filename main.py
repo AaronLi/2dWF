@@ -116,7 +116,9 @@ class Mob:  # Class used for the player and enemies
                     self.animation = right
                 self.shootCounter = 0
 
-
+    def damage(self,amount):
+        self.health -= amount
+        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y,amount,WHITE))
 class Pickup:  # Class for ammo, health, and credit drops
     def __init__(self, x, y, dropType, amount):
         self.X = x
@@ -240,7 +242,7 @@ class explosion:
                 for k, j in zip(enemyList, range(len(enemyList))):
                     enemyRect = Rect(k.X, k.Y, k.W, k.H)
                     if enemyRect.collidepoint(checkPoint) and not hitByExplosive[j]:
-                        k.health -= max(self.damage - (7 * (i * self.falloff)), 0)
+                        k.damage(max(self.damage - (7 * (i * self.falloff)), 0))
                         if k.X+(k.W//2) > self.x:
                             k.vX = max(self.radius-abs(self.x-(k.X+(k.W//2))),0)
                         elif k.X+(k.W//2) > self.x:
@@ -255,7 +257,19 @@ class explosion:
                 Particle(screen, self.x, self.y, i, self.radius // 5, self.smokeColour, 3 + random.random(), 0, 0, 0, 2,
                          20, 2))
 
-
+class DamageText:
+    def __init__(self,x,y,amount,colour):
+        self.x = x
+        self.y = y
+        self.amount = amount
+        self.colour = colour
+        self.vY = -0.5
+        self.renderedText = micRoboto.render('-%s'%(str(round(self.amount,2))),True,self.colour)
+        self.life = 50
+    def move(self):
+        self.y+=self.vY
+        self.vY += 0.025
+        self.life -= 1
 def sind(deg):
     return math.sin(math.radians(deg))
 
@@ -316,7 +330,7 @@ def swordHit():  # check for sword hits
         # Swing
         if player.fA:  # if player is facing left
             if enemyRect.colliderect(swingBox.move(-swingBox.w, 0)):  # if enemy is colliding with the sword
-                i.health -= 50
+                i.damage(50)
                 break
         elif not player.fA:  # if player is facing right
             if enemyRect.colliderect(swingBox.move(player.W, 0)):
@@ -437,7 +451,7 @@ def calcBullets():  # check if the enemy bullets hit anything
                                                        bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
                                                        weaponList[currentWeapon].bulletColour, (200, 200, 200), 0))
                     else:
-                        enemyList[j].health -= bulletList[i].damage
+                        enemyList[j].damage(bulletList[i].damage)
                     bulletList[i].range = 0
         if not nextBullet:
             if len(bulletList) > 0:
@@ -477,7 +491,7 @@ def drawUpper(playerX, playerY):  # Also includes shooting
         rotUpper = transform.rotate(lUpperSurf, angle)  # rotate upper body
         screen.blit(rotUpper, (playerX - 5 - rotUpper.get_width() // 2, playerY - rotUpper.get_height() // 2 - 2))
 
-    if mb[0] and player.shootCooldown == 0 and player.mag > 0:  # if player can shoot and is trying to shoot
+    if mb[0] and player.shootCooldown == 0 and player.mag > 0 and player.reloading == 0:  # if player can shoot and is trying to shoot
         player.shootCooldown = weaponList[currentWeapon].firerate  # fire rate timer
         for i in range(10):  # add particles at muzzle of gun
             particleList.append(
@@ -492,7 +506,7 @@ def drawUpper(playerX, playerY):  # Also includes shooting
             if weaponList[currentWeapon].bulletType == 0:
                 enemyHit = playerShoot(weaponList[currentWeapon], shotAngle)
                 if type(enemyHit) == int:  # if it hit an enemy
-                    enemyList[enemyHit].health -= weaponList[currentWeapon].damage
+                    enemyList[enemyHit].damage(weaponList[currentWeapon].damage)
             elif weaponList[currentWeapon].bulletType == 1:
                 if currentWeapon == 'ignis':
                     bulletList.append(
@@ -782,6 +796,8 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
     player.frame += 1
     screen.blit(tileSurf, (640 - player.X, 360 - player.Y))  # blit the level
     moveParticles()
+    for i in damagePopoff:
+        screen.blit(i.renderedText,(640-player.X+i.x,360-player.Y+i.y))
     for i in bulletList:
         i.draw(screen)
     for i in range(len(pickupList)):
@@ -1111,6 +1127,7 @@ def startGame():  # reset all game related variables
     bulletList = []
     regenTimer = 0
     menuAnimation = 0
+    player.reloading = 0
     animationStatus = -1
     player.mag = weaponList[currentWeapon].magSize
     drawUpperSprite()
@@ -1346,29 +1363,21 @@ enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'), mixer.Sound('sfx/mi
 # Weapon Info
 weaponList = {
     'braton': Weapon(25, 20, 45, 100, bratonShoot, (200, 150, 0), 1, 1, bratonReload, 0, 0, 0, 0, cost=5000, wepType=0),
-    'dera': Weapon(18, 15, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,
-                   wepType=0),
+    'dera': Weapon(18, 15, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,wepType=0),
     'boarP': Weapon(5, 13, 20, 100, boarShoot, (200, 150, 0), 13, 12, boarReload, 1, 0, 0, 0, cost=20000, wepType=1),
     'laser': Weapon(3, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=3),
     'hek': Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 5, hekReload, 1, 0, 0, 0, cost=17500, wepType=1),
     'tigris': Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 8, tigrisReload, 1, 0, 0, 0, cost=17500, wepType=1),
     'rubico': Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType=2),
-    'gorgon': Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,
-                     wepType=3),
-    'grakata': Weapon(14, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 10, grakataReload, 0, 0, 0, 0, cost=10000,
-                      wepType=0),
+    'gorgon': Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,wepType=3),
+    'grakata': Weapon(14, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 10, grakataReload, 0, 0, 0, 0, cost=10000,wepType=0),
     'twinviper': Weapon(6, 3, 28, 80, twinviperShoot, WHITE, 1, 7, twinviperReload, 0, 0, 0, 0, cost=5000, wepType=0),
-    'vulkar': Weapon(120, 100, 6, 100, vulkarShoot, (200, 150, 0), 1, 0, vulkarReload, 3, 0, 0, 0, cost=15000,
-                     wepType=2),
-    'lanka': Weapon(170, 150, 10, 100, lankaShoot, (0, 255, 0), 1, 1, lankaReload, 3, 1, 0, 15, 10, 4, 700, cost=17500,
-                    wepType=2),
-    'ignis': Weapon(0.7, 2, 150, 100, ignisShoot, (255, 200, 0), 10, 4, ignisReload, 2, 1, 0.1, 7, 5, 5, 80, cost=20000,
-                    wepType=3),
-    'zhuge': Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,
-                    cost=20000, wepType=3),
-    'supra': Weapon(8, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
-    'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,
-                    100, 0, 0),
+    'vulkar': Weapon(120, 100, 6, 100, vulkarShoot, (200, 150, 0), 1, 0, vulkarReload, 3, 0, 0, 0, cost=15000,wepType=2),
+    'lanka': Weapon(170, 150, 10, 100, lankaShoot, (0, 255, 0), 1, 1, lankaReload, 3, 1, 0, 15, 10, 4, 700, cost=17500,wepType=2),
+    'ignis': Weapon(0.7, 3, 150, 100, ignisShoot, (255, 200, 0), 15, 4, ignisReload, 2, 1, 0.1, 7, 5, 5, 80, cost=20000,wepType=3),
+    'zhuge': Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType=3),
+    'supra': Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
+    'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1576,6 +1585,7 @@ selectedStoreProduct = ''
 weaponStatNames = ['Damage', 'Fire Rate', 'Magazine', 'Reload Speed', 'Accuracy', 'Projectiles']
 weaponStatIDs = ['damage', 'firerate', 'magSize', 'reloadSpeed', 'inaccuracy', 'bulletsPerShot']
 explosiveList = []
+damagePopoff = []
 
 animationStatus = -1  # positive for opening, negative for closing
 menuOn = 0
@@ -1738,6 +1748,10 @@ while running:
                     del explosiveList[i]
                 else:
                     explosiveList[i].fuse -= 1
+            for i in range(len(damagePopoff)-1,-1,-1):
+                damagePopoff[i].move()
+                if damagePopoff[i].life <=0:
+                    del damagePopoff[i]
             canRegenShields = player.shield < player.maxShield
             calcBullets()
             # Shield regen and sfx
