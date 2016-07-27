@@ -161,7 +161,7 @@ class Bullet2:
         screen.set_at((int(self.x),int(self.y)),self.colour)
         draw.line(surface,self.colour,(self.x+640-player.X,self.y+360-player.Y),(int((self.length * cosd(self.angle))+self.x+(640-player.X)), int((self.length * sind(self.angle))+self.y+(360-player.Y))),self.thickness)
 class Weapon:
-    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0):
+    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0,cost = 0):
         self.damage = damage
         self.firerate = firerate
         self.magSize = magSize
@@ -178,7 +178,7 @@ class Weapon:
         self.bulletLength = bulletLength
         self.bulletThickness = bulletThickness
         self.bulletRange = bulletRange
-
+        self.cost = cost
 def sind(deg):
     return math.sin(math.radians(deg))
 def cosd(deg):
@@ -349,7 +349,6 @@ def drawUpper(playerX, playerY):# Also includes shooting
         smallestLimit = -270
         largestLimit = 90
     angle = min(max(math.degrees(math.atan2(mx - playerX, my - playerY)) - 90, smallestLimit), largestLimit)
-    print(angle)
     if not player.fA:
         rotUpper=transform.rotate(upperSurf,angle)#rotate upper body
         screen.blit(rotUpper, (playerX-rotUpper.get_width()//2, playerY-rotUpper.get_height()//2-2))
@@ -739,7 +738,7 @@ def pauseMenu():
         if optionRect.collidepoint((mx,my)):#if mouse is colliding with an option
             draw.rect(screen,WHITE,optionRect)#highlight it
             draw.rect(screen,(0,0,255),optionRect,2)
-            optionText = largeRoboto.render(options[i], True, (0,0,0))
+            optionText = largeRoboto.render(options[i], True, BLACK)
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
             if mb[0]==1:
                 draw.rect(screen,(255,0,0),optionRect,2)
@@ -754,37 +753,40 @@ def pauseMenu():
                 elif option == 2:
                     running=False
         else:#draw the boxes with regular colouring
-            draw.rect(screen,(0,0,0),optionRect)
+            draw.rect(screen,BLACK,optionRect)
             draw.rect(screen,(0,0,255),optionRect,2)
             optionText = largeRoboto.render(options[i], True, WHITE)
             screen.blit(optionText, (670-optionText.get_width()//2,70*i+170))
-def shipMenu():#menu for the store
+def shipMenu0():#menu for the store
     global mx,my,mb,gameState,playTile,drawnmap,minimap,selectedWeaponType,purchasedWeapons,weaponCosts,currentWeapon,canClick,typeSortedWeapons
-    screen.fill((0,0,0))
+    screen.fill(BLACK)
+    draw.rect(screen,(140,140,140),(385,260,440,305))
+    draw.line(screen,(255,255,255),(380,412),(830,412))
     weaponOffX=0
     weaponOffY=0
     startGameButton = Rect(1130,640,140,70)
-    riflesButton = Rect(95,20,264,50)
-    shotgunsButton = Rect(369,20,264,50)
-    snipersButton = Rect(643,20,264,50)
-    heavyButton = Rect(917,20,264,50)
+    riflesButton = Rect(364,260,20,76)
+    shotgunsButton = Rect(364,336,32,76)
+    snipersButton = Rect(643,20,30,152)
+    heavyButton = Rect(917,20,30,152)
     weaponTypeButtons = [riflesButton,shotgunsButton,snipersButton,heavyButton]
-
+    weaponNameOffsetX = [0,0,0,0]
+    weaponNameOffsetY = [25,0,0,0]
     weaponTypes = ['Rifles', 'Shotguns', 'Snipers', 'Heavy']
     weapons=list(weaponList.keys())#list of weapon names from the dictionary that contains the weapon information
     weapons.sort()#sort alphabetically
     draw.rect(screen,(150,150,150),(0,25,1280,50))
-    for i,j in zip(weaponTypeButtons,weaponTypes):
-        listPos=weaponTypes.index(j)
-        weaponTypeName = largeRoboto.render(j,True,WHITE)
-        screen.blit(weaponTypeName,i.move(0,10).topleft)
-        if selectedWeaponType == listPos:#draw a line under the selected weapon type
+    for i,j,k,l,m in zip(weaponTypeButtons,weaponTypes,range(4),weaponNameOffsetX,weaponNameOffsetY):
+        if selectedWeaponType == k:#draw a line under the selected weapon type
             draw.line(screen,WHITE,i.bottomleft,i.bottomright,2)
         if i.collidepoint((mx,my)):#if mouse is hovering over the weapon button
-            weaponTypeName = largeRoboto.render(j,True,(255,255,190))
+            weaponTypeName = smallRoboto.render(j,True,(255,255,190))
             if mb[0]==1:
-                selectedWeaponType = listPos
-        screen.blit(weaponTypeName,i.move(0,10).topleft)
+                selectedWeaponType = k
+        else:
+            weaponTypeName = smallRoboto.render(j, True, WHITE)
+        weaponTypeName = transform.rotate(weaponTypeName, 90)
+        screen.blit(weaponTypeName,i.move(l,m).topleft)
     for i,j,k in zip(typeSortedWeapons[selectedWeaponType],purchasedWeapons[selectedWeaponType],weaponCosts[selectedWeaponType]):
         if weaponOffX >=450:
             weaponOffX = 0
@@ -797,7 +799,9 @@ def shipMenu():#menu for the store
             draw.rect(screen,(150,150,150),Rect(weaponOffX+395,270+weaponOffY,120,85),2)
         #draw weapon name and cost
         screen.blit(smallRoboto.render(i.title(),True,WHITE),(weaponOffX+400,270+weaponOffY))
+        screen.set_clip(Rect(weaponOffX+395,270+weaponOffY,119,85))
         screen.blit(scaledSprite,(weaponOffX+400,300+weaponOffY))
+        screen.set_clip(None)
         creditCost=smallRoboto.render(str(k),True,WHITE)
         screen.blit(creditCost,(weaponOffX+513-creditCost.get_width(),330+weaponOffY))
         screen.blit(hudCredit,(weaponOffX+500-creditCost.get_width(),337+weaponOffY))
@@ -818,7 +822,7 @@ def shipMenu():#menu for the store
             draw.circle(screen,(255,0,0),(weaponOffX+505,280+weaponOffY),7)
         weaponOffX+=150
     #draw store legend and start button
-    startGameButtonText = largeRoboto.render('Start',True,(0,0,0))
+    startGameButtonText = largeRoboto.render('Start',True,BLACK)
     draw.rect(screen,WHITE,startGameButton)
     screen.blit(startGameButtonText,(1167,660,140,70))
     creditHud = Surface((200,25),SRCALPHA)
@@ -840,13 +844,137 @@ def shipMenu():#menu for the store
     draw.circle(screen,(0,255,0),(10,660),7)
     if startGameButton.collidepoint(mx,my):#if player presses the start button
         startGameButtonText = largeRoboto.render('Start',True,WHITE)
-        draw.rect(screen,(0,0,0),startGameButton)
+        draw.rect(screen,BLACK,startGameButton)
         draw.rect(screen,WHITE,startGameButton,2)
         screen.blit(startGameButtonText,(1167,660,140,70))
         if mb[0]==1:
             deathAnimation = 0
             gameState = 'game'
             playTile,drawnmap,minimap=startGame()
+def shipMenu():
+    global gameState,playTile,drawnmap,minimap,mb,typeSortedWeapons,purchasedWeapons,weaponCosts,rotPos,selectedStoreProduct,currentWeapon,canClick
+    screen.blit(storeBackdrop,(0,0))
+    rifleRect = Rect(190,190,70,70)
+    shottyRect = Rect(190,530,70,70)
+    sniperRect = Rect(1020,190,70,70)
+    heavyRect = Rect(1020,530,70,70)
+    rifleWheelRect = Rect(70,70,300,300)
+    shottyWheelRect = Rect(70,410,300,300)
+    sniperWheelRect = Rect(900,70,300,300)
+    heavyWheelRect = Rect(900,410,300,300)
+    equipButton = Rect(480, 540, 100, 40)
+    startButton = Rect(560,660,140,50)
+    buttonRects = (rifleRect, shottyRect, sniperRect, heavyRect)
+    wheelRects = (rifleWheelRect,shottyWheelRect,sniperWheelRect,heavyWheelRect)
+    buttonColours = ((255,0,0),(0,255,0),(0,0,255),(255,255,0))
+    buttonText = ('Rifles', 'Shotguns', 'Snipers', 'Heavies')
+    for i,j,k,l,m in zip(buttonRects,buttonText,buttonColours,wheelRects,range(4)):
+        buttonCenter = (i.x + (i.width // 2), i.y + (i.height // 2))
+        #draw.rect(screen,BLACK,i)
+        renderedButtonText = micRoboto.render(j,True,WHITE)
+        #draw.rect(screen,k,l)
+
+        if l.collidepoint(mx,my):
+            canSpin = True
+            draw.circle(screen, (200, 200, 200), buttonCenter, l.width // 3)
+            draw.circle(screen, WHITE, buttonCenter, l.width // 3 - 5)
+            draw.circle(screen, k, buttonCenter, i.width // 2)
+            for n, o, p in zip(typeSortedWeapons[m],  weaponCosts[m],
+                                  range(len(typeSortedWeapons[m]))):
+                bubbleSeperation = 360 // len(typeSortedWeapons[m])
+                circlePos = (int((l.width // 3) * cosd(bubbleSeperation * p+rotPos[m]) + buttonCenter[0]),
+                             int((l.width // 3) * sind(bubbleSeperation * p+rotPos[m])) + buttonCenter[1])
+                weaponIcon = eval(n)
+                bubbleBox = Rect(circlePos[0]-30,circlePos[1]-30,60,60)
+                draw.circle(screen, k, circlePos, 15)
+                screen.blit(weaponIcon, (circlePos[0]-(weaponIcon.get_width()//2),circlePos[1]-(weaponIcon.get_height()//2)))
+                if bubbleBox.collidepoint(mx,my):
+                    canSpin = False
+                    draw.circle(screen, k, circlePos, 30)
+                    weaponIcon = transform.scale(weaponIcon,(weaponIcon.get_width()*2,weaponIcon.get_height()*2))
+                    screen.blit(weaponIcon, (circlePos[0] - (weaponIcon.get_width() // 2), circlePos[1] - (weaponIcon.get_height() // 2)))
+                    if mb[0]:
+                        selectedStoreProduct = n
+                else:
+                    draw.circle(screen, k, circlePos, 15)
+                    screen.blit(weaponIcon, (
+                    circlePos[0] - (weaponIcon.get_width() // 2), circlePos[1] - (weaponIcon.get_height() // 2)))
+            if canSpin:
+                rotPos[m] += 0.1
+        else:
+            rotPos[m] = 0
+            draw.circle(screen, (200, 200, 200), buttonCenter, l.width // 4)
+            draw.circle(screen, WHITE, buttonCenter, l.width // 4 - 5)
+            draw.circle(screen, (120, 120, 120), buttonCenter, i.width // 2)
+        screen.blit(renderedButtonText, (buttonCenter[0] - (renderedButtonText.get_width() // 2),
+                                     buttonCenter[1]- (renderedButtonText.get_height() // 2)))
+    #Weapon Stats Card
+    draw.rect(screen,(140,140,140),(470,50,340,540))
+    if not selectedStoreProduct == '':
+        draw.rect(screen,(100,100,100),(480,60,320,300))
+        weaponIcon = eval(selectedStoreProduct)
+        weaponIcon = transform.scale(weaponIcon,(weaponIcon.get_width()*10,weaponIcon.get_height()*10))
+        weaponIcon = transform.rotate(weaponIcon,45)
+        screen.blit(weaponIcon,(640-(weaponIcon.get_width()//2),210-(weaponIcon.get_height()//2)))
+        weaponNameRender = smallRoboto.render('"%s"'%(selectedStoreProduct.title()),True,(255,255,255))
+        screen.blit(weaponNameRender,(640-(weaponNameRender.get_width()//2),370))
+        for i,j,k in zip(weaponStatNames,range(6),weaponStatIDs):
+            weaponStatRender = smallRoboto.render(i,True,(255,255,255))
+            screen.blit(weaponStatRender,(480,20*j+400))
+            weaponStatValue = eval('weaponList[selectedStoreProduct].%s'%(k))
+            if k == 'reloadSpeed' or k == 'firerate':
+                weaponStatValue = round(weaponStatValue / 60,2)
+                if k == 'reloadSpeed':
+                    weaponStatValue = str(weaponStatValue)+' s'
+                elif k == 'firerate':
+                    weaponStatValue = str(round(1/weaponStatValue,1))+' /s'
+            elif k == 'inaccuracy':
+                weaponStatValue = str(int((180-weaponStatValue)/1.8))+'%'
+            weaponStatValueRender = smallRoboto.render(str(weaponStatValue),True,(255,255,255))
+            screen.blit(weaponStatValueRender,(800-weaponStatValueRender.get_width(),20*j+400))
+        #Buy and equip button
+        if not purchasedWeapons[weaponNamesList.index(selectedStoreProduct)]:
+            weaponCostRender = micRoboto.render('%d/%d'%(weaponList[selectedStoreProduct].cost,player.money),True,(255,255,255))
+            buyTextRender = micRoboto.render('Buy',True,(255,255,255))
+            buyButton = Rect(480,540,weaponCostRender.get_width()+30,40)
+            if player.money > weaponList[selectedStoreProduct].cost:
+                if buyButton.collidepoint(mx,my):
+                    draw.rect(screen, (100, 255, 100), buyButton)
+                    if mb[0] == 1:
+                        canClick = False
+                        player.money -= weaponList[selectedStoreProduct].cost
+                        purchasedWeapons[weaponNamesList.index(selectedStoreProduct)] = True
+                else:
+                    draw.rect(screen, (0, 200, 0), buyButton)
+            else:
+                draw.rect(screen, (200, 0, 0), (480, 540, weaponCostRender.get_width() + 30, 40))
+            screen.blit(weaponCostRender,(505,560))
+            screen.blit(hudCredit,(490,563))
+            screen.blit(buyTextRender,(490,543))
+        #Equip button
+        elif not selectedStoreProduct == currentWeapon:
+            equipText = smallRoboto.render('Equip',True,(255,255,255))
+            if equipButton.collidepoint(mx,my):
+                draw.rect(screen,(0,0,255),equipButton)
+                if mb[0] and canClick:
+                    currentWeapon = selectedStoreProduct
+            else:
+                draw.rect(screen,(100,100,180),equipButton)
+            screen.blit(equipText,(530-(equipText.get_width()//2),545))
+        elif selectedStoreProduct == currentWeapon:
+            equipText = smallRoboto.render('Equipped',True,(255,255,255))
+            draw.rect(screen,(100,100,255),equipButton)
+            screen.blit(equipText, (530 - (equipText.get_width() // 2), 545))
+        #Start Game Button
+        startText = midRoboto.render('Start',True,(255,255,255))
+        if startButton.collidepoint(mx,my):
+            draw.rect(screen,(140,140,140),startButton)
+            if mb[0] and canClick:
+                gameState = 'game'
+                playTile, drawnmap, minimap = startGame()
+        else:
+            draw.rect(screen,(100,100,100),startButton)
+        screen.blit(startText,(630-(startText.get_width()//2),670))
 def reloadTime():
     global weaponList
     if player.reloading >0:
@@ -980,7 +1108,7 @@ def mainMenu():
     screen.blit(flippedColouredTriangle,(862,min(max(selectionY-(selectionTriangle.get_height()//2),250),510)))
 def instructions():#draw the instructoins
     global mb, gameState, canClick
-    screen.fill((0,0,0))
+    screen.fill(BLACK)
     functionLine = 450
     boundKeyLine = functionLine+120
     boundKeyLine1 = boundKeyLine+120
@@ -1010,6 +1138,7 @@ def instructions():#draw the instructoins
             gameState="menu"
 # Colours
 WHITE = (255, 255, 255)
+BLACK = (0,0,0)
 #Main Menu
 selectionTriangle = image.load('images/menu/selectionTriangle.png')
 flippedTriangle = transform.flip(selectionTriangle,True,False)
@@ -1026,6 +1155,7 @@ playButton = image.load('images/menu/playButton.png')
 playButtonG = image.load('images/menu/playButtonG.png')
 closeButton = image.load('images/menu/closeButton.png')
 closeButtonG = image.load('images/menu/closeButtonG.png')
+storeBackdrop = image.load('images/menu/storeBackDrop.jpg')
 #Adds backdrops to a list for main menu slideshow
 mainMenuBackDrops = []
 backdropGlob = glob.glob('images/backdrops/backdrop*')
@@ -1043,6 +1173,8 @@ boundKeyList2 = ['','','Space','','','']
 largeRoboto=font.Font('fonts/Roboto-Light.ttf',30)
 midRoboto = font.Font('fonts/Roboto-Light.ttf',25)
 smallRoboto = font.Font('fonts/Roboto-Light.ttf',20)
+micRoboto = font.Font('fonts/Roboto-Light.ttf',13)
+
 lisetSprite = image.load('images/levels/liset.png')
 lisetSprite = transform.scale(lisetSprite, (int(lisetSprite.get_width()*1.5),int(lisetSprite.get_height()*1.5)))
 #Sounds
@@ -1086,21 +1218,21 @@ sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
 noSound = mixer.Sound('sfx/misc/none.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 #Weapons damagePerShot, fireRate, magSize, reload speed, fire sound, bullet colour, bulletsPErShot, inaccuracy, reload sound, ammo type,bullet type,bulletgravity,bulletspeed
-weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0),
-              'dera':Weapon(18, 15, 30, 80, deraShoot,(50,170,255),1,1,deraReload,0,1,0,10,5,3,500),
-              'boarP':Weapon(5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1,0,0,0),
-              'laser':Weapon(3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0),
-              'hek':Weapon(19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0),
-              'tigris':Weapon(25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0),
-              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,WHITE,1,0,rubicoReload,3,0,0,0),
-              'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0),
-              'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0),
-              'twinviper':Weapon(6,3,28,80,twinviperShoot,WHITE,1,7,twinviperReload,0,0,0,0),
-              'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0),
-              'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700),
-              'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80),
-              'zhuge':Weapon(60,23,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500),
-              'none':Weapon(0,0,0,10,noSound,(0,0,0),0,0,noSound,0,0)}#damage per shot, fire rate, mag size, reload speed, sfx, muzzleFlash Colour, projectiles per shot, accuracy, reload sound, ammo type
+weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0,cost = 5000),
+              'dera':Weapon(18, 15, 30, 80, deraShoot,(50,170,255),1,1,deraReload,0,1,0,10,5,3,500, cost = 5000),
+              'boarP':Weapon(5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1,0,0,0, cost = 20000),
+              'laser':Weapon(3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0, cost = 25000),
+              'hek':Weapon(19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0, cost = 17500),
+              'tigris':Weapon(25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0, cost = 17500),
+              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,WHITE,1,0,rubicoReload,3,0,0,0, cost = 20000),
+              'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0, cost = 17500),
+              'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0, cost = 10000),
+              'twinviper':Weapon(6,3,28,80,twinviperShoot,WHITE,1,7,twinviperReload,0,0,0,0, cost = 5000),
+              'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0, cost = 15000),
+              'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700,cost = 17500),
+              'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80, cost = 20000),
+              'zhuge':Weapon(60,23,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500, cost = 20000),
+              'none':Weapon(0,0,0,10,noSound,BLACK,0,0,noSound,0,0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -1198,9 +1330,10 @@ player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 currentFrame = 0
 
 #Store info
+weaponNamesList = ['braton','dera','boarP','laser','hek','tigris','rubico','gorgon','grakata','twinviper','vulkar','lanka','ignis','zhuge','none']
 typeSortedWeapons = [['dera', 'braton', 'grakata', 'twinviper'], ['tigris', 'hek', 'boarP'],
                      ['rubico', 'vulkar', 'lanka'], ['gorgon', 'laser', 'ignis', 'zhuge']]
-purchasedWeapons =[[0,0,0,0],[0,0,0],[0,0,0],[0,0,0,0]]
+purchasedWeapons =[0 for i in range(len(weaponList))]
 weaponCosts = [[5000,5000,10000,5000],[15000,20000,25000],[20000,17500,17500],[20000,25000,20000,20000]]
 bulletTrailList=[]
 counter = 0
@@ -1232,6 +1365,10 @@ shiftAmountX = 1
 shiftAmountY = 1
 startBlitX = -640
 startBlitY = -360
+rotPos = [0,0,0,0]
+selectedStoreProduct = 'lanka'
+weaponStatNames = ['Damage','Fire Rate','Magazine','Reload Speed','Accuracy','Projectiles']
+weaponStatIDs = ['damage','firerate','magSize','reloadSpeed','inaccuracy','bulletsPerShot']
 
 animationStatus=-1#positive for opening, negative for closing
 menuOn = 0
@@ -1421,9 +1558,9 @@ while running:
             elif deathAnimation >=350:
                 screen.fill((min(200,max(200-((deathAnimation-350)*3),0)),0,0))
             if deathAnimation in range(50,500):
-                screen.blit(largeRoboto.render('You Died', True, (0,0,0)),(580,300))
+                screen.blit(largeRoboto.render('You Died', True, BLACK),(580,300))
             if deathAnimation in range(200,500):
-                encouragementRender=largeRoboto.render(encouragementText, True, (0,0,0))
+                encouragementRender=largeRoboto.render(encouragementText, True, BLACK)
                 screen.blit(encouragementRender,(640-encouragementRender.get_width()//2,350))
             if deathAnimation >500:
                 gameState = 'ship'
@@ -1432,7 +1569,7 @@ while running:
         menuAnimation+=animationStatus
     if not gameState == 'menu':
         draw.circle(screen, WHITE, (int(mx), int(my)), 3)
-        draw.circle(screen, (0,0,0), (int(mx), int(my)), 2)
+        draw.circle(screen, BLACK, (int(mx), int(my)), 2)
         screen.set_at((int(mx),int(my)),WHITE)
     display.flip()
     gameClock.tick(60)
