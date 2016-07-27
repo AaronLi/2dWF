@@ -1,12 +1,12 @@
 # Base Platformer
 from pygame import *
-import glob, random, math,os
-print(os.getcwd())
+import glob, random, math
+
 
 init()
 mixer.music.set_volume(0.1)
 startTime = time.get_ticks()
-startingMoney = 5000
+startingMoney = 500000000000000
 
 
 class Particle:  # Class used for simulating particles (Guns, 'blood', bullet hits)
@@ -236,11 +236,16 @@ class explosion:
         hitByExplosive = [False for i in range(len(enemyList))]
         for i in range(0, self.radius, 7):
             for j in range(0, 360, 15):
+                checkPoint = (int(self.x + (i * cosd(j))), int(self.y + (i * sind(j))))
                 for k, j in zip(enemyList, range(len(enemyList))):
-                    checkPoint = (int(self.x + (i * cosd(j))), int(self.y + (i * sind(j))))
                     enemyRect = Rect(k.X, k.Y, k.W, k.H)
                     if enemyRect.collidepoint(checkPoint) and not hitByExplosive[j]:
                         k.health -= max(self.damage - (7 * (i * self.falloff)), 0)
+                        if k.X+(k.W//2) > self.x:
+                            k.vX = max(self.radius-abs(self.x-(k.X+(k.W//2))),0)
+                        elif k.X+(k.W//2) > self.x:
+                            k.vX = min(-(self.radius-abs(self.x-(k.X+(k.W//2)))),0)
+                        k.vY = -3
                         hitByExplosive[j] = True
         explosionSfx.play()
         for i in range(0, 360, 10):
@@ -418,7 +423,7 @@ def calcBullets():  # check if the enemy bullets hit anything
                 if bulletList[i].isExplosive:
                     explosiveList.append(explosion(bulletList[i].x, bulletList[i].y, bulletList[i].damage,
                                                    bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
-                                                   weaponList[currentWeapon].bulletColour, (200, 200, 200), 0))
+                                                   weaponList[currentWeapon].bulletColour, (200, 200, 200), weaponList[currentWeapon].fuse))
                 del bulletList[i]
                 nextBullet = True
                 break
@@ -1362,7 +1367,7 @@ weaponList = {
     'zhuge': Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,
                     cost=20000, wepType=3),
     'supra': Weapon(8, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
-    'ogris': Weapon(150, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,
+    'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,
                     100, 0, 0),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
@@ -1727,7 +1732,7 @@ while running:
                 enemyList[i].enemyMove()
                 hitSurface(enemyList[i], playTile[2])
                 enemyList[i] = applyFriction(enemyList[i])
-            for i in range(len(explosiveList) - 1, 0, -1):
+            for i in range(len(explosiveList) - 1, -1, -1):
                 if explosiveList[i].fuse <= 0:
                     explosiveList[i].detonate()
                     del explosiveList[i]
