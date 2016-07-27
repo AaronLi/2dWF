@@ -1,9 +1,6 @@
 # Base Platformer
-import glob
-import math
-import random
-
 from pygame import *
+import glob, random, math
 
 init()
 mixer.music.set_volume(0.1)
@@ -1070,16 +1067,16 @@ def shipMenu():
             equipText = smallRoboto.render('Equipped', True, (255, 255, 255))
             draw.rect(screen, (100, 100, 255), equipButton)
             screen.blit(equipText, (530 - (equipText.get_width() // 2), 545))
-    # Start Game Button
-    startText = midRoboto.render('Start', True, (255, 255, 255))
-    if startButton.collidepoint(mx, my):
-        draw.rect(screen, (140, 140, 140), startButton)
-        if mb[0] and canClick:
-            gameState = 'game'
-            playTile, drawnmap, minimap = startGame()
-    else:
-        draw.rect(screen, (100, 100, 100), startButton)
-    screen.blit(startText, (630 - (startText.get_width() // 2), 670))
+        # Start Game Button
+        startText = midRoboto.render('Start', True, (255, 255, 255))
+        if startButton.collidepoint(mx, my):
+            draw.rect(screen, (140, 140, 140), startButton)
+            if mb[0] and canClick:
+                gameState = 'game'
+                playTile, drawnmap, minimap = startGame()
+        else:
+            draw.rect(screen, (100, 100, 100), startButton)
+        screen.blit(startText, (630 - (startText.get_width() // 2), 670))
 
 
 def reloadTime():
