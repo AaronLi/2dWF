@@ -5,7 +5,7 @@ import glob, random, math
 init()
 mixer.music.set_volume(0.1)
 startTime = time.get_ticks()
-startingMoney = 50000
+startingMoney = 5000
 
 
 class Particle:  # Class used for simulating particles (Guns, 'blood', bullet hits)
