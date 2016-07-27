@@ -45,7 +45,7 @@ class Mob:#Class used for the player and enemies
         self.hP, self.hW = [Rect(0, 0, 0, 0), 0], [Rect(0, 0, 0, 0), 0]  # Hit Plat, Hit Wall - last floor platform the mob hit
         self.maxHealth= health#Won't be changed, only read to find the limit
         self.maxShield = shield#same as maxHealth
-        self.money = 50000#Credits, for purchasing weapons
+        self.money = 5000#Credits, for purchasing weapons
 
         self.health = health#current Health
         self.shield = shield#current shields
@@ -161,7 +161,7 @@ class Bullet2:
         screen.set_at((int(self.x),int(self.y)),self.colour)
         draw.line(surface,self.colour,(self.x+640-player.X,self.y+360-player.Y),(int((self.length * cosd(self.angle))+self.x+(640-player.X)), int((self.length * sind(self.angle))+self.y+(360-player.Y))),self.thickness)
 class Weapon:
-    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0,cost = 0):
+    def __init__(self,damage,firerate,magSize,reloadSpeed,fireSound,bulletColour, bulletsPerShot, inaccuracy, reloadSound,ammoType, bulletType = 0,bulletGravity = 0, bulletSpeed = 0, bulletLength = 0, bulletThickness = 0, bulletRange = 0,cost = 0,wepType = 0):
         self.damage = damage
         self.firerate = firerate
         self.magSize = magSize
@@ -179,6 +179,8 @@ class Weapon:
         self.bulletThickness = bulletThickness
         self.bulletRange = bulletRange
         self.cost = cost
+        self.wepType = wepType
+
 def sind(deg):
     return math.sin(math.radians(deg))
 def cosd(deg):
@@ -879,11 +881,10 @@ def shipMenu():
             draw.circle(screen, (200, 200, 200), buttonCenter, l.width // 3)
             draw.circle(screen, WHITE, buttonCenter, l.width // 3 - 5)
             draw.circle(screen, k, buttonCenter, i.width // 2)
-            for n, o, p in zip(typeSortedWeapons[m],  weaponCosts[m],
-                                  range(len(typeSortedWeapons[m]))):
+            for n, o in zip(typeSortedWeapons[m],range(len(typeSortedWeapons[m]))):
                 bubbleSeperation = 360 // len(typeSortedWeapons[m])
-                circlePos = (int((l.width // 3) * cosd(bubbleSeperation * p+rotPos[m]) + buttonCenter[0]),
-                             int((l.width // 3) * sind(bubbleSeperation * p+rotPos[m])) + buttonCenter[1])
+                circlePos = (int((l.width // 3) * cosd(bubbleSeperation * o+rotPos[m]) + buttonCenter[0]),
+                             int((l.width // 3) * sind(bubbleSeperation * o+rotPos[m])) + buttonCenter[1])
                 weaponIcon = eval(n)
                 bubbleBox = Rect(circlePos[0]-30,circlePos[1]-30,60,60)
                 draw.circle(screen, k, circlePos, 15)
@@ -937,7 +938,7 @@ def shipMenu():
             weaponCostRender = micRoboto.render('%d/%d'%(weaponList[selectedStoreProduct].cost,player.money),True,(255,255,255))
             buyTextRender = micRoboto.render('Buy',True,(255,255,255))
             buyButton = Rect(480,540,weaponCostRender.get_width()+30,40)
-            if player.money > weaponList[selectedStoreProduct].cost:
+            if player.money >= weaponList[selectedStoreProduct].cost:
                 if buyButton.collidepoint(mx,my):
                     draw.rect(screen, (100, 255, 100), buyButton)
                     if mb[0] == 1:
@@ -1218,20 +1219,20 @@ sword2 = mixer.Sound('sfx/weapons/tenno/nikana2.ogg')
 noSound = mixer.Sound('sfx/misc/none.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'),mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 #Weapons damagePerShot, fireRate, magSize, reload speed, fire sound, bullet colour, bulletsPErShot, inaccuracy, reload sound, ammo type,bullet type,bulletgravity,bulletspeed
-weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0,cost = 5000),
-              'dera':Weapon(18, 15, 30, 80, deraShoot,(50,170,255),1,1,deraReload,0,1,0,10,5,3,500, cost = 5000),
-              'boarP':Weapon(5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1,0,0,0, cost = 20000),
-              'laser':Weapon(3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0, cost = 25000),
-              'hek':Weapon(19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0, cost = 17500),
-              'tigris':Weapon(25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0, cost = 17500),
-              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,WHITE,1,0,rubicoReload,3,0,0,0, cost = 20000),
-              'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0, cost = 17500),
-              'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0, cost = 10000),
-              'twinviper':Weapon(6,3,28,80,twinviperShoot,WHITE,1,7,twinviperReload,0,0,0,0, cost = 5000),
-              'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0, cost = 15000),
-              'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700,cost = 17500),
-              'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80, cost = 20000),
-              'zhuge':Weapon(60,23,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500, cost = 20000),
+weaponList = {'braton':Weapon(25, 20, 45, 100, bratonShoot,(200, 150, 0),1,1,bratonReload,0,0,0,0,cost = 5000,wepType = 0),
+              'dera':Weapon(18, 15, 30, 80, deraShoot,(50,170,255),1,1,deraReload,0,1,0,10,5,3,500, cost = 5000, wepType = 0),
+              'boarP':Weapon(5,13,20,100,boarShoot, (200,150,0),13,12,boarReload,1,0,0,0, cost = 20000,wepType = 1),
+              'laser':Weapon(3,2,250,100,laserShoot, (255,0,0),1,0,laserReload,2,0,0,0, cost = 25000,wepType = 3),
+              'hek':Weapon(19,30,4,100,hekShoot,(200,150,0),7,5,hekReload,1,0,0,0, cost = 17500, wepType = 1),
+              'tigris':Weapon(25,15,2,120,tigrisShoot,(200,150,0),5,8,tigrisReload,1,0,0,0, cost = 17500, wepType = 1),
+              'rubico':Weapon(150, 150, 5, 100, rubicoShoot,WHITE,1,0,rubicoReload,3,0,0,0, cost = 20000, wepType = 2),
+              'gorgon':Weapon(20,10,90,180,gorgonShoot,(200,150,0),1,3,gorgonReload,0,0,0,0, cost = 17500, wepType = 3),
+              'grakata':Weapon(14,5,60,100,grakataShoot,(200,150,0),1,10,grakataReload,0,0,0,0, cost = 10000,wepType = 0),
+              'twinviper':Weapon(6,3,28,80,twinviperShoot,WHITE,1,7,twinviperReload,0,0,0,0, cost = 5000, wepType = 0),
+              'vulkar':Weapon(120,100,6,100,vulkarShoot,(200,150,0),1,0,vulkarReload,3,0,0,0, cost = 15000, wepType = 2),
+              'lanka':Weapon(170,150,10,100,lankaShoot,(0,255,0),1,1,lankaReload,3,1,0,15,10,4,700,cost = 17500, wepType = 2),
+              'ignis':Weapon(0.7,2,150,100,ignisShoot,(255,200,0),10,4,ignisReload,2,1,0.1,7,5,5,80, cost = 20000, wepType = 3),
+              'zhuge':Weapon(60,23,20,100,zhugeShoot,(190,190,190),1,2,zhugeReload,0,1,0.05,10,12,2,500, cost = 20000, wepType = 3),
               'none':Weapon(0,0,0,10,noSound,BLACK,0,0,noSound,0,0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1330,11 +1331,15 @@ player = Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2,health = 100,shield = 100)
 currentFrame = 0
 
 #Store info
-weaponNamesList = ['braton','dera','boarP','laser','hek','tigris','rubico','gorgon','grakata','twinviper','vulkar','lanka','ignis','zhuge','none']
-typeSortedWeapons = [['dera', 'braton', 'grakata', 'twinviper'], ['tigris', 'hek', 'boarP'],
-                     ['rubico', 'vulkar', 'lanka'], ['gorgon', 'laser', 'ignis', 'zhuge']]
+weaponNamesList = list(weaponList.keys())
+weaponNamesList.sort()
+typeSortedWeapons = [[],[],[],[]]
+for i in range(len(weaponNamesList)):
+    weaponName = weaponNamesList[i]
+    weaponInfo = weaponList[weaponName]
+    if not weaponName == 'none':
+        typeSortedWeapons[weaponInfo.wepType].append(weaponName)
 purchasedWeapons =[0 for i in range(len(weaponList))]
-weaponCosts = [[5000,5000,10000,5000],[15000,20000,25000],[20000,17500,17500],[20000,25000,20000,20000]]
 bulletTrailList=[]
 counter = 0
 shooting = False
