@@ -40,7 +40,30 @@ class Particle:  # Class used for simulating particles (Guns, 'blood', bullet hi
         if self.life <= 0:
             self.live = False
 
-
+class Door:
+    def __init__(self,pos,vY,w,h,openHeight,sprite):
+        self.x,self.y = pos
+        self.offY = 0
+        self.vY = vY
+        self.h = h
+        self.w = w
+        self.openHeight = -openHeight
+        self.sprite = sprite
+        self.hitBox = Rect(self.x, self.y + self.offY, self.w, self.h)
+    def moveDoor(self):
+        openDoor = False
+        for i in enemyList:
+            if abs(math.hypot(i.X-self.x,i.Y-self.y)) < 70:
+                openDoor = True
+        if abs(math.hypot(player.X-self.x,player.Y-self.y))<70:
+            openDoor = True
+        if openDoor and self.offY >self.openHeight:
+            self.offY -= self.vY
+        elif not openDoor and self.offY < 0:
+            self.offY += self.vY
+        self.hitBox = Rect(self.x,self.y+self.offY,self.w,self.h)
+    def draw(self):
+        screen.blit(self.sprite,(640-player.X+self.x,360-player.Y+self.y+self.offY))
 class Mob:  # Class used for the player and enemies
     def __init__(self, x, y, w, h, vX, vY, vM, vAx, fA, jumps, health=100, shield=100, enemyType=0, animation=0,
                  weapon='braton', avoidance=50, shootRange=200, money=5000):
@@ -155,7 +178,6 @@ class Pickup:  # Class for ammo, health, and credit drops
                 return True
         return False
 
-
 class Bullet2:
     def __init__(self, x, y, angle, damage, faction, range, speed, colour, hitColour, length, gravity, slowdown,
                  thickness, isExplosive=0, explosiveRadius=0, explosiveFalloff=0,
@@ -247,6 +269,11 @@ class explosion:
                         hitEnvironment = True
                         break
                 if not hitEnvironment:
+                    for k in doorList:
+                        if k.hitBox.collidepoint(checkPoint):
+                            hitEnvironment = True
+                            break
+                if not hitEnvironment:
                     for l, m in zip(enemyList, range(len(enemyList))):
                         enemyRect = Rect(l.X, l.Y, l.W, l.H)
                         if enemyRect.collidepoint(checkPoint) and not hitByExplosive[m]:
@@ -257,7 +284,7 @@ class explosion:
                                 l.vX = min(-(self.radius-abs(self.x-(l.X+(l.W//2)))),0)
                             l.vY = -3
                             hitByExplosive[m] = True
-                else:
+                elif hitEnvironment:
                     break
         explosionSfx.play()
 
@@ -415,6 +442,14 @@ def checkBullTrajectory(bullAngle, x, y):  # check trajectory of player shots
                         Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
                                  0.2, 0.2, 0.4, 1, 10))
                 retVal = None
+        for i in doorList:
+            if i.hitBox.collidepoint(x,y):
+                hit = True
+                endX, endY = x, y
+                for i in range(5):  # make particles on the environment at the hit location
+                    particleList.append(
+                        Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
+                                 0.2, 0.2, 0.4, 1, 10))
         for i in range(len(enemyList)):  # if bullet hits enemy
             eInfo = enemyList[i]
             mobRect = Rect(eInfo.X, eInfo.Y, eInfo.W, eInfo.H)  # enemy hitbox
@@ -445,6 +480,19 @@ def calcBullets():  # check if the enemy bullets hit anything
                 del bulletList[i]
                 nextBullet = True
                 break
+        if not nextBullet:
+            for j in doorList:
+                if j.hitBox.collidepoint(bulletList[i].x, bulletList[i].y):
+                    if bulletList[i].isExplosive:
+                        explosiveList.append(
+                            explosion(bulletList[i].x - bulletList[i].vX, bulletList[i].y - bulletList[i].vY,
+                                      bulletList[i].damage,
+                                      bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
+                                      weaponList[currentWeapon].bulletColour, (200, 200, 200),
+                                      weaponList[currentWeapon].fuse))
+                    del bulletList[i]
+                    nextBullet = True
+                    break
         if not nextBullet:
             for j in range(len(enemyList) - 1, -1, -1):  # checking player bullets
                 enemyRect = Rect(enemyList[j].X, enemyList[j].Y, enemyList[j].W, enemyList[j].H)
@@ -589,6 +637,10 @@ def enemyLogic():  # enemy AI
                     while checkLos:  # if the mob can shoot the playeer
                         for j in playTile[2]:
                             if j[0].collidepoint(losX, player.Y):  # if there is a tile between the mob and the player
+                                checkLos = False
+                                break
+                        for j in doorList:
+                            if j.hitBox.collidepoint(losX,player.Y):
                                 checkLos = False
                                 break
                         if abs(player.X - losX) > enemyInfo.shootRange:  # if the player is out of range
@@ -798,6 +850,8 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
     pic = playerFrames[player.animation][0][player.frame // playerFrames[player.animation][1] % len(
         playerFrames[player.animation][0])]  # current frame to show
     player.frame += 1
+    for i in doorList:
+        i.draw()
     screen.blit(tileSurf, (640 - player.X, 360 - player.Y))  # blit the level
     moveParticles()
     for i in damagePopoff:
@@ -874,7 +928,6 @@ def makeNewLevel(levelLength):  # stitches the rects from different tiles togeth
         levelSeq.append(random.randint(1, len(drawTiles) - 1))  # add tile to the list of tiles
     xOff, yOff = 0, 0
     checkPlatList = []
-    sameRect = []
     stitchedLevel = []
     rectOuts = []
     for i in range(len(levelSeq)):  # place tiles together
@@ -897,8 +950,7 @@ def makeNewLevel(levelLength):  # stitches the rects from different tiles togeth
         pCheck = [checkPlatList[1][0][1], checkPlatList[1][0][0], checkPlatList[1][0][2],
                   checkPlatList[1][0][3]]  # Change back to original after it's been sorted
         previousPlat = [checkPlatList[0][0][1], checkPlatList[0][0][0], checkPlatList[0][0][2], checkPlatList[0][0][3]]
-        if (previousPlat[0] + previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and pCheck[1] == \
-                previousPlat[1]:  # if platforms are at the same height and are adjacent or colliding
+        if (previousPlat[0] + previousPlat[2] == pCheck[0] or Rect(previousPlat).colliderect(pCheck)) and pCheck[1] == previousPlat[1]:  # if platforms are at the same height and are adjacent or colliding
             unionedRect = Rect(previousPlat).union(Rect(pCheck))  # union the tiles
             checkPlatList.insert(2, [[unionedRect[1], unionedRect[0], unionedRect[2], unionedRect[3]],
                                      0])  # Change back into height prioritized format
@@ -929,7 +981,6 @@ def fixLevel(levelIn):  # Moves the level so that it isn't outside of the boundi
     platTypes = []
     movedTileTops = []
     newTile = [levelIn.pop(0)]
-    finalRects = []
     for i in levelIn:
         platHeights.append(i[0].top)  # heights of the platforms
         platTypes.append(i[1])  # types of the platform (wall, platform, invisible platform, etc.)
@@ -940,6 +991,9 @@ def fixLevel(levelIn):  # Moves the level so that it isn't outside of the boundi
         newTile.append([movedRect, i[1]])
         if i[1] == 3:  # make the player's spawn location the spawn box's coordinates
             spawnX, spawnY = newTile[-1][0].topleft
+        if i[1] == 4:
+            doorList.append(Door(newTile[-1][0].topleft,4,15,60,80,corpDoor1))
+            del newTile[-1]
     newTile.append([Rect(-16, min(movedTileTops) - 720, 20000, 32), 2])  # platform so player can't leave level
     newTile.append([Rect(-16, min(movedTileTops) - 720, 32, newTile[0][1]), 1])  # wall on left
     newTile.append([Rect(newTile[0][0] - 16, min(movedTileTops) - 720, 32, newTile[0][1]), 1])  # wall on right
@@ -1319,6 +1373,7 @@ micRoboto = font.Font('fonts/Roboto-Light.ttf', 13)
 
 lisetSprite = image.load('images/levels/liset.png')
 lisetSprite = transform.scale(lisetSprite, (int(lisetSprite.get_width() * 1.5), int(lisetSprite.get_height() * 1.5)))
+corpDoor1 = image.load('images/levels/corpDoor1.png')
 # Sounds
 # Music
 mixer.music.load('sfx/music/theme.ogg')  # loads music
@@ -1369,7 +1424,7 @@ weaponList = {
     'braton': Weapon(25, 20, 45, 100, bratonShoot, (200, 150, 0), 1, 1, bratonReload, 0, 0, 0, 0, cost=5000, wepType=0),
     'dera': Weapon(18, 15, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,wepType=0),
     'boarP': Weapon(5, 13, 20, 100, boarShoot, (200, 150, 0), 13, 12, boarReload, 1, 0, 0, 0, cost=20000, wepType=1),
-    'laser': Weapon(3, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=3),
+    'laser': Weapon(4, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=3),
     'hek': Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 5, hekReload, 1, 0, 0, 0, cost=17500, wepType=1),
     'tigris': Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 8, tigrisReload, 1, 0, 0, 0, cost=17500, wepType=1),
     'rubico': Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType=2),
@@ -1520,6 +1575,7 @@ tileRects = []
 tileSizes = []
 movedTiles = []
 tileIO = []
+doorList = []
 visualOff = 0
 movedTileTops = []
 # Get information from tileset files
@@ -1770,7 +1826,8 @@ while running:
                 pickupList[i].fallToGround()
                 if pickupList[i].checkCollide():
                     del pickupList[i]
-
+            for i in doorList:
+                i.moveDoor()
             drawStuff(playTile[1], playTile[0], keysIn)
             if player.shootCooldown > 0:  # fire rate
                 player.shootCooldown -= 1
