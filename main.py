@@ -236,26 +236,30 @@ class explosion:
     def detonate(self):
         global enemyList, particleList
         hitByExplosive = [False for i in range(len(enemyList))]
-        for i in range(0, self.radius, 7):
-            for j in range(0, 360, 15):
-                checkPoint = (int(self.x + (i * cosd(j))), int(self.y + (i * sind(j))))
-                for k, j in zip(enemyList, range(len(enemyList))):
-                    enemyRect = Rect(k.X, k.Y, k.W, k.H)
-                    if enemyRect.collidepoint(checkPoint) and not hitByExplosive[j]:
-                        k.damage(max(self.damage - (7 * (i * self.falloff)), 0))
-                        if k.X+(k.W//2) > self.x:
-                            k.vX = max(self.radius-abs(self.x-(k.X+(k.W//2))),0)
-                        elif k.X+(k.W//2) > self.x:
-                            k.vX = min(-(self.radius-abs(self.x-(k.X+(k.W//2)))),0)
-                        k.vY = -3
-                        hitByExplosive[j] = True
+        for i in range(0, 360, 15):
+            hitEnvironment  = False
+            particleList.append(Particle(screen, self.x, self.y, i, self.radius // 5, (255, random.randint(0, 255), 0),random.randint(2,3), 0, 0, 0, 2, 20, 2))
+            particleList.append(Particle(screen, self.x, self.y, i, self.radius // 5, self.smokeColour, random.randint(2,3), 0, 0, 0, 2,20, 2))
+            for j in range(0, self.radius, 7):
+                checkPoint = (int(self.x + (j * cosd(i))), int(self.y + (j * sind(i))))
+                for k in playTile[2]:
+                    if k[0].collidepoint(checkPoint):
+                        hitEnvironment = True
+                        break
+                if not hitEnvironment:
+                    for l, m in zip(enemyList, range(len(enemyList))):
+                        enemyRect = Rect(l.X, l.Y, l.W, l.H)
+                        if enemyRect.collidepoint(checkPoint) and not hitByExplosive[m]:
+                            l.damage(max(self.damage - (7 * (j * self.falloff)), 0))
+                            if l.X+(l.W//2) > self.x:
+                                l.vX = max(self.radius-abs(self.x-(l.X+(l.W//2))),0)
+                            elif l.X+(l.W//2) > self.x:
+                                l.vX = min(-(self.radius-abs(self.x-(l.X+(l.W//2)))),0)
+                            l.vY = -3
+                            hitByExplosive[m] = True
+                else:
+                    break
         explosionSfx.play()
-        for i in range(0, 360, 10):
-            particleList.append(Particle(screen, self.x, self.y, i, self.radius // 5, (255, random.randint(0, 255), 0),
-                                         3 + random.random(), 0, 0, 0, 2, 20, 2))
-            particleList.append(
-                Particle(screen, self.x, self.y, i, self.radius // 5, self.smokeColour, 3 + random.random(), 0, 0, 0, 2,
-                         20, 2))
 
 class DamageText:
     def __init__(self,x,y,amount,colour):
@@ -334,7 +338,7 @@ def swordHit():  # check for sword hits
                 break
         elif not player.fA:  # if player is facing right
             if enemyRect.colliderect(swingBox.move(player.W, 0)):
-                i.health -= 50
+                i.damage(50)
                 break
 
 
@@ -435,7 +439,7 @@ def calcBullets():  # check if the enemy bullets hit anything
         for j in playTile[2]:
             if j[0].collidepoint(bulletList[i].x, bulletList[i].y) and j[1] != 3:  # if bullet hit a platform or wall
                 if bulletList[i].isExplosive:
-                    explosiveList.append(explosion(bulletList[i].x, bulletList[i].y, bulletList[i].damage,
+                    explosiveList.append(explosion(bulletList[i].x-bulletList[i].vX, bulletList[i].y-bulletList[i].vY, bulletList[i].damage,
                                                    bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
                                                    weaponList[currentWeapon].bulletColour, (200, 200, 200), weaponList[currentWeapon].fuse))
                 del bulletList[i]
