@@ -141,7 +141,7 @@ class Mob:  # Class used for the player and enemies
 
     def damage(self,amount,type = 0):
         self.health -= amount
-        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y,amount,type))
+        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y+random.randint(-10,0),amount,type))
 class Pickup:  # Class for ammo, health, and credit drops
     def __init__(self, x, y, dropType, amount):
         self.X = x
@@ -1469,7 +1469,8 @@ weaponList = {
     'zhuge': Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType=3),
     'supra': Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
     'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0 ),
-    'soma':Weapon(3,6,100,100,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 6.6),
+    'soma':Weapon(2.7,5,100,150,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 6.6),
+    'prismagorgon':Weapon(12,8,120,160,gorgonReload,WHITE,1,3,gorgonShoot,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1498,6 +1499,7 @@ zhuge = image.load('images/weapons/tenno/zhuge.png')
 supra = image.load('images/weapons/corpus/supra.png')
 ogris = image.load('images/weapons/grineer/ogris.png')
 soma = image.load('images/weapons/tenno/soma.png')
+prismagorgon = image.load('images/weapons/grineer/gorgonPrisma.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
