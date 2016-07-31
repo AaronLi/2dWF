@@ -139,9 +139,9 @@ class Mob:  # Class used for the player and enemies
                     self.animation = right
                 self.shootCounter = 0
 
-    def damage(self,amount):
+    def damage(self,amount,type = 0):
         self.health -= amount
-        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y,amount,WHITE))
+        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y,amount,type))
 class Pickup:  # Class for ammo, health, and credit drops
     def __init__(self, x, y, dropType, amount):
         self.X = x
@@ -220,7 +220,7 @@ class Bullet2:
 class Weapon:
     def __init__(self, damage, firerate, magSize, reloadSpeed, fireSound, bulletColour, bulletsPerShot, inaccuracy,
                  reloadSound, ammoType, bulletType=0, bulletGravity=0, bulletSpeed=0, bulletLength=0, bulletThickness=0,
-                 bulletRange=0, cost=0, wepType=0, isExplosive=0, explosiveRadius=0, explosiveFalloff=0, fuse=0):
+                 bulletRange=0, cost=0, wepType=0, isExplosive=0, explosiveRadius=0, explosiveFalloff=0, fuse=0,critChance = 5,critMult = 1.5):
         self.damage = damage
         self.firerate = firerate
         self.magSize = magSize
@@ -243,6 +243,8 @@ class Weapon:
         self.explosiveRadius = explosiveRadius
         self.explosiveFalloff = explosiveFalloff
         self.fuse = fuse
+        self.critChance = critChance
+        self.critMult = critMult
 
 
 class explosion:
@@ -289,11 +291,14 @@ class explosion:
         explosionSfx.play()
 
 class DamageText:
-    def __init__(self,x,y,amount,colour):
+    def __init__(self,x,y,amount,type):
         self.x = x
         self.y = y
         self.amount = amount
-        self.colour = colour
+        if type == 0:
+            self.colour = WHITE
+        elif type == 1:
+            self.colour = (255,255,0)
         self.vY = -0.5
         self.renderedText = micRoboto.render('-%s'%(str(round(self.amount,2))),True,self.colour)
         self.life = 50
@@ -558,25 +563,50 @@ def drawUpper(playerX, playerY):  # Also includes shooting
             if weaponList[currentWeapon].bulletType == 0:
                 enemyHit = playerShoot(weaponList[currentWeapon], shotAngle)
                 if type(enemyHit) == int:  # if it hit an enemy
-                    enemyList[enemyHit].damage(weaponList[currentWeapon].damage)
+                    if random.randint(0,100)<weaponList[currentWeapon].critChance:
+                        enemyList[enemyHit].damage(weaponList[currentWeapon].damage*weaponList[currentWeapon].critMult,1)
+                    else:
+                        enemyList[enemyHit].damage(weaponList[currentWeapon].damage)
             elif weaponList[currentWeapon].bulletType == 1:
                 if currentWeapon == 'ignis':
-                    bulletList.append(
-                        Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle, weaponList[currentWeapon].damage,
-                                1, weaponList[currentWeapon].bulletRange,
-                                weaponList[currentWeapon].bulletSpeed + random.randint(-2, 2),
-                                (255, random.randint(0, 255), 0), weaponList[currentWeapon].bulletColour,
-                                weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
-                                weaponList[currentWeapon].bulletThickness))
+                    if random.randint(0,100)<weaponList[currentWeapon].critChance:
+                        bulletList.append(
+                            Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle, weaponList[currentWeapon].damage*weaponList[currentWeapon].critMult,
+                                    1, weaponList[currentWeapon].bulletRange,
+                                    weaponList[currentWeapon].bulletSpeed + random.randint(-2, 2),
+                                    (255, random.randint(0, 255), 0), weaponList[currentWeapon].bulletColour,
+                                    weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
+                                    weaponList[currentWeapon].bulletThickness))
+                    else:
+                        bulletList.append(
+                            Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle,
+                                    weaponList[currentWeapon].damage,
+                                    1, weaponList[currentWeapon].bulletRange,
+                                    weaponList[currentWeapon].bulletSpeed + random.randint(-2, 2),
+                                    (255, random.randint(0, 255), 0), weaponList[currentWeapon].bulletColour,
+                                    weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
+                                    weaponList[currentWeapon].bulletThickness))
                 else:
-                    bulletList.append(
-                        Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle, weaponList[currentWeapon].damage,
-                                1, weaponList[currentWeapon].bulletRange, weaponList[currentWeapon].bulletSpeed,
-                                weaponList[currentWeapon].bulletColour, weaponList[currentWeapon].bulletColour,
-                                weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
-                                weaponList[currentWeapon].bulletThickness, weaponList[currentWeapon].isExplosive,
-                                weaponList[currentWeapon].explosiveRadius, weaponList[currentWeapon].explosiveFalloff,
-                                weaponList[currentWeapon].fuse))
+                    if random.randint(0,100)<weaponList[currentWeapon].critChance:
+                        bulletList.append(
+                            Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle, weaponList[currentWeapon].damage,
+                                    1, weaponList[currentWeapon].bulletRange, weaponList[currentWeapon].bulletSpeed,
+                                    weaponList[currentWeapon].bulletColour, weaponList[currentWeapon].bulletColour,
+                                    weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
+                                    weaponList[currentWeapon].bulletThickness, weaponList[currentWeapon].isExplosive,
+                                    weaponList[currentWeapon].explosiveRadius, weaponList[currentWeapon].explosiveFalloff,
+                                    weaponList[currentWeapon].fuse))
+                    else:
+                        bulletList.append(
+                            Bullet2(player.X + player.W // 2, player.Y + 20, -shotAngle,
+                                    weaponList[currentWeapon].damage,
+                                    1, weaponList[currentWeapon].bulletRange, weaponList[currentWeapon].bulletSpeed,
+                                    weaponList[currentWeapon].bulletColour, weaponList[currentWeapon].bulletColour,
+                                    weaponList[currentWeapon].bulletLength, weaponList[currentWeapon].bulletGravity, 0,
+                                    weaponList[currentWeapon].bulletThickness, weaponList[currentWeapon].isExplosive,
+                                    weaponList[currentWeapon].explosiveRadius,
+                                    weaponList[currentWeapon].explosiveFalloff,
+                                    weaponList[currentWeapon].fuse))
     elif mb[0] and not player.mag and not player.reloading:  # if you have no ammo but are trying to shoot
         weaponList[currentWeapon].reloadSound.play()
         player.reloading += 1
@@ -1394,6 +1424,7 @@ ignisShoot = mixer.Sound('sfx/weapons/grineer/ignisShoot.ogg')
 zhugeShoot = mixer.Sound('sfx/weapons/tenno/zhuge.ogg')
 supraShoot = mixer.Sound('sfx/weapons/corpus/supraShoot.ogg')
 ogrisShoot = mixer.Sound('sfx/weapons/grineer/ogrisShoot.ogg')
+somaShoot = mixer.Sound('sfx/weapons/tenno/somaShoot.ogg')
 # Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
@@ -1411,6 +1442,7 @@ ignisReload = mixer.Sound('sfx/weapons/grineer/ignisReload.ogg')
 zhugeReload = mixer.Sound('sfx/weapons/tenno/zhugeReload.ogg')
 supraReload = mixer.Sound('sfx/weapons/corpus/supraReload.ogg')
 ogrisReload = mixer.Sound('sfx/weapons/grineer/ogrisReload.ogg')
+somaReload = mixer.Sound('sfx/weapons/tenno/somaReload.ogg')
 # Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
@@ -1429,14 +1461,15 @@ weaponList = {
     'tigris': Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 8, tigrisReload, 1, 0, 0, 0, cost=17500, wepType=1),
     'rubico': Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType=2),
     'gorgon': Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,wepType=3),
-    'grakata': Weapon(14, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 10, grakataReload, 0, 0, 0, 0, cost=10000,wepType=0),
+    'grakata': Weapon(4, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 8, grakataReload, 0, 0, 0, 0, cost=15000,wepType=0,critChance = 50, critMult = 3),
     'twinviper': Weapon(6, 3, 28, 80, twinviperShoot, WHITE, 1, 7, twinviperReload, 0, 0, 0, 0, cost=5000, wepType=0),
     'vulkar': Weapon(120, 100, 6, 100, vulkarShoot, (200, 150, 0), 1, 0, vulkarReload, 3, 0, 0, 0, cost=15000,wepType=2),
     'lanka': Weapon(170, 150, 10, 100, lankaShoot, (0, 255, 0), 1, 1, lankaReload, 3, 1, 0, 15, 10, 4, 700, cost=17500,wepType=2),
     'ignis': Weapon(0.7, 3, 150, 100, ignisShoot, (255, 200, 0), 15, 4, ignisReload, 2, 1, 0.1, 7, 5, 5, 80, cost=20000,wepType=3),
     'zhuge': Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType=3),
     'supra': Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
-    'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0),
+    'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0 ),
+    'soma':Weapon(3,6,100,100,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 6.6),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1464,6 +1497,7 @@ ignis = image.load('images/weapons/grineer/ignis.png')
 zhuge = image.load('images/weapons/tenno/zhuge.png')
 supra = image.load('images/weapons/corpus/supra.png')
 ogris = image.load('images/weapons/grineer/ogris.png')
+soma = image.load('images/weapons/tenno/soma.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
