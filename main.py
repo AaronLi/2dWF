@@ -1092,6 +1092,11 @@ def shipMenu():
     wheelRects = (rifleWheelRect, shottyWheelRect, sniperWheelRect, heavyWheelRect)
     buttonColours = ((255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0))
     buttonText = ('Rifles', 'Shotguns', 'Snipers', 'Heavies')
+    weaponStatNames = ['Damage', 'Fire Rate', 'Magazine', 'Reload Speed', 'Accuracy', 'Projectiles']
+    weaponStatIDs = ['damage', 'firerate', 'magSize', 'reloadSpeed', 'inaccuracy', 'bulletsPerShot']
+    weaponSpecialStats = ['isExplosive','critChance','fireMode']
+    weaponStatsReq = [0,20,1]
+    specStatOffset = 0
     for i, j, k, l, m in zip(buttonRects, buttonText, buttonColours, wheelRects, range(4)):
         buttonCenter = (i.x + (i.width // 2), i.y + (i.height // 2))
         # draw.rect(screen,BLACK,i)
@@ -1143,8 +1148,10 @@ def shipMenu():
         screen.blit(weaponIcon, (640 - (weaponIcon.get_width() // 2), 210 - (weaponIcon.get_height() // 2)))
         weaponNameRender = smallRoboto.render('"%s"' % (selectedStoreProduct.title()), True, (255, 255, 255))
         screen.blit(weaponNameRender, (640 - (weaponNameRender.get_width() // 2), 370))
-        if weaponList[selectedStoreProduct].isExplosive:
-            screen.blit(explosiveIcon, (784, 380))
+        for i,j,k in zip(weaponSpecialStats,weaponStatsReq,range(len(weaponSpecialStats))):
+            if eval('weaponList[selectedStoreProduct].'+i) > j:
+                screen.blit(specialIconList[k],(784-specStatOffset,380))
+                specStatOffset+=18
         for i, j, k in zip(weaponStatNames, range(6), weaponStatIDs):
             weaponStatRender = smallRoboto.render(i, True, (255, 255, 255))
             screen.blit(weaponStatRender, (480, 20 * j + 400))
@@ -1398,6 +1405,9 @@ closeButton = image.load('images/menu/closeButton.png')
 closeButtonG = image.load('images/menu/closeButtonG.png')
 storeBackdrop = image.load('images/menu/storeBackDrop.jpg')
 explosiveIcon = image.load('images/menu/explosive.png')
+criticalIcon = image.load('images/menu/critical.png')
+burstIcon = image.load('images/menu/burst.png')
+specialIconList = [explosiveIcon,criticalIcon,burstIcon]
 # Adds backdrops to a list for main menu slideshow
 mainMenuBackDrops = []
 backdropGlob = glob.glob('images/backdrops/backdrop*')
@@ -1443,6 +1453,8 @@ ogrisShoot = mixer.Sound('sfx/weapons/grineer/ogrisShoot.ogg')
 somaShoot = mixer.Sound('sfx/weapons/tenno/somaShoot.ogg')
 burstonShoot = mixer.Sound('sfx/weapons/tenno/burstonShoot.ogg')
 sybarisShoot = mixer.Sound('sfx/weapons/tenno/sybarisShoot.ogg')
+detronShoot = mixer.Sound('sfx/weapons/corpus/detronShoot.ogg')
+vectisShoot = mixer.Sound('sfx/weapons/tenno/vectisShoot.ogg')
 # Reloading
 laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
 bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
@@ -1463,6 +1475,8 @@ ogrisReload = mixer.Sound('sfx/weapons/grineer/ogrisReload.ogg')
 somaReload = mixer.Sound('sfx/weapons/tenno/somaReload.ogg')
 burstonReload = mixer.Sound('sfx/weapons/tenno/burstonReload.ogg')
 sybarisReload = mixer.Sound('sfx/weapons/tenno/sybarisReload.ogg')
+detronReload = mixer.Sound('sfx/weapons/corpus/detronReload.ogg')
+vectisReload = mixer.Sound('sfx/weapons/tenno/vectisReload.ogg')
 # Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
@@ -1489,10 +1503,12 @@ weaponList = {
     'zhuge': Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType=3),
     'supra': Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
     'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0 ),
-    'soma':Weapon(2.7,5,100,150,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 6.6),
-    'prismagorgon':Weapon(12,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
+    'soma':Weapon(2.6,5,100,150,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 7),
+    'prismagorgon':Weapon(10,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
     'burston':Weapon(18,40,45,120,burstonShoot,WHITE,1,1,burstonReload,0,0,cost = 10000,fireMode = 3, burstDelay = 10),
     'sybaris':Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
+    'detron':Weapon(15,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,10,2,1,30,10000,1,fireMode = 1),
+    'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1524,6 +1540,8 @@ soma = image.load('images/weapons/tenno/soma.png')
 prismagorgon = image.load('images/weapons/grineer/gorgonPrisma.png')
 burston = image.load('images/weapons/tenno/burston.png')
 sybaris = image.load('images/weapons/tenno/sybaris.png')
+detron = image.load('images/weapons/corpus/detron.png')
+vectis = image.load('images/weapons/tenno/vectis.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
@@ -1702,8 +1720,7 @@ startBlitX = -640
 startBlitY = -360
 rotPos = [0, 0, 0, 0]
 selectedStoreProduct = 'dera'
-weaponStatNames = ['Damage', 'Fire Rate', 'Magazine', 'Reload Speed', 'Accuracy', 'Projectiles']
-weaponStatIDs = ['damage', 'firerate', 'magSize', 'reloadSpeed', 'inaccuracy', 'bulletsPerShot']
+
 explosiveList = []
 damagePopoff = []
 queuedShots = []
