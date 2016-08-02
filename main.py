@@ -1,12 +1,12 @@
 # Base Platformer
 from pygame import *
-import glob, random, math
+import glob, random, math, pickle
 
 
 init()
 mixer.music.set_volume(0.1)
 startTime = time.get_ticks()
-startingMoney = 5000000
+startingMoney = 5000
 
 
 class Particle:  # Class used for simulating particles (Guns, 'blood', bullet hits)
@@ -313,7 +313,21 @@ def sind(deg):
 
 def cosd(deg):
     return math.cos(math.radians(deg))
-
+def loadSave(fName):
+    global purchasedWeapons
+    saveFile = open(fName,'rb')
+    saveInfo = pickle.load(saveFile)
+    saveFile.close()
+    return saveInfo
+def saveGame(fName):
+    saveFile = open('SAVE'+fName+'.txt','wb')
+    pickle.dump([purchasedWeapons,fName], saveFile)
+    saveFile.close()
+def findSaves():
+    global savedGames
+    saveList = glob.glob('SAVE*.txt')
+    for i in saveList:
+        savedGames.append(loadSave(i))
 def drawCursor():
     draw.circle(screen, WHITE, (int(mx), int(my)), 3)
     draw.circle(screen, BLACK, (int(mx), int(my)), 2)
@@ -1357,6 +1371,8 @@ def mainMenu():
 def instructions():  # draw the instructoins
     global mb, gameState, canClick
     screen.fill(BLACK)
+    saveButton = Rect(0,0,300,200)
+    loadButton = Rect(310,0,300,200)
     functionLine = 450
     boundKeyLine = functionLine + 120
     boundKeyLine1 = boundKeyLine + 120
@@ -1384,7 +1400,13 @@ def instructions():  # draw the instructoins
         if mb[0] == 1:
             canClick = False
             gameState = "menu"
-
+    draw.rect(screen,WHITE,saveButton)
+    draw.rect(screen,WHITE,loadButton)
+    if mb[0]:
+        if saveButton.collidepoint(mx,my):
+            saveGame(input('fName'))
+        elif loadButton.collidepoint(mx,my):
+            loadSave(input('fName'))
 
 # Colours
 WHITE = (255, 255, 255)
@@ -1509,7 +1531,7 @@ weaponList = {
     'prismagorgon':Weapon(12,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
     'burston':Weapon(18,40,45,120,burstonShoot,WHITE,1,1,burstonReload,0,0,cost = 10000,fireMode = 3, burstDelay = 10),
     'sybaris':Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
-    'detron':Weapon(15,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,10,2,1,30,10000,1,fireMode = 1),
+    'detron':Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
     'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
@@ -1723,7 +1745,11 @@ startBlitX = -640
 startBlitY = -360
 rotPos = [0, 0, 0, 0]
 selectedStoreProduct = 'dera'
-
+typing = False
+textOut = []
+savedGames = []
+findSaves()
+print(savedGames)
 explosiveList = []
 damagePopoff = []
 queuedShots = []
@@ -1745,6 +1771,8 @@ while running:
             running = False
         if not controllerMode:
             if e.type == KEYDOWN:
+                if e.key==K_0:
+                    purchasedWeapons = [1 for i in range(len(weaponList))]
                 if (e.key == K_w or e.key == K_SPACE) and player.jumps > 0:  # if player can jump
                     player.vY = -7
                     player.jumps -= 1
@@ -1850,6 +1878,12 @@ while running:
                     canClick = True
                 if e.button == 5:
                     keysIn[K_e] = False
+        if typing:
+            if e.type == KEYDOWN:
+                if 'a'<=e.unicode<='z' or 'A'<=e.unicode<='Z' or '0'<=e.unicode<='9':
+                    textOut.append(e.unicode)
+                elif e.key == K_BACKSPACE and len(textOut)>0:
+                    del textOut[-1]
     if not controllerMode:
         mb = mouse.get_pressed()
         mx, my = mouse.get_pos()
