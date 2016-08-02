@@ -220,7 +220,7 @@ class Bullet2:
 class Weapon:
     def __init__(self, damage, firerate, magSize, reloadSpeed, fireSound, bulletColour, bulletsPerShot, inaccuracy,
                  reloadSound, ammoType, bulletType=0, bulletGravity=0, bulletSpeed=0, bulletLength=0, bulletThickness=0,
-                 bulletRange=0, cost=0, wepType=0, isExplosive=0, explosiveRadius=0, explosiveFalloff=0, fuse=0,critChance = 5,critMult = 1.5, fireMode = 0, burstDelay = 1):
+                 bulletRange=900, cost=0, wepType=0, isExplosive=0, explosiveRadius=0, explosiveFalloff=0, fuse=0,critChance = 5,critMult = 1.5, fireMode = 0, burstDelay = 1):
         self.damage = damage
         self.firerate = firerate
         self.magSize = magSize
@@ -441,7 +441,7 @@ def checkBullTrajectory(bullAngle, x, y):  # check trajectory of player shots
     endX, endY = x, y
     retVal = None
     while not hit:  # loop while the bullet hasn't reached anything
-        if math.hypot(startX - x, startY - y) >= 900:  # if bullet has checked 900 pixels distance
+        if math.hypot(startX - x, startY - y) >= weaponList[currentWeapon].bulletRange:  # if bullet has checked 900 pixels distance
             hit = True
             endX, endY = x, y
             break
@@ -571,7 +571,8 @@ def drawUpper(playerX, playerY):  # Also includes shooting
         player.reloading += 1
 
     player.fA = -270 < angle < -90  # change player direction if they are aiming on the left or right
-def fireWeapon(angle):
+def fireWeapon(angleIn):
+    angle = angleIn
     if player.mag > 0:
         for i in range(10):  # add particles at muzzle of gun
             particleList.append(
@@ -580,7 +581,8 @@ def fireWeapon(angle):
         weaponList[currentWeapon].fireSound.play()
         player.mag -= 1
         for i in range(weaponList[currentWeapon].bulletsPerShot):  # check if the bullet hit an enemy
-            angle += random.randint(-weaponList[currentWeapon].inaccuracy,weaponList[currentWeapon].inaccuracy)  # angle from player's upper body to mouse
+            angle = angleIn + random.randint(-weaponList[currentWeapon].inaccuracy, weaponList[
+                currentWeapon].inaccuracy)  # angle from player's upper body to mouse
             if weaponList[currentWeapon].bulletType == 0:
                 enemyHit = playerShoot(weaponList[currentWeapon], angle)
                 if type(enemyHit) == int:  # if it hit an enemy
@@ -1489,10 +1491,10 @@ enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'), mixer.Sound('sfx/mi
 weaponList = {
     'braton': Weapon(25, 18, 45, 100, bratonShoot, (200, 150, 0), 1, 1, bratonReload, 0, 0, 0, 0, cost=5000, wepType=0),
     'dera': Weapon(15, 13, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,wepType=0),
-    'boarP': Weapon(5, 13, 20, 100, boarShoot, (200, 150, 0), 13, 12, boarReload, 1, 0, 0, 0, cost=20000, wepType=1),
+    'boarP': Weapon(6, 13, 20, 100, boarShoot, (200, 150, 0), 13, 7, boarReload, 1, 0, 0, 0,bulletRange = 300, cost=20000, wepType=1),
     'laser': Weapon(4, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=3),
-    'hek': Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 4, hekReload, 1, 0, 0, 0, cost=17500, wepType=1, fireMode = 1),
-    'tigris': Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 8, tigrisReload, 1, 0, 0, 0, cost=17500, wepType=1, fireMode = 1),
+    'hek': Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 4, hekReload, 1, 0, 0, 0,bulletRange = 500, cost=17500, wepType=1, fireMode = 1),
+    'tigris': Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 6, tigrisReload, 1, 0, 0, 0,bulletRange =400 , cost=17500, wepType=1, fireMode = 1),
     'rubico': Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType=2, fireMode = 1),
     'gorgon': Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,wepType=3),
     'grakata': Weapon(4, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 8, grakataReload, 0, 0, 0, 0, cost=15000,wepType=0,critChance = 50, critMult = 3),
@@ -1504,7 +1506,7 @@ weaponList = {
     'supra': Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
     'ogris': Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0 ),
     'soma':Weapon(2.6,5,100,150,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 7),
-    'prismagorgon':Weapon(10,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
+    'prismagorgon':Weapon(12,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
     'burston':Weapon(18,40,45,120,burstonShoot,WHITE,1,1,burstonReload,0,0,cost = 10000,fireMode = 3, burstDelay = 10),
     'sybaris':Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
     'detron':Weapon(15,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,10,2,1,30,10000,1,fireMode = 1),
@@ -1600,6 +1602,7 @@ sCrewmanFrames = [[[image.load('images/enemies/sniperCrewman/sCrewman001.png')],
                        image.load('images/enemies/sniperCrewman/sCrewman018.png'),
                        image.load('images/enemies/sniperCrewman/sCrewman019.png'),
                        image.load('images/enemies/sniperCrewman/sCrewman020.png')], 5]]
+dCrewmanFrames =[]
 playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [
     [image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"),
      image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"),
