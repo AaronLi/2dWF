@@ -97,21 +97,139 @@ class Mob:  # Class used for the player and enemies
         self.avoidance = avoidance  # How close the player can be
         self.shootRange = shootRange  # How far the mob tries to stay
         self.shootCounter = 0  # Enemy fire rate timer
-
+        self.despawn = False
     def move(self):
         self.X += int(self.vX)
         self.Y += int(self.vY)
 
-    def enemyMove(self):
+    def enemyLogic(self):
+        #Logic
+        distX = abs(self.X - player.X)  # distance from player
+        distY = abs(self.Y - player.Y)
+        enemyRect = Rect(self.X, self.Y, self.W, self.H)  # enemy hitbox
+        losX = self.X  # line of sight x for checking whether you can shoot or not
+        checkLos = True
+        # Checking health
+        if self.health <= 0:  # start dying if not enough health
+            if self.fA:
+                self.animation = 6
+            else:
+                self.animation = 7
+            if self.enemyType != 1:
+                random.choice(enemyDeathSounds).play()  # find a lovely death sound
+            self.dying += 1
+            if self.dying == 1:
+                self.frame = 1
+            if self.frame % 25 == 0:  # wait until enemy death animation is done
+                if random.randint(0, 2) == 0:  # spawn a drop
+                    dropType = random.randint(0, len(pickupSprites) - 1)
+                    dropAmounts = [20, 10, 50, 10, 'health', 'credits']  # Rifle, shotgun, laser, health, sniper
+                    pickupList.append(Pickup(self.X + self.W // 2,
+                                             self.Y + self.H - pickupSprites[dropType].get_height(),
+                                             dropType,
+                                             dropAmounts[dropType]))
+        elif distY > 1000 or distX > 1200:  # if enemy is too far away then despawn it
+            self.despawn = True
+        else:
+            # Jumping over obstacles
+            if self.oW and self.oG:  # if there's a wall and the enemy is on the ground
+                self.jumps -= 1
+                self.vY -= 7
+
+            # Jumping across gaps
+            if self.fA:
+                if (not enemyRect.move(int(self.vM), 1).colliderect(
+                        self.hP[
+                            0])) and self.oG:  # if the moved enemy won't be still on the platform (hP)
+                    self.vY -= 7  # jump
+            elif not self.fA:
+                if (not enemyRect.move(-int(self.vM), 1).colliderect(self.hP[0])) and self.oG:
+                    self.vY -= 7
+
+            # Shooting
+            if abs(self.X - player.X) in range(self.avoidance,
+                                                    self.shootRange):  # if player distance is in between the enemy avoidance and the sooting range
+                if abs(self.Y - player.Y) < 30 and int(
+                        self.vX) == 0:  # if player and enemy are both on the same level
+                    while checkLos:  # if the mob can shoot the playeer
+                        for j in playTile[2]:
+                            if j[0].collidepoint(losX,
+                                                 player.Y):  # if there is a tile between the mob and the player
+                                checkLos = False
+                                break
+                        for j in doorList:
+                            if j.hitBox.collidepoint(losX, player.Y):
+                                checkLos = False
+                                break
+                        if abs(player.X - losX) > self.shootRange:  # if the player is out of range
+                            checkLos = False
+                        if playerRect.collidepoint(losX, player.Y):  # if the player is in line of sight
+                            self.attacking = True  # begin attacking
+                            self.shootCounter += 1
+                            if self.fA:  # shooting animation
+                                self.animation = 4
+                            else:
+                                self.animation = 5
+                            if self.shootCounter % weaponList[self.weapon].firerate == 0:
+                                # different bullet based on different enemy type
+                                if self.enemyType == 0:
+                                    if self.fA:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W // 2, self.Y + 25, 0,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
+                                                    weaponList[self.weapon].bulletColour,
+                                                    (255, 0, 0), 7, 0, 0, 2))
+                                    else:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W // 2, self.Y + 25, 180,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
+                                                    weaponList[self.weapon].bulletColour, (255, 0, 0), 7,
+                                                    0, 0, 2))
+                                elif self.enemyType == 1:
+                                    if self.fA:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W // 2, self.Y, 0,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
+                                                    weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                    0, 0, 4))
+                                    else:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W // 2, self.Y, 180,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
+                                                    weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                    0, 0, 4))
+                                elif self.enemyType == 2:
+                                    if self.fA:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W // 2, self.Y + 25, 0,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 7,
+                                                    weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                    0, 0, 4))
+                                    else:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W // 2, self.Y + 25, 180,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 7,
+                                                    weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                    0, 0, 4))
+                                weaponList[self.weapon].fireSound.play()
+                            break
+                        if player.X > self.X:  # check 3 pixels along the line of sight
+                            losX += 3
+                        elif player.X < self.X:
+                            losX -= 3
+                else:
+                    self.attacking = False
+
+
         # Moving left and right
         if self.animation != 6:  # Won't work if mob is currently dying
             if player.X > self.X:  # face right if player is on right
-                enemyList[i].fA = True
+                self.fA = True
                 if not self.attacking:  # use standing animation if not attacking
                     self.shootCounter = 0
                     self.animation = idleRight
             elif player.X < self.X:  # Face left is player is on left
-                enemyList[i].fA = False
+                self.fA = False
                 if not self.attacking:
                     self.shootCounter = 0
                     self.animation = idleLeft
@@ -119,22 +237,22 @@ class Mob:  # Class used for the player and enemies
             if abs(
                             player.X - self.X) > self.shootRange or not self.oG:  # Move towards player if not on ground or if outside of shooting range
                 if player.X > self.X:  # begin walking to the right
-                    enemyList[i].fA = True
+                    self.fA = True
                     self.vX += self.vAx
                     self.animation = right
                 elif player.X < self.X:  # begin walking to the left
-                    enemyList[i].fA = False
+                    self.fA = False
                     self.vX -= self.vAx
                     self.animation = left
                 self.shootCounter = 0
             elif abs(
                             player.X - self.X) < self.avoidance or not self.oG:  # Move away from player if not on ground or inside avoidance area
                 if player.X > self.X:  # Move left
-                    enemyList[i].fA = False
+                    self.fA = False
                     self.vX -= self.vAx
                     self.animation = left
                 elif player.X < self.X:  # Move right
-                    enemyList[i].fA = True
+                    self.fA = True
                     self.vX += self.vAx
                     self.animation = right
                 self.shootCounter = 0
@@ -142,6 +260,65 @@ class Mob:  # Class used for the player and enemies
     def damage(self,amount,type = 0):
         self.health -= amount
         damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y+random.randint(-10,0),amount,type))
+
+    #def think(self):  # enemy AI
+    
+    def applyFriction(self):
+            if self.vX > 0:  # if self is moving, apply friction
+                if self.oG:
+                    # Friction on Ground
+                    self.vX = min(self.vX, self.vM)
+                    self.vX -= friction
+                else:
+                    # Friction in Air
+                    self.vX = min(self.vX, self.vM)
+                    self.vX -= airFriction
+            elif self.vX < 0:
+                if self.oG:
+                    # Friction On ground
+                    self.vX = max(self.vX, -self.vM)
+                    self.vX += friction
+                else:
+                    # Friction in Air
+                    self.vX = max(self.vX, -self.vM)
+                    self.vX += airFriction
+            elif self.vX in range(1, -1):
+                self.vX = 0
+    def hitStuff(self):
+        mobRect = Rect(self.X, self.Y, self.W, self.H)
+        hitRect = [Rect(0, 0, 0, 0)]
+        wallRect = [Rect(0, 0, 0, 0)]
+        for platTile in playTile[2]:
+            if mobRect.move(0, 1).colliderect(Rect(platTile[0])) and (
+                            platTile[1] == 0 or platTile[1] == 2):  # if the tile is a platform or an invisible platform
+                self.vY = 0
+                self.hP = platTile
+                if mobRect.bottom < platTile[
+                    0].bottom:  # if the mob is clipping into the tile and is closer to the top of it
+                    self.Y = platTile[0].top - self.H  # move mob to top of platform
+                    self.oG = True
+                    self.jumps = 2
+                elif mobRect.top > platTile[0].top:  # if mob is closer to bottom
+                    self.Y = platTile[0].bottom  # move to bototm
+                    self.vY *= -1  # reflect vY
+                    self.oG = False
+            if mobRect.colliderect(platTile[0]) and platTile[1] == 1:  # if colliding with a wall
+                self.oW = True
+                self.hW = platTile
+                if mobRect.left < platTile[0].left:  # if mob is on the right side of the wall
+                    self.X = platTile[0].left - self.W - 1  # move to right
+                    self.jumps = 1  # more jumps for jumping off of the wall
+                elif mobRect.right > platTile[0].right:
+                    self.X = platTile[0].right + 1
+                    self.jumps = 1
+        if not mobRect.move(0, 1).colliderect(self.hP[0]):  # if player isn't hitting the ground
+            self.oG = False
+            self.vY += gravity
+        if not (mobRect.move(0, 1).colliderect(self.hW[0]) or mobRect.move(0, -1).colliderect(
+                self.hW[0])):  # if player isn't hitting a wall
+            self.oW = False
+
+
 class Pickup:  # Class for ammo, health, and credit drops
     def __init__(self, x, y, dropType, amount):
         self.X = x
@@ -177,7 +354,34 @@ class Pickup:  # Class for ammo, health, and credit drops
                 player.money += 50 * random.randint(100, 200)  # Add a random amount of credits
                 return True
         return False
-
+class damageArea:
+    def __init__(self,shape,size,x,y,colour,duration,damage,tickLength):
+        self.shape = shape
+        if shape == 0:
+            self.w = size[0]
+            self.h = size[1]
+            self.cRect = Rect(x,y,w,h)
+        elif shape == 1:
+            self.radius = size
+        self.x = x
+        self.y = y
+        self.colour = colour
+        self.duration = duration
+        self.damage = damage
+        self.tickLength = tickLength
+        self.currentTick = 0
+    def updateCloud(self):
+        if self.currentTick == 0:
+            self.currentTick = self.tickLength
+            if self.shape == 0:
+                for i in enemyList:
+                    enemyCenter = (i.X+(i.w//2),i.Y+(i.h//2))
+                    if math.hypot(self.x-enemyCenter[0],self.y-enemyCenter[1]) <=self.radius:
+                        i.damage(self.damage)
+            elif self.shape == 1:
+                for i in enemylist:
+                    if self.cRect.collidepoint(i.X,i.Y):
+                        i.damage(self.damage)
 class Bullet2:
     def __init__(self, x, y, angle, damage, faction, range, speed, colour, hitColour, length, gravity, slowdown,
                  thickness, isExplosive=0, explosiveRadius=0, explosiveFalloff=0,
@@ -592,6 +796,7 @@ def fireWeapon(angleIn):
             particleList.append(
                 Particle(screen, player.X + (player.W // 2) + 20 * cosd(angle), player.Y + 20 - 20 * sind(angle),
                          -angle, 5, weaponList[currentWeapon].bulletColour, 4, 0.1, 0.1, 7, 2, 20))
+        weaponList[currentWeapon].fireSound.stop()
         weaponList[currentWeapon].fireSound.play()
         player.mag -= 1
         for i in range(weaponList[currentWeapon].bulletsPerShot):  # check if the bullet hit an enemy
@@ -646,117 +851,6 @@ def fireWeapon(angleIn):
                                     weaponList[currentWeapon].explosiveRadius,
                                     weaponList[currentWeapon].explosiveFalloff,
                                     weaponList[currentWeapon].fuse))
-def enemyLogic():  # enemy AI
-    global enemyList, playerRect
-    for i in range(len(enemyList) - 1, -1, -1):
-        enemyInfo = enemyList[i]  # 3 characters less to type
-        distX = abs(enemyInfo.X - player.X)  # distance from player
-        distY = abs(enemyInfo.Y - player.Y)
-        enemyRect = Rect(enemyInfo.X, enemyInfo.Y, enemyInfo.W, enemyInfo.H)  # enemy hitbox
-        losX = enemyInfo.X  # line of sight x for checking whether you can shoot or not
-        checkLos = True
-        # Checking health
-        if enemyInfo.health <= 0:  # start dying if not enough health
-            if enemyList[i].fA:
-                enemyList[i].animation = 6
-            else:
-                enemyList[i].animation = 7
-            if enemyList[i].enemyType != 1:
-                random.choice(enemyDeathSounds).play()  # find a lovely death sound
-            enemyList[i].dying += 1
-            if enemyInfo.dying == 1:
-                enemyList[i].frame = 1
-            if enemyInfo.frame % 25 == 0:  # wait until enemy death animation is done
-                del enemyList[i]
-                if random.randint(0, 2) == 0:  # spawn a drop
-                    dropType = random.randint(0, len(pickupSprites) - 1)
-                    dropAmounts = [20, 10, 50, 10, 'health', 'credits']  # Rifle, shotgun, laser, health, sniper
-                    pickupList.append(Pickup(enemyInfo.X + enemyInfo.W // 2,
-                                             enemyInfo.Y + enemyInfo.H - pickupSprites[dropType].get_height(), dropType,
-                                             dropAmounts[dropType]))
-        elif distY > 1000 or distX > 1200:  # if enemy is too far away then despawn it
-            del enemyList[i]
-        else:
-            # Jumping over obstacles
-            if enemyInfo.oW and enemyInfo.oG:  # if there's a wall and the enemy is on the ground
-                enemyList[i].jumps -= 1
-                enemyList[i].vY -= 7
-
-            # Jumping across gaps
-            if enemyInfo.fA:
-                if (not enemyRect.move(int(enemyInfo.vM), 1).colliderect(
-                        enemyInfo.hP[0])) and enemyInfo.oG:  # if the moved enemy won't be still on the platform (hP)
-                    enemyList[i].vY -= 7  # jump
-            elif not enemyInfo.fA:
-                if (not enemyRect.move(-int(enemyInfo.vM), 1).colliderect(enemyInfo.hP[0])) and enemyInfo.oG:
-                    enemyList[i].vY -= 7
-
-            # Shooting
-            if abs(enemyInfo.X - player.X) in range(enemyInfo.avoidance,
-                                                    enemyInfo.shootRange):  # if player distance is in between the enemy avoidance and the sooting range
-                if abs(enemyInfo.Y - player.Y) < 30 and int(
-                        enemyInfo.vX) == 0:  # if player and enemy are both on the same level
-                    while checkLos:  # if the mob can shoot the playeer
-                        for j in playTile[2]:
-                            if j[0].collidepoint(losX, player.Y):  # if there is a tile between the mob and the player
-                                checkLos = False
-                                break
-                        for j in doorList:
-                            if j.hitBox.collidepoint(losX,player.Y):
-                                checkLos = False
-                                break
-                        if abs(player.X - losX) > enemyInfo.shootRange:  # if the player is out of range
-                            checkLos = False
-                        if playerRect.collidepoint(losX, player.Y):  # if the player is in line of sight
-                            enemyList[i].attacking = True  # begin attacking
-                            enemyList[i].shootCounter += 1
-                            if enemyInfo.fA:  # shooting animation
-                                enemyList[i].animation = 4
-                            else:
-                                enemyList[i].animation = 5
-                            if enemyInfo.shootCounter % weaponList[enemyInfo.weapon].firerate == 0:
-                                # different bullet based on different enemy type
-                                if enemyInfo.enemyType == 0:
-                                    if enemyInfo.fA:
-                                        bulletList.append(Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 0,
-                                                                  weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
-                                                                  weaponList[enemyInfo.weapon].bulletColour,
-                                                                  (255, 0, 0), 7, 0, 0, 2))
-                                    else:
-                                        bulletList.append(
-                                            Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
-                                                    weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
-                                                    weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 7, 0, 0, 2))
-                                elif enemyInfo.enemyType == 1:
-                                    if enemyInfo.fA:
-                                        bulletList.append(
-                                            Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 0,
-                                                    weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
-                                                    weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
-                                    else:
-                                        bulletList.append(
-                                            Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y, 180,
-                                                    weaponList[enemyInfo.weapon].damage // 2, 0, 400, 3,
-                                                    weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
-                                elif enemyInfo.enemyType == 2:
-                                    if enemyInfo.fA:
-                                        bulletList.append(
-                                            Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 0,
-                                                    weaponList[enemyInfo.weapon].damage // 2, 0, 400, 7,
-                                                    weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
-                                    else:
-                                        bulletList.append(
-                                            Bullet2(enemyInfo.X + enemyInfo.W // 2, enemyInfo.Y + 25, 180,
-                                                    weaponList[enemyInfo.weapon].damage // 2, 0, 400, 7,
-                                                    weaponList[enemyInfo.weapon].bulletColour, (255, 0, 0), 5, 0, 0, 4))
-                                weaponList[enemyInfo.weapon].fireSound.play()
-                            break
-                        if player.X > enemyInfo.X:  # check 3 pixels along the line of sight
-                            losX += 3
-                        elif player.X < enemyInfo.X:
-                            losX -= 3
-                else:
-                    enemyList[i].attacking = False
 
 
 def makeTile(tileInfo):  # draw the tile
@@ -832,65 +926,6 @@ def keysDown(keys):  # check what keys are being held
             player.animation = idleRight
 
 
-def applyFriction(mob):
-    global friction
-    if mob.vX > 0:  # if mob is moving, apply friction
-        if mob.oG:
-            # Friction on Ground
-            mob.vX = min(mob.vX, mob.vM)
-            mob.vX -= friction
-        else:
-            # Friction in Air
-            mob.vX = min(mob.vX, mob.vM)
-            mob.vX -= airFriction
-    elif mob.vX < 0:
-        if mob.oG:
-            # Friction On ground
-            mob.vX = max(mob.vX, -mob.vM)
-            mob.vX += friction
-        else:
-            # Friction in Air
-            mob.vX = max(mob.vX, -mob.vM)
-            mob.vX += airFriction
-    elif mob.vX in range(1, -1):
-        mob.vX = 0
-    return mob
-
-
-def hitSurface(mob, tilePlats):  # player colliding with the level
-    global gravity
-    mobRect = Rect(mob.X, mob.Y, mob.W, mob.H)
-    hitRect = [Rect(0, 0, 0, 0)]
-    wallRect = [Rect(0, 0, 0, 0)]
-    for platTile in tilePlats:
-        if mobRect.move(0, 1).colliderect(Rect(platTile[0])) and (
-                        platTile[1] == 0 or platTile[1] == 2):  # if the tile is a platform or an invisible platform
-            mob.vY = 0
-            mob.hP = platTile
-            if mobRect.bottom < platTile[
-                0].bottom:  # if the mob is clipping into the tile and is closer to the top of it
-                mob.Y = platTile[0].top - mob.H  # move mob to top of platform
-                mob.oG = True
-                mob.jumps = 2
-            elif mobRect.top > platTile[0].top:  # if mob is closer to bottom
-                mob.Y = platTile[0].bottom  # move to bototm
-                mob.vY *= -1  # reflect vY
-                mob.oG = False
-        if mobRect.colliderect(platTile[0]) and platTile[1] == 1:  # if colliding with a wall
-            mob.oW = True
-            mob.hW = platTile
-            if mobRect.left < platTile[0].left:  # if mob is on the right side of the wall
-                mob.X = platTile[0].left - mob.W - 1  # move to right
-                mob.jumps = 1  # more jumps for jumping off of the wall
-            elif mobRect.right > platTile[0].right:
-                mob.X = platTile[0].right + 1
-                mob.jumps = 1
-    if not mobRect.move(0, 1).colliderect(mob.hP[0]):  # if player isn't hitting the ground
-        mob.oG = False
-        mob.vY += gravity
-    if not (mobRect.move(0, 1).colliderect(mob.hW[0]) or mobRect.move(0, -1).colliderect(
-            mob.hW[0])):  # if player isn't hitting a wall
-        mob.oW = False
 
 
 def drawStuff(tileSurf, tileSize, keys):  # render everything
@@ -1909,20 +1944,21 @@ while running:
             keysDown(keysIn)
             reloadTime()
             player.move()
-            hitSurface(player, playTile[2])
-            player = applyFriction(player)
-            enemyLogic()
+            player.hitStuff()
+            player.applyFriction()
             for i in range(len(queuedShots)-1,-1,-1):
                 if queuedShots[i][0] > 0 :
                     queuedShots[i][0] -= 1
                 elif queuedShots[i][0] <= 0:
                     fireWeapon(queuedShots[i][1])
                     del queuedShots[i]
-            for i in range(len(enemyList)):
+            for i in range(len(enemyList)-1,-1,-1):
                 enemyList[i].move()
-                enemyList[i].enemyMove()
-                hitSurface(enemyList[i], playTile[2])
-                enemyList[i] = applyFriction(enemyList[i])
+                enemyList[i].enemyLogic()
+                enemyList[i].hitStuff()
+                enemyList[i].applyFriction()
+                if (enemyList[i].health <= 0 and enemyList[i].frame%25 == 0) or enemyList[i].despawn:
+                    del enemyList[i]
             for i in range(len(explosiveList) - 1, -1, -1):
                 if explosiveList[i].fuse <= 0:
                     explosiveList[i].detonate()
