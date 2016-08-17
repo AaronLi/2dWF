@@ -175,13 +175,13 @@ class Mob:  # Class used for the player and enemies
                                 if self.enemyType == 0:
                                     if self.fA:
                                         bulletList.append(
-                                            Bullet2(self.X + self.W // 2, self.Y + 25, 0,
+                                            Bullet2(self.X, self.Y + 25, 0,
                                                     weaponList[self.weapon].damage // 2, 0, 400, 3,
                                                     weaponList[self.weapon].bulletColour,
                                                     (255, 0, 0), 7, 0, 0, 2))
                                     else:
                                         bulletList.append(
-                                            Bullet2(self.X + self.W // 2, self.Y + 25, 180,
+                                            Bullet2(self.X + self.W, self.Y + 25, 180,
                                                     weaponList[self.weapon].damage // 2, 0, 400, 3,
                                                     weaponList[self.weapon].bulletColour, (255, 0, 0), 7,
                                                     0, 0, 2))
@@ -678,10 +678,11 @@ def checkBullTrajectory(bullAngle, x, y,checkDist,indexPos = None,weapon = True)
             if i.hitBox.collidepoint(x,y):
                 hit = True
                 endX, endY = x, y
-                for i in range(5):  # make particles on the environment at the hit location
-                    particleList.append(
-                        Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
-                                 0.2, 0.2, 0.4, 1, 10))
+                if weapon:
+                    for i in range(5):  # make particles on the environment at the hit location
+                        particleList.append(
+                            Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
+                                     0.2, 0.2, 0.4, 1, 10))
         for i in range(len(enemyList)):  # if bullet hits enemy
             eInfo = enemyList[i]
             mobRect = Rect(eInfo.X, eInfo.Y, eInfo.W, eInfo.H)  # enemy hitbox
@@ -777,7 +778,12 @@ def drawUpper(playerX, playerY):  # Also includes shooting
             fireWeapon(angleIn)
         elif playerWeapon.fireMode >= 1:
             if canClick:
-                fireWeapon(angleIn)
+                if currentWeapon != 'targeter':
+                    fireWeapon(angleIn)
+                else:
+                    for i in range(len(targeterList)):
+                        if targeterList[i][1]<=0:
+                            queuedShots.append([i*10,180+targeterList[i][2]])
                 canClick = False
                 for i in range(playerWeapon.burstDelay,playerWeapon.burstDelay*playerWeapon.fireMode,playerWeapon.burstDelay):
                     queuedShots.append([i,angleIn])
@@ -932,17 +938,29 @@ def keysDown(keys):  # check what keys are being held
         elif not player.fA:
             player.animation = idleRight
 
-def targeter():
+def targeterMech():
     global angleIn
     for i in enemyList:
-        if abs(int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))) in range(140,250) and checkBullTrajectory(angleIn,player.X,player.Y,700,enemyList.index(i),False) == enemyList.index(i):
+        if player.fA:
+            playerToEnemy = angleBetween((player.X,player.Y+player.H//2),(i.X+i.W//2,i.Y+i.H//2))
+        else:
+            playerToEnemy = angleBetween((player.X+player.W, player.Y + player.H // 2),
+                                         (i.X + i.W // 2, i.Y + i.H // 2))
+        aimFromEnemy = int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))
+        if checkBullTrajectory(180+playerToEnemy,player.X,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210):
             addToList = True
             for j in targeterList:
                 if i in j:
                     addToList = False
             if addToList:
-                targeterList.append([i,120])
-            print(abs(int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))))
+                targeterList.append([i,120,180+playerToEnemy])
+        elif checkBullTrajectory(180+playerToEnemy,player.X+player.W,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210):
+            addToList = True
+            for j in targeterList:
+                if i in j:
+                    addToList = False
+            if addToList:
+                targeterList.append([i,120,180+playerToEnemy])
         else:
             for j in targeterList:
                 if i in j:
@@ -950,18 +968,18 @@ def targeter():
                     break
     for i in range(len(targeterList)-1,-1,-1):
         mobInfo = targeterList[i]
-        if player.fA:
-            if mobInfo[1] > 0:
+        if mobInfo[1] > 0:
+            if player.fA:
                 draw.line(screen,(255,0,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
-                targeterList[i][1]-=1
-            elif mobInfo[1]<= 0:
-                draw.line(screen,(0,255,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
-        elif not player.fA:
-            if mobInfo[1] > 0:
+            else:
                 draw.line(screen,(255,0,0),(670,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
-                targeterList[i][1]-=1
-            elif mobInfo[1]<= 0:
+            targeterList[i][1] -= 1
+        elif mobInfo[1]<= 0:
+            if player.fA:
+                draw.line(screen,(0,255,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+            else:
                 draw.line(screen,(0,255,0),(670,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+        targeterList[i][2] = angleBetween((player.X+player.W//2,player.Y+player.H//2),(mobInfo[0].X+mobInfo[0].W//2,mobInfo[0].Y+mobInfo[0].H//2))
         if mobInfo[0].health<=0:
             del targeterList[i]
 
@@ -1105,8 +1123,12 @@ def makeNewLevel(levelLength):  # stitches the rects from different tiles togeth
 
 def playerShoot(weapon, angle):  # finds what the player hit
     global pic, movedTileTops, mx, my
-
-    return checkBullTrajectory(angle, player.X + player.W // 2, player.Y + 20,weaponList[currentWeapon].bulletRange)
+    retVal = None
+    if player.fA:
+        retVal = checkBullTrajectory(angle, player.X, player.Y + 20, weaponList[currentWeapon].bulletRange)
+    else:
+        retVal = checkBullTrajectory(angle, player.X + player.W , player.Y + 20, weaponList[currentWeapon].bulletRange)
+    return retVal
 
 
 def fixLevel(levelIn):  # Moves the level so that it isn't outside of the bounding box
@@ -1605,6 +1627,7 @@ weaponList = {
     'sybaris':Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
     'detron':Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
     'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
+    'targeter':Weapon(150,100,20,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3,cost = 30000,wepType = 3,fireMode = 1),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1638,6 +1661,7 @@ burston = image.load('images/weapons/tenno/burston.png')
 sybaris = image.load('images/weapons/tenno/sybaris.png')
 detron = image.load('images/weapons/corpus/detron.png')
 vectis = image.load('images/weapons/tenno/vectis.png')
+targeter = image.load('images/weapons/tenno/vectis.png')
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
@@ -2050,7 +2074,8 @@ while running:
             if deathAnimation > 500:
                 gameState = 'ship'
                 deathAnimation = 0
-        targeter()
+        if currentWeapon == 'targeter':
+            targeterMech()
         menuAnimation += animationStatus
     if not gameState == 'menu':
         drawCursor()
