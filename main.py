@@ -947,20 +947,20 @@ def targeterMech():
             playerToEnemy = angleBetween((player.X+player.W, player.Y + player.H // 2),
                                          (i.X + i.W // 2, i.Y + i.H // 2))
         aimFromEnemy = int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))
-        if checkBullTrajectory(180+playerToEnemy,player.X,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210):
+        if checkBullTrajectory(180+playerToEnemy,player.X,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
             addToList = True
             for j in targeterList:
                 if i in j:
                     addToList = False
             if addToList:
-                targeterList.append([i,120,180+playerToEnemy])
-        elif checkBullTrajectory(180+playerToEnemy,player.X+player.W,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210):
+                targeterList.append([i,90,180+playerToEnemy])
+        elif checkBullTrajectory(180+playerToEnemy,player.X+player.W,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
             addToList = True
             for j in targeterList:
                 if i in j:
                     addToList = False
             if addToList:
-                targeterList.append([i,120,180+playerToEnemy])
+                targeterList.append([i,90,180+playerToEnemy])
         else:
             for j in targeterList:
                 if i in j:
@@ -1016,7 +1016,7 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
     for i in range(len(bulletTrailList) - 1, -1, -1):  # draw the bullet trails from the player
         draw.line(screen, weaponList[currentWeapon].bulletColour,
                   (640 - player.X + bulletTrailList[i][0], 360 - player.Y + bulletTrailList[i][1]),
-                  (640 - player.X + bulletTrailList[i][2], 360 - player.Y + bulletTrailList[i][3]))
+                  (640 - player.X + bulletTrailList[i][2], 360 - player.Y + bulletTrailList[i][3]),weaponList[currentWeapon].bulletThickness)
     bulletTrailList = []
     for i in enemyList:
 
@@ -1627,7 +1627,7 @@ weaponList = {
     'sybaris':Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
     'detron':Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
     'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
-    'targeter':Weapon(150,100,20,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3,cost = 30000,wepType = 3,fireMode = 1),
+    'targeter':Weapon(150,100,6,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3,cost = 30000,wepType = 3,fireMode = 1,bulletThickness = 4),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
