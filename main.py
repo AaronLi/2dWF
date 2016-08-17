@@ -548,7 +548,8 @@ def flipFrames(frameList):  # Reflects the sprites in a spritelist if they're al
             flippedList[i][0].append(transform.flip(j, True, False))  # append to the new list the flipped frame
         flippedList[i].append(frameList[i][1])  # Append the rate at which the frames should be played
     return flippedList
-
+def angleBetween(point1,point2):
+    return math.degrees(math.atan2(point1[0] - point2[0], point1[1] - point2[1])) - 90
 
 def completeFrames(frameList, ogFrames,
                    flipFrameOrder):  # will return a list of frames that contains the frames and their reflected form for use
@@ -650,7 +651,7 @@ def drawHud():  # Draw hud, credits, health, shields, minimap, ammo
     miniMap()
 
 
-def checkBullTrajectory(bullAngle, x, y):  # check trajectory of player shots
+def checkBullTrajectory(bullAngle, x, y,checkDist,indexPos = None,weapon = True):  # check trajectory of player shots
     # bullAngle is the angle of the bullet
     # x, y is the position the player is at
     global particleList
@@ -659,7 +660,7 @@ def checkBullTrajectory(bullAngle, x, y):  # check trajectory of player shots
     endX, endY = x, y
     retVal = None
     while not hit:  # loop while the bullet hasn't reached anything
-        if math.hypot(startX - x, startY - y) >= weaponList[currentWeapon].bulletRange:  # if bullet has checked 900 pixels distance
+        if math.hypot(startX - x, startY - y) >= checkDist:  # if bullet has checked 900 pixels distance
             hit = True
             endX, endY = x, y
             break
@@ -667,10 +668,11 @@ def checkBullTrajectory(bullAngle, x, y):  # check trajectory of player shots
             if i[0].collidepoint(x, y) and i[1] != 3:
                 hit = True
                 endX, endY = x, y
-                for i in range(5):  # make particles on the environment at the hit location
-                    particleList.append(
-                        Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
-                                 0.2, 0.2, 0.4, 1, 10))
+                if weapon:
+                    for i in range(5):  # make particles on the environment at the hit location
+                        particleList.append(
+                            Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
+                                     0.2, 0.2, 0.4, 1, 10))
                 retVal = None
         for i in doorList:
             if i.hitBox.collidepoint(x,y):
@@ -684,15 +686,20 @@ def checkBullTrajectory(bullAngle, x, y):  # check trajectory of player shots
             eInfo = enemyList[i]
             mobRect = Rect(eInfo.X, eInfo.Y, eInfo.W, eInfo.H)  # enemy hitbox
             if mobRect.collidepoint(x, y) and eInfo.dying == 0:  # if it hits an enemy that isn't dying
-                hit = True
-                endX, endY = x, y
-                retVal = i
-                for i in range(5):  # add particles for BLOOD
-                    particleList.append(
-                        Particle(screen, endX, endY, bullAngle + 180, 20, [255, 0, 0], 3, 1, 0.2, 0, 1, 10))
+                if indexPos == None:
+                    hit = True
+                    endX, endY = x, y
+                    retVal = i
+                    for i in range(5):  # add particles for BLOOD
+                        particleList.append(Particle(screen, endX, endY, bullAngle + 180, 20, [255, 0, 0], 3, 1, 0.2, 0, 1, 10))
+                elif indexPos == i:
+                    hit = True
+                    endX, endY = x, y
+                    retVal = i
         x += 7 * cosd(bullAngle)  # move bullet checking coordinates
         y += 7 * sind(-bullAngle)
-    bulletTrailList.append([startX, startY, endX, endY])  # queue bullet trail for drawing
+    if indexPos == None:
+        bulletTrailList.append([startX, startY, endX, endY])  # queue bullet trail for drawing
     return retVal
 
 
@@ -753,49 +760,38 @@ def calcBullets():  # check if the enemy bullets hit anything
 
 
 def drawUpper(playerX, playerY):  # Also includes shooting
-    global upperSurf, currentWeapon, particleList, keysIn, canClick
+    global upperSurf, currentWeapon, particleList, keysIn, canClick, aimAngle,angleIn
     smallestLimit = -180
     largestLimit = 180
     playerWeapon = weaponList[currentWeapon]
-    if keysIn[K_a]:
-        smallestLimit = -225
-        largestLimit = -135
-    elif keysIn[K_d]:
-        smallestLimit = -45
-        largestLimit = 45
-    else:
-        smallestLimit = -270
-        largestLimit = 90
-    angle = min(max(math.degrees(math.atan2(mx - playerX, my - playerY)) - 90, smallestLimit), largestLimit)
     if not player.fA:
-        rotUpper = transform.rotate(upperSurf, angle)  # rotate upper body
+        rotUpper = transform.rotate(upperSurf, angleIn)  # rotate upper body
         screen.blit(rotUpper, (playerX - rotUpper.get_width() // 2, playerY - rotUpper.get_height() // 2 - 2))
     else:
-        rotUpper = transform.rotate(lUpperSurf, angle)  # rotate upper body
+        rotUpper = transform.rotate(lUpperSurf, angleIn)  # rotate upper body
         screen.blit(rotUpper, (playerX - 5 - rotUpper.get_width() // 2, playerY - rotUpper.get_height() // 2 - 2))
 
     if mb[0] and player.shootCooldown == 0 and player.mag > 0 and player.reloading == 0:  # if player can shoot and is trying to shoot
         player.shootCooldown = playerWeapon.firerate  # fire rate timer
         if playerWeapon.fireMode == 0:
-            fireWeapon(angle)
+            fireWeapon(angleIn)
         elif playerWeapon.fireMode >= 1:
             if canClick:
-                fireWeapon(angle)
+                fireWeapon(angleIn)
                 canClick = False
                 for i in range(playerWeapon.burstDelay,playerWeapon.burstDelay*playerWeapon.fireMode,playerWeapon.burstDelay):
-                    queuedShots.append([i,angle])
+                    queuedShots.append([i,angleIn])
     elif mb[0] and not player.mag and not player.reloading:  # if you have no ammo but are trying to shoot
         weaponList[currentWeapon].reloadSound.play()
         player.reloading += 1
 
-    player.fA = -270 < angle < -90  # change player direction if they are aiming on the left or right
+    player.fA = -270 < angleIn < -90  # change player direction if they are aiming on the left or right
 def fireWeapon(angleIn):
-    angle = angleIn
     if player.mag > 0:
         for i in range(10):  # add particles at muzzle of gun
             particleList.append(
-                Particle(screen, player.X + (player.W // 2) + 20 * cosd(angle), player.Y + 20 - 20 * sind(angle),
-                         -angle, 5, weaponList[currentWeapon].bulletColour, 4, 0.1, 0.1, 7, 2, 20))
+                Particle(screen, player.X + (player.W // 2) + 20 * cosd(angleIn), player.Y + 20 - 20 * sind(angleIn),
+                         -angleIn, 5, weaponList[currentWeapon].bulletColour, 4, 0.1, 0.1, 7, 2, 20))
         weaponList[currentWeapon].fireSound.stop()
         weaponList[currentWeapon].fireSound.play()
         player.mag -= 1
@@ -851,7 +847,18 @@ def fireWeapon(angleIn):
                                     weaponList[currentWeapon].explosiveRadius,
                                     weaponList[currentWeapon].explosiveFalloff,
                                     weaponList[currentWeapon].fuse))
-
+def possibleangleIn():
+    global angleIn
+    if keysIn[K_a]:
+        smallestLimit = -225
+        largestLimit = -135
+    elif keysIn[K_d]:
+        smallestLimit = -45
+        largestLimit = 45
+    else:
+        smallestLimit = -270
+        largestLimit = 90
+    angleIn = min(max(math.degrees(math.atan2(mx - 660, my - 376+(36-pic.get_height()))) - 90, smallestLimit), largestLimit)
 
 def makeTile(tileInfo):  # draw the tile
     global levelAtlas, visualOff
@@ -925,8 +932,38 @@ def keysDown(keys):  # check what keys are being held
         elif not player.fA:
             player.animation = idleRight
 
-
-
+def targeter():
+    global angleIn
+    for i in enemyList:
+        if abs(int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))) in range(140,250) and checkBullTrajectory(angleIn,player.X,player.Y,700,enemyList.index(i),False) == enemyList.index(i):
+            addToList = True
+            for j in targeterList:
+                if i in j:
+                    addToList = False
+            if addToList:
+                targeterList.append([i,120])
+            print(abs(int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))))
+        else:
+            for j in targeterList:
+                if i in j:
+                    del targeterList[targeterList.index(j)]
+                    break
+    for i in range(len(targeterList)-1,-1,-1):
+        mobInfo = targeterList[i]
+        if player.fA:
+            if mobInfo[1] > 0:
+                draw.line(screen,(255,0,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+                targeterList[i][1]-=1
+            elif mobInfo[1]<= 0:
+                draw.line(screen,(0,255,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+        elif not player.fA:
+            if mobInfo[1] > 0:
+                draw.line(screen,(255,0,0),(670,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+                targeterList[i][1]-=1
+            elif mobInfo[1]<= 0:
+                draw.line(screen,(0,255,0),(670,375),(640-player.X+mobInfo[0].X+(mobInfo[0].W//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+        if mobInfo[0].health<=0:
+            del targeterList[i]
 
 def drawStuff(tileSurf, tileSize, keys):  # render everything
     global player, frames, animation, visualOff, pic, currentFrame, bulletTrailList
@@ -1069,7 +1106,7 @@ def makeNewLevel(levelLength):  # stitches the rects from different tiles togeth
 def playerShoot(weapon, angle):  # finds what the player hit
     global pic, movedTileTops, mx, my
 
-    return checkBullTrajectory(angle, player.X + player.W // 2, player.Y + 20)
+    return checkBullTrajectory(angle, player.X + player.W // 2, player.Y + 20,weaponList[currentWeapon].bulletRange)
 
 
 def fixLevel(levelIn):  # Moves the level so that it isn't outside of the bounding box
@@ -1788,6 +1825,7 @@ print(savedGames)
 explosiveList = []
 damagePopoff = []
 queuedShots = []
+targeterList = []
 
 animationStatus = -1  # positive for opening, negative for closing
 menuOn = 0
@@ -1933,12 +1971,12 @@ while running:
         player.reloading = 0
     if gameState == 'ship':
         shipMenu()
-    if gameState == 'menu':
+    elif gameState == 'menu':
         mainMenu()
-    if gameState == 'instructions':
+    elif gameState == 'instructions':
         instructions()
-    if gameState == 'game':
-
+    elif gameState == 'game':
+        possibleangleIn()
         if menuAnimation <= 0 and player.health > 0:  # go through all game related functions if not in the pause menu and if alive
             spawnEnemies()
             keysDown(keysIn)
@@ -2012,7 +2050,7 @@ while running:
             if deathAnimation > 500:
                 gameState = 'ship'
                 deathAnimation = 0
-
+        targeter()
         menuAnimation += animationStatus
     if not gameState == 'menu':
         drawCursor()
