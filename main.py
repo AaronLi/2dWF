@@ -214,13 +214,13 @@ class Mob:  # Class used for the player and enemies
                                 elif self.enemyType == 3:
                                     if self.fA:
                                         bulletList.append(
-                                            Bullet2(self.X, self.Y + 25, 0,
+                                            Bullet2(self.X, self.Y + 22, 0,
                                                     weaponList[self.weapon].damage // 2, 0, 400, 3,
                                                     weaponList[self.weapon].bulletColour,
                                                     (255, 0, 0), 7, 0, 0, 2))
                                     else:
                                         bulletList.append(
-                                            Bullet2(self.X + self.W, self.Y + 25, 180,
+                                            Bullet2(self.X + self.W, self.Y + 22, 180,
                                                     weaponList[self.weapon].damage // 2, 0, 400, 3,
                                                     weaponList[self.weapon].bulletColour, (255, 0, 0), 7,
                                                     0, 0, 2))
@@ -1070,8 +1070,8 @@ def spawnEnemies():
     mobSpawnY = player.Y - 500  # height at which the mob should spawn
     if len(enemyList) < 3:  # if there are less than 2 enemies
         for i in range(random.randint(1,5)):  # spawn 3
-            newEnemyType = random.randint(0, 3)  # pick random enemy type
-            if newEnemyType == 0:  # refer to mob
+            newEnemyType = random.randint(-2, 3)  # pick random enemy type
+            if newEnemyType <= 0:  # refer to mob
                 enemyList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 3 + random.random(), 0.3,
                         False, 1, weapon='dera', avoidance=50 + random.randint(-5, 60),
