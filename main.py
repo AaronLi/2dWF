@@ -211,6 +211,19 @@ class Mob:  # Class used for the player and enemies
                                                     weaponList[self.weapon].damage // 2, 0, 400, 7,
                                                     weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
                                                     0, 0, 4))
+                                elif self.enemyType == 3:
+                                    if self.fA:
+                                        bulletList.append(
+                                            Bullet2(self.X, self.Y + 25, 0,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
+                                                    weaponList[self.weapon].bulletColour,
+                                                    (255, 0, 0), 7, 0, 0, 2))
+                                    else:
+                                        bulletList.append(
+                                            Bullet2(self.X + self.W, self.Y + 25, 180,
+                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
+                                                    weaponList[self.weapon].bulletColour, (255, 0, 0), 7,
+                                                    0, 0, 2))
                                 weaponList[self.weapon].fireSound.play()
                             break
                         if player.X > self.X:  # check 3 pixels along the line of sight
@@ -699,7 +712,7 @@ def checkBullTrajectory(bullAngle, x, y,checkDist,indexPos = None,weapon = True)
                     retVal = i
         x += 7 * cosd(bullAngle)  # move bullet checking coordinates
         y += 7 * sind(-bullAngle)
-    if indexPos == None:
+    if weapon:
         bulletTrailList.append([startX, startY, endX, endY])  # queue bullet trail for drawing
     return retVal
 
@@ -1016,7 +1029,7 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
     for i in range(len(bulletTrailList) - 1, -1, -1):  # draw the bullet trails from the player
         draw.line(screen, weaponList[currentWeapon].bulletColour,
                   (640 - player.X + bulletTrailList[i][0], 360 - player.Y + bulletTrailList[i][1]),
-                  (640 - player.X + bulletTrailList[i][2], 360 - player.Y + bulletTrailList[i][3]),weaponList[currentWeapon].bulletThickness)
+                  (640 - player.X + bulletTrailList[i][2], 360 - player.Y + bulletTrailList[i][3]),max(weaponList[currentWeapon].bulletThickness,1))
     bulletTrailList = []
     for i in enemyList:
 
@@ -1028,6 +1041,9 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
         elif i.enemyType == 2:
             enemyPic = sCrewmanFrames[i.animation][0][
                 i.frame // sCrewmanFrames[i.animation][1] % len(sCrewmanFrames[i.animation][0])]
+        elif i.enemyType == 3:
+            enemyPic = cTechFrames[i.animation][0][
+                i.frame // cTechFrames[i.animation][1] % len(cTechFrames[i.animation][0])]
         i.frame += 1
         screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y + (25 - enemyPic.get_height())))
         draw.line(screen, (255, 40, 40), (640 - player.X + i.X + (30 * max(0, i.health) // i.maxHealth),
@@ -1053,8 +1069,8 @@ def moveParticles():
 def spawnEnemies():
     mobSpawnY = player.Y - 500  # height at which the mob should spawn
     if len(enemyList) < 3:  # if there are less than 2 enemies
-        for i in range(3):  # spawn 3
-            newEnemyType = random.randint(0, 2)  # pick random enemy type
+        for i in range(random.randint(1,5)):  # spawn 3
+            newEnemyType = random.randint(0, 3)  # pick random enemy type
             if newEnemyType == 0:  # refer to mob
                 enemyList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 3 + random.random(), 0.3,
@@ -1063,13 +1079,19 @@ def spawnEnemies():
             elif newEnemyType == 1:
                 enemyList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 4 + random.random(), 0.3,
-                        False, 1, weapon='laser', enemyType=1, avoidance=40 + random.randint(-5, 30), health=150,
+                        False, 1, weapon='laser', enemyType=1, avoidance=40 + random.randint(-5, 30), health=170,
                         shootRange=130 + random.randint(-20, 10)))
             elif newEnemyType == 2:
                 enemyList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 2 + random.random(), 0.3,
                         False, 1, weapon='lanka', enemyType=2, avoidance=430 + random.randint(-5, 40),
                         shootRange=500 + random.randint(0, 100), health=60))
+            elif newEnemyType == 3:
+                enemyList.append(
+                    Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 2.5 + random.random(), 0.3,
+                        False, 1, weapon='supra', enemyType=3, avoidance=100 + random.randint(-5, 40),
+                        shootRange=170 + random.randint(0, 100), health=120)
+                )
 
 
 def makeNewLevel(levelLength):  # stitches the rects from different tiles together
@@ -1626,8 +1648,8 @@ weaponList = {
     'burston':Weapon(18,40,45,120,burstonShoot,WHITE,1,1,burstonReload,0,0,cost = 10000,fireMode = 3, burstDelay = 10),
     'sybaris':Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
     'detron':Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
-    'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
-    'targeter':Weapon(150,100,6,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3,cost = 30000,wepType = 3,fireMode = 1,bulletThickness = 4),
+    'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,0,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
+    'targeter':Weapon(150,100,10,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3,cost = 30000,wepType = 3,fireMode = 1,bulletThickness = 4),
     'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
@@ -1721,6 +1743,8 @@ sCrewmanFrames = [[[image.load('images/enemies/sniperCrewman/sCrewman001.png')],
                        image.load('images/enemies/sniperCrewman/sCrewman019.png'),
                        image.load('images/enemies/sniperCrewman/sCrewman020.png')], 5]]
 dCrewmanFrames =[]
+cTechFrames = [[[image.load('images/enemies/supraCrewman/supraCrewman001.png')],1], [[image.load('images/enemies/supraCrewman/supraCrewman002.png'),image.load('images/enemies/supraCrewman/supraCrewman003.png'),image.load('images/enemies/supraCrewman/supraCrewman004.png'),image.load('images/enemies/supraCrewman/supraCrewman005.png'),image.load('images/enemies/supraCrewman/supraCrewman006.png'),image.load('images/enemies/supraCrewman/supraCrewman007.png'),image.load('images/enemies/supraCrewman/supraCrewman008.png'),image.load('images/enemies/supraCrewman/supraCrewman009.png')],7],
+               [[image.load('images/enemies/supraCrewman/supraCrewman010.png'),image.load('images/enemies/supraCrewman/supraCrewman011.png')],1],[[image.load('images/enemies/supraCrewman/supraCrewman012.png'),image.load('images/enemies/supraCrewman/supraCrewman013.png'),image.load('images/enemies/supraCrewman/supraCrewman014.png'),image.load('images/enemies/supraCrewman/supraCrewman015.png'),image.load('images/enemies/supraCrewman/supraCrewman016.png'),image.load('images/enemies/supraCrewman/supraCrewman017.png'),image.load('images/enemies/supraCrewman/supraCrewman018.png')],7]]
 playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [
     [image.load("images/warframes/frost/frost003.png"), image.load("images/warframes/frost/frost004.png"),
      image.load("images/warframes/frost/frost005.png"), image.load("images/warframes/frost/frost006.png"),
@@ -1749,6 +1773,7 @@ playerFrames = completeFrames(playerFrames, [0, 2, 4, 6, 8, 10], [1, 3, 5, 7, 9,
 crewmanFrames = completeFrames(crewmanFrames, [0, 2, 4, 6], [1, 3, 5, 7])
 moaFrames = flipFrames(completeFrames(moaFrames, [0, 2, 4, 6], [1, 3, 5, 7]))
 sCrewmanFrames = completeFrames(sCrewmanFrames, [0, 2, 4, 6], [1, 3, 5, 7])
+cTechFrames = completeFrames(cTechFrames, [0,2,4,6], [1,3,5,7])
 globalTicks = 0
 mobSpawnY = 0
 idle = idleRight
@@ -2048,6 +2073,8 @@ while running:
             for i in doorList:
                 i.moveDoor()
             drawStuff(playTile[1], playTile[0], keysIn)
+            if currentWeapon == 'targeter':
+                targeterMech()
             if player.shootCooldown > 0:  # fire rate
                 player.shootCooldown -= 1
         elif menuAnimation >= 1:  # if paused
@@ -2074,8 +2101,6 @@ while running:
             if deathAnimation > 500:
                 gameState = 'ship'
                 deathAnimation = 0
-        if currentWeapon == 'targeter':
-            targeterMech()
         menuAnimation += animationStatus
     if not gameState == 'menu':
         drawCursor()
