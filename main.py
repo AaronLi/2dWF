@@ -52,9 +52,11 @@ class Door:
         self.hitBox = Rect(self.x, self.y + self.offY, self.w, self.h)
     def moveDoor(self):
         openDoor = False
-        for i in enemyList:
+        for i in mobList:
             if abs(math.hypot(i.X-self.x,i.Y-self.y)) < 70:
                 openDoor = True
+        if abs(math.hypot(companion.X-self.x,companion.Y-self.y))<70:
+            openDoor = True
         if abs(math.hypot(player.X-self.x,player.Y-self.y))<70:
             openDoor = True
         if openDoor and self.offY >self.openHeight:
@@ -98,6 +100,8 @@ class Mob:  # Class used for the player and enemies
         self.shootRange = shootRange  # How far the mob tries to stay
         self.shootCounter = 0  # Enemy fire rate timer
         self.despawn = False
+        #Companion Related Things
+        self.target = -1
     def move(self):
         self.X += int(self.vX)
         self.Y += int(self.vY)
@@ -269,13 +273,104 @@ class Mob:  # Class used for the player and enemies
                     self.vX += self.vAx
                     self.animation = right
                 self.shootCounter = 0
+    def kubrowLogic(self):
+        # Logic
+        distX = abs(self.X - player.X)  # distance from player
+        distY = abs(self.Y - player.Y)
+        kubrowRect = Rect(self.X, self.Y, self.W, self.H)  # enemy hitbox
+        if self.target == -1:
+            if random.randint(0,120) == 0:
+                    enemyDistances = []
+                    for i in mobList:
+                        enemyDistances.append(abs(i.X-self.X))
+                    self.target = enemyDistances.index(min(enemyDistances))
+        if distY > 1000 or distX > 1200:  # if enemy is too far away then despawn it
+            self.X, self.Y = player.X, player.Y
+            self.target = -1
+        else:
+            # Jumping over obstacles
+            if self.oW and self.oG:  # if there's a wall and the enemy is on the ground
+                self.jumps -= 1
+                self.vY -= 7
 
+            # Jumping across gaps
+            if self.fA:
+                if (not kubrowRect.move(int(self.vM), 1).colliderect(
+                        self.hP[
+                            0])) and self.oG:  # if the moved enemy won't be still on the platform (hP)
+                    self.vY -= 7  # jump
+            elif not self.fA:
+                if (not kubrowRect.move(-int(self.vM), 1).colliderect(self.hP[0])) and self.oG:
+                    self.vY -= 7
+            if self.target != -1:
+                # Shooting
+                try:
+                    if abs(self.X - mobList[self.target].X) in range(0,10):  # if player distance is in between the enemy avoidance and the sooting range
+                        if abs(self.Y - mobList[self.target].Y) < 30 and int(self.vX) == 0:  # if player and enemy are both on the same level
+                            self.attacking = True
+                            mobList[self.target].damage(25)
+                            self.target = -1
+                    else:
+                        self.attacking = False
+                except IndexError:
+                    self.target = -1
+        # Moving left and right
+        if self.target == -1:
+            self.attacking = False
+            if self.animation != 6:  # Won't work if mob is currently dying
+                if player.X > self.X:  # face right if player is on right
+                    self.fA = True
+                    if not self.attacking:  # use standing animation if not attacking
+                        self.animation = idleRight
+                elif player.X < self.X:  # Face left is player is on left
+                    self.fA = False
+                    if not self.attacking:
+                        self.animation = idleLeft
+    
+                if abs(player.X - self.X) > 20 or not self.oG:  # Move towards player if not on ground or if outside of shooting range
+                    if player.X > self.X:  # begin walking to the right
+                        self.fA = True
+                        self.vX += self.vAx
+                        self.animation = right
+                    elif player.X < self.X:  # begin walking to the left
+                        self.fA = False
+                        self.vX -= self.vAx
+                        self.animation = left
+                elif abs(player.X - self.X) < 1 or not self.oG:  # Move away from player if not on ground or inside avoidance area
+                    if player.X > self.X:  # Move left
+                        self.fA = False
+                        self.vX -= self.vAx
+                        self.animation = left
+                    elif player.X < self.X:  # Move right
+                        self.fA = True
+                        self.vX += self.vAx
+                        self.animation = right
+        else:
+                if abs(
+                                mobList[self.target].X - self.X) > 10 or not self.oG:  # Move towards mobList[self.target] if not on ground or if outside of shooting range
+                    if mobList[self.target].X > self.X:  # begin walking to the right
+                        self.fA = True
+                        self.vX += self.vAx
+                        self.animation = right
+                    elif mobList[self.target].X < self.X:  # begin walking to the left
+                        self.fA = False
+                        self.vX -= self.vAx
+                        self.animation = left
+                elif abs(
+                                mobList[self.target].X - self.X) < 1 or not self.oG:  # Move away from mobList[self.target] if not on ground or inside avoidance area
+                    if mobList[self.target].X > self.X:  # Move left
+                        self.fA = False
+                        self.vX -= self.vAx
+                        self.animation = left
+                    elif mobList[self.target].X < self.X:  # Move right
+                        self.fA = True
+                        self.vX += self.vAx
+                        self.animation = right
     def damage(self,amount,type = 0):
         self.health -= amount
         damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y+random.randint(-10,0),amount,type))
 
-    #def think(self):  # enemy AI
-    
+
     def applyFriction(self):
             if self.vX > 0:  # if self is moving, apply friction
                 if self.oG:
@@ -387,12 +482,12 @@ class damageArea:
         if self.currentTick == 0:
             self.currentTick = self.tickLength
             if self.shape == 0:
-                for i in enemyList:
+                for i in mobList:
                     enemyCenter = (i.X+(i.w//2),i.Y+(i.h//2))
                     if math.hypot(self.x-enemyCenter[0],self.y-enemyCenter[1]) <=self.radius:
                         i.damage(self.damage)
             elif self.shape == 1:
-                for i in enemylist:
+                for i in mobList:
                     if self.cRect.collidepoint(i.X,i.Y):
                         i.damage(self.damage)
 class Bullet2:
@@ -476,8 +571,8 @@ class explosion:
         self.fuse = fuse
 
     def detonate(self):
-        global enemyList, particleList
-        hitByExplosive = [False for i in range(len(enemyList))]
+        global mobList, particleList
+        hitByExplosive = [False for i in range(len(mobList))]
         for i in range(0, 360, 15):
             hitEnvironment  = False
             particleList.append(Particle(screen, self.x, self.y, i, self.radius // 5, (255, random.randint(0, 255), 0),random.randint(2,3), 0, 0, 0, 2, 20, 2))
@@ -494,7 +589,7 @@ class explosion:
                             hitEnvironment = True
                             break
                 if not hitEnvironment:
-                    for l, m in zip(enemyList, range(len(enemyList))):
+                    for l, m in zip(mobList, range(len(mobList))):
                         enemyRect = Rect(l.X, l.Y, l.W, l.H)
                         if enemyRect.collidepoint(checkPoint) and not hitByExplosive[m]:
                             l.damage(max(self.damage - (7 * (j * self.falloff)), 0))
@@ -600,7 +695,7 @@ def readyController():
 def swordHit():  # check for sword hits
     global playerRect
     swingBox = Rect(player.X, player.Y, 40, player.H)  # sword area
-    for i in enemyList:
+    for i in mobList:
         enemyRect = Rect(i.X, i.Y, i.W, i.H)  # enemy area
         # Swing
         if player.fA:  # if player is facing left
@@ -696,8 +791,8 @@ def checkBullTrajectory(bullAngle, x, y,checkDist,indexPos = None,weapon = True)
                         particleList.append(
                             Particle(screen, endX, endY, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
                                      0.2, 0.2, 0.4, 1, 10))
-        for i in range(len(enemyList)):  # if bullet hits enemy
-            eInfo = enemyList[i]
+        for i in range(len(mobList)):  # if bullet hits enemy
+            eInfo = mobList[i]
             mobRect = Rect(eInfo.X, eInfo.Y, eInfo.W, eInfo.H)  # enemy hitbox
             if mobRect.collidepoint(x, y) and eInfo.dying == 0:  # if it hits an enemy that isn't dying
                 if indexPos == None:
@@ -745,16 +840,16 @@ def calcBullets():  # check if the enemy bullets hit anything
                     nextBullet = True
                     break
         if not nextBullet:
-            for j in range(len(enemyList) - 1, -1, -1):  # checking player bullets
-                enemyRect = Rect(enemyList[j].X, enemyList[j].Y, enemyList[j].W, enemyList[j].H)
+            for j in range(len(mobList) - 1, -1, -1):  # checking player bullets
+                enemyRect = Rect(mobList[j].X, mobList[j].Y, mobList[j].W, mobList[j].H)
                 if enemyRect.collidepoint(bulletList[i].x, bulletList[i].y) and bulletList[i].faction == 1 and \
-                                enemyList[j].dying == 0:  # if bullet hits an enemy that's not dying
+                                mobList[j].dying == 0:  # if bullet hits an enemy that's not dying
                     if bulletList[i].isExplosive:
                         explosiveList.append(explosion(bulletList[i].x, bulletList[i].y, bulletList[i].damage,
                                                        bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
                                                        weaponList[currentWeapon].bulletColour, (200, 200, 200), 0))
                     else:
-                        enemyList[j].damage(bulletList[i].damage,bulletList[i].isCrit)
+                        mobList[j].damage(bulletList[i].damage,bulletList[i].isCrit)
                     bulletList[i].range = 0
         if not nextBullet:
             if len(bulletList) > 0:
@@ -821,9 +916,9 @@ def fireWeapon(angleIn):
                 enemyHit = playerShoot(weaponList[currentWeapon], angle)
                 if type(enemyHit) == int:  # if it hit an enemy
                     if random.randint(0, 100) < weaponList[currentWeapon].critChance:
-                        enemyList[enemyHit].damage(weaponList[currentWeapon].damage * weaponList[currentWeapon].critMult, 1)
+                        mobList[enemyHit].damage(weaponList[currentWeapon].damage * weaponList[currentWeapon].critMult, 1)
                     else:
-                        enemyList[enemyHit].damage(weaponList[currentWeapon].damage)
+                        mobList[enemyHit].damage(weaponList[currentWeapon].damage)
             elif weaponList[currentWeapon].bulletType == 1:
                 if currentWeapon == 'ignis':
                     if random.randint(0, 100) < weaponList[currentWeapon].critChance:
@@ -953,21 +1048,21 @@ def keysDown(keys):  # check what keys are being held
 
 def targeterMech():
     global angleIn
-    for i in enemyList:
+    for i in mobList:
         if player.fA:
             playerToEnemy = angleBetween((player.X,player.Y+player.H//2),(i.X+i.W//2,i.Y+i.H//2))
         else:
             playerToEnemy = angleBetween((player.X+player.W, player.Y + player.H // 2),
                                          (i.X + i.W // 2, i.Y + i.H // 2))
         aimFromEnemy = int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))
-        if checkBullTrajectory(180+playerToEnemy,player.X,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
+        if checkBullTrajectory(180+playerToEnemy,player.X,player.Y,700,mobList.index(i),False) == mobList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
             addToList = True
             for j in targeterList:
                 if i in j:
                     addToList = False
             if addToList:
                 targeterList.append([i,90,180+playerToEnemy])
-        elif checkBullTrajectory(180+playerToEnemy,player.X+player.W,player.Y,700,enemyList.index(i),False) == enemyList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
+        elif checkBullTrajectory(180+playerToEnemy,player.X+player.W,player.Y,700,mobList.index(i),False) == mobList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
             addToList = True
             for j in targeterList:
                 if i in j:
@@ -1031,7 +1126,7 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
                   (640 - player.X + bulletTrailList[i][0], 360 - player.Y + bulletTrailList[i][1]),
                   (640 - player.X + bulletTrailList[i][2], 360 - player.Y + bulletTrailList[i][3]),max(weaponList[currentWeapon].bulletThickness,1))
     bulletTrailList = []
-    for i in enemyList:
+    for i in mobList:
 
         if i.enemyType == 0:  # draw the enemies based on their type
             enemyPic = crewmanFrames[i.animation][0][
@@ -1049,6 +1144,10 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
         draw.line(screen, (255, 40, 40), (640 - player.X + i.X + (30 * max(0, i.health) // i.maxHealth),
                                           360 - player.Y + i.Y + (25 - enemyPic.get_height())),
                   (640 - player.X + i.X, 360 - player.Y + i.Y + (25 - enemyPic.get_height())))
+    companionPic =  wKubrowFrames[companion.animation][0][
+                companion.frame // wKubrowFrames[companion.animation][1] % len(wKubrowFrames[companion.animation][0])]
+    screen.blit(companionPic, (640 - player.X + companion.X, 379 - player.Y + companion.Y + (10 - companionPic.get_height())))
+    companion.frame+=1
     currentFrame = player.frame // playerFrames[player.animation][1] % len(
         playerFrames[player.animation][0])  # the current frame for use in other functions
     screen.blit(pic, (640 + additionalOffsets[player.animation][
@@ -1068,26 +1167,26 @@ def moveParticles():
 
 def spawnEnemies():
     mobSpawnY = player.Y - 500  # height at which the mob should spawn
-    if len(enemyList) < 3:  # if there are less than 2 enemies
+    if len(mobList) < 3:  # if there are less than 2 enemies
         for i in range(random.randint(1,5)):  # spawn 3
             newEnemyType = random.randint(-2, 3)  # pick random enemy type
             if newEnemyType <= 0:  # refer to mob
-                enemyList.append(
+                mobList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 3 + random.random(), 0.3,
                         False, 1, weapon='dera', avoidance=50 + random.randint(-5, 60),
                         shootRange=150 + random.randint(-10, 10)))
             elif newEnemyType == 1:
-                enemyList.append(
+                mobList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 4 + random.random(), 0.3,
                         False, 1, weapon='laser', enemyType=1, avoidance=40 + random.randint(-5, 30), health=170,
                         shootRange=130 + random.randint(-20, 10)))
             elif newEnemyType == 2:
-                enemyList.append(
+                mobList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 2 + random.random(), 0.3,
                         False, 1, weapon='lanka', enemyType=2, avoidance=430 + random.randint(-5, 40),
                         shootRange=500 + random.randint(0, 100), health=60))
             elif newEnemyType == 3:
-                enemyList.append(
+                mobList.append(
                     Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 2.5 + random.random(), 0.3,
                         False, 1, weapon='supra', enemyType=3, avoidance=100 + random.randint(-5, 40),
                         shootRange=170 + random.randint(0, 100), health=120)
@@ -1358,14 +1457,14 @@ def reloadTime():
 
 
 def startGame():  # reset all game related variables
-    global spawnX, spawnY, menuAnimation, animationStatus, enemyList, pickupList, regenTimer, bulletList
+    global spawnX, spawnY, menuAnimation, animationStatus, mobList, pickupList, regenTimer, bulletList
     playTile = makeTile(fixLevel(makeNewLevel(10)))
     drawnMap = playTile[1]
     minimap = transform.scale(drawnMap, [drawnMap.get_width() // 7, drawnMap.get_height() // 7])
     player.health, player.shield = player.maxHealth, player.maxShield
     player.reserveAmmo = [500, 200, 2500, 60]
     player.X, player.Y = spawnX, spawnY
-    enemyList = []
+    mobList = []
     pickupList = []
     bulletList = []
     regenTimer = 0
@@ -1650,7 +1749,7 @@ weaponList = {
     'detron':Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
     'vectis':Weapon(160,1,1,120,vectisShoot,WHITE,0,0,vectisShoot,3,cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
     'targeter':Weapon(150,100,10,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3,cost = 30000,wepType = 3,fireMode = 1,bulletThickness = 4),
-    'none': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
+    'unarmed': Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 screen = display.set_mode((1280, 720))
 display.set_icon(image.load('images/deco/icon.png'))
 idleRight, idleLeft, right, left, jumpRight, jumpLeft = 0, 1, 2, 3, 4, 5
@@ -1660,7 +1759,7 @@ closeMenu = mixer.Sound('sfx/misc/closeMenu.ogg')
 levelAtlas = image.load('images/levels/tileTextures.png')
 hudCredit = image.load('images/drops/lifeSupport/hudCredits.png')
 # Guns
-none = Surface((1, 1), SRCALPHA)
+unarmed = Surface((1, 1), SRCALPHA)
 braton = image.load('images/weapons/corpus/braton.png')
 dera = image.load('images/weapons/corpus/dera.png')
 boarP = image.load('images/weapons/orokin/boarP.png')
@@ -1688,7 +1787,7 @@ targeter = image.load('images/weapons/tenno/vectis.png')
 frostUpper = image.load('images/warframes/frost/frostUpper.png')
 frostArms = image.load('images/warframes/frost/frostArms.png')
 frostLower = image.load('images/warframes/frost/frostLower.png')
-currentWeapon = 'none'
+currentWeapon = 'unarmed'
 
 pic = Surface((20, 30))
 pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png'), image.load('images/drops/ammo/shotgunAmmo.png'),
@@ -1766,6 +1865,9 @@ playerFrames = [[[image.load("images/warframes/frost/frost001.png")], 1], [
                      image.load('images/warframes/frost/frost025.png'),
                      image.load('images/warframes/frost/frost026.png'),
                      image.load('images/warframes/frost/frost027.png')], 7]]
+wKubrowFrames = [[[image.load('images/companions/kubrows/white/kubrowWhite000.png')],1],[[image.load('images/companions/kubrows/white/kubrowWhite001.png'),image.load('images/companions/kubrows/white/kubrowWhite002.png'),image.load('images/companions/kubrows/white/kubrowWhite003.png'),image.load('images/companions/kubrows/white/kubrowWhite004.png'),image.load('images/companions/kubrows/white/kubrowWhite005.png'),image.load('images/companions/kubrows/white/kubrowWhite006.png'),image.load('images/companions/kubrows/white/kubrowWhite007.png')],5],
+                 [[image.load('images/companions/kubrows/white/kubrowWhite008.png'),image.load('images/companions/kubrows/white/kubrowWhite009.png'),image.load('images/companions/kubrows/white/kubrowWhite010.png'),image.load('images/companions/kubrows/white/kubrowWhite011.png'),image.load('images/companions/kubrows/white/kubrowWhite012.png'),image.load('images/companions/kubrows/white/kubrowWhite013.png'),image.load('images/companions/kubrows/white/kubrowWhite014.png'),image.load('images/companions/kubrows/white/kubrowWhite015.png'),image.load('images/companions/kubrows/white/kubrowWhite016.png'),image.load('images/companions/kubrows/white/kubrowWhite017.png'),image.load('images/companions/kubrows/white/kubrowWhite018.png'),image.load('images/companions/kubrows/white/kubrowWhite019.png')],8],
+                 [[image.load('images/companions/kubrows/white/kubrowWhite020.png')],1]]
 flippedFrame = Surface((0, 0))
 
 # Player frames
@@ -1774,6 +1876,7 @@ crewmanFrames = completeFrames(crewmanFrames, [0, 2, 4, 6], [1, 3, 5, 7])
 moaFrames = flipFrames(completeFrames(moaFrames, [0, 2, 4, 6], [1, 3, 5, 7]))
 sCrewmanFrames = completeFrames(sCrewmanFrames, [0, 2, 4, 6], [1, 3, 5, 7])
 cTechFrames = completeFrames(cTechFrames, [0,2,4,6], [1,3,5,7])
+wKubrowFrames = completeFrames(wKubrowFrames, [0,2,4,6,8,10],[1,3,5,7,9,11])
 globalTicks = 0
 mobSpawnY = 0
 idle = idleRight
@@ -1832,7 +1935,7 @@ typeSortedWeapons = [[], [], [], []]
 for i in range(len(weaponNamesList)):
     weaponName = weaponNamesList[i]
     weaponInfo = weaponList[weaponName]
-    if not weaponName == 'none':
+    if not weaponName == 'unarmed':
         typeSortedWeapons[weaponInfo.wepType].append(weaponName)
 purchasedWeapons = [0 for i in range(len(weaponList))]
 bulletTrailList = []
@@ -1881,11 +1984,12 @@ menuOn = 0
 menuAnimation = 0
 canUseSword = True
 gameState = 'menu'
-enemyList = []
+mobList = []
 bulletList = []
 mixer.music.play(-1)  # plays music on repeat
 drawUpperSprite()
 readyController()
+companion = Mob(0,0,50,30,0,0,4.5,1,True,2)
 print("Loaded in ", time.get_ticks() - startTime, "ms", sep='')
 while running:
     for e in event.get():
@@ -2033,19 +2137,23 @@ while running:
             player.move()
             player.hitStuff()
             player.applyFriction()
+            companion.move()
+            companion.kubrowLogic()
+            companion.hitStuff()
+            companion.applyFriction()
             for i in range(len(queuedShots)-1,-1,-1):
                 if queuedShots[i][0] > 0 :
                     queuedShots[i][0] -= 1
                 elif queuedShots[i][0] <= 0:
                     fireWeapon(queuedShots[i][1])
                     del queuedShots[i]
-            for i in range(len(enemyList)-1,-1,-1):
-                enemyList[i].move()
-                enemyList[i].enemyLogic()
-                enemyList[i].hitStuff()
-                enemyList[i].applyFriction()
-                if (enemyList[i].health <= 0 and enemyList[i].frame%25 == 0) or enemyList[i].despawn:
-                    del enemyList[i]
+            for i in range(len(mobList)-1,-1,-1):
+                mobList[i].move()
+                mobList[i].enemyLogic()
+                mobList[i].hitStuff()
+                mobList[i].applyFriction()
+                if (mobList[i].health <= 0 and mobList[i].frame%25 == 0) or mobList[i].despawn:
+                    del mobList[i]
             for i in range(len(explosiveList) - 1, -1, -1):
                 if explosiveList[i].fuse <= 0:
                     explosiveList[i].detonate()
