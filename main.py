@@ -366,9 +366,9 @@ class Mob:  # Class used for the player and enemies
                         self.fA = True
                         self.vX += self.vAx
                         self.animation = right
-    def damage(self,amount,type = 0):
+    def damage(self,amount,dtype = 0):
         self.health -= amount
-        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y+random.randint(-10,0),amount,type))
+        damagePopoff.append(DamageText(self.X+(self.W//2)+random.randint(-30,30),self.Y+random.randint(-10,0),amount,dtype))
 
 
     def applyFriction(self):
