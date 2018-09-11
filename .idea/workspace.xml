@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="af9bda6f-a3a0-44bd-a59a-ed49291137a0" name="Default" comment="Created classes for most things">
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mob.py" beforeDir="false" afterPath="$PROJECT_DIR$/mob.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pickup.py" beforeDir="false" afterPath="$PROJECT_DIR$/pickup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,27 +20,27 @@
           <entry key="project.closed" value="4" />
           <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.12" value="1" />
-          <entry key="project.open.time.8" value="3" />
-          <entry key="project.opened" value="5" />
+          <entry key="project.open.time.8" value="4" />
+          <entry key="project.opened" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="dummy" value="22" />
-          <entry key="md" value="520" />
+          <entry key="md" value="612" />
           <entry key="py" value="3757" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Markdown" value="520" />
+          <entry key="Markdown" value="612" />
           <entry key="PLAIN_TEXT" value="22" />
           <entry key="Python" value="3757" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="md" value="1" />
+          <entry key="md" value="2" />
           <entry key="png" value="59" />
           <entry key="py" value="4" />
           <entry key="txt" value="5" />
@@ -52,7 +49,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="Image" value="59" />
-          <entry key="Markdown" value="1" />
+          <entry key="Markdown" value="2" />
           <entry key="PLAIN_TEXT" value="5" />
           <entry key="Python" value="4" />
         </counts>
@@ -61,14 +58,26 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="430">
-              <caret line="598" column="54" lean-forward="true" selection-start-line="598" selection-start-column="54" selection-end-line="598" selection-end-column="54" />
+              <caret line="598" column="54" selection-start-line="598" selection-start-column="54" selection-end-line="598" selection-end-column="54" />
               <folding>
                 <element signature="e#18#38#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="304">
+                <caret line="19" column="1" lean-forward="true" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
+              </first_editor>
+              <second_editor />
             </state>
           </provider>
         </entry>
@@ -139,8 +148,8 @@
         <option value="$PROJECT_DIR$/explosion.py" />
         <option value="$PROJECT_DIR$/pickup.py" />
         <option value="$PROJECT_DIR$/mob.py" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -270,7 +279,7 @@
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14872068" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15031983" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -351,19 +360,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="536">
           <caret line="241" column="36" selection-start-line="241" selection-start-column="36" selection-end-line="241" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="272">
-            <caret line="17" column="4" selection-start-line="17" selection-start-column="4" selection-end-line="17" selection-end-column="4" />
-          </first_editor>
-          <second_editor />
         </state>
       </provider>
     </entry>
@@ -405,30 +401,14 @@
     <entry file="file://$PROJECT_DIR$/readme_data/level78688.png" />
     <entry file="file://$PROJECT_DIR$/readme_data/level5535.png" />
     <entry file="file://$PROJECT_DIR$/readme_data/level17936.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level55339.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level9528.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level28779.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level35008.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level46064.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level72793.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level85852.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme_data/level99625.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level55339.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level9528.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level28779.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level35008.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level46064.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level72793.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level85852.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level99625.png" />
     <entry file="file://$PROJECT_DIR$/readme_data/level6533.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -438,10 +418,20 @@
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="430">
-          <caret line="598" column="54" lean-forward="true" selection-start-line="598" selection-start-column="54" selection-end-line="598" selection-end-column="54" />
+          <caret line="598" column="54" selection-start-line="598" selection-start-column="54" selection-end-line="598" selection-end-column="54" />
           <folding>
             <element signature="e#18#38#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="304">
+            <caret line="19" column="1" lean-forward="true" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
+          </first_editor>
+          <second_editor />
         </state>
       </provider>
     </entry>

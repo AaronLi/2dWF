@@ -15,7 +15,9 @@
     * ![Kubrow](images/companions/kubrows/white/kubrowWhite000.png)
 * Full Animations for all characters
     * ![Player Running](readme_data/frost_running.gif)  
-      
+* Randomly generated levels with 5 different tiles
+    * ![Sample levels](readme_data/levelPreviews.gif)
+ 
 Sounds come from either  
 https://www.warframe.com  
 or  
