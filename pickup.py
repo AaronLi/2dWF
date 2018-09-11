@@ -22,7 +22,7 @@ class Pickup:  # Class for ammo, health, and credit drops
             self.Y += int(self.vY)
 
     def checkCollide(self, player, ammoPickup, healthPickup):  # Checks if player is colliding with the pickup
-        if Rect(self.X, self.Y, 16, 16).colliderect(Rect(player.X, player.Y, player.W, player.H)):  # if colliding
+        if Rect(self.X, self.Y, 16, 16).colliderect(Rect(player.X, player.Y, player.width, player.H)):  # if colliding
             if type(self.amount) == int:  # if the drop is ammo
                 player.reserveAmmo[self.dropType] += self.amount  # add ammo to respective reserve
                 ammoPickup.play()

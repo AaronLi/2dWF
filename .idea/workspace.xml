@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="af9bda6f-a3a0-44bd-a59a-ed49291137a0" name="Default" comment="Created classes for most things">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mob.py" beforeDir="false" afterPath="$PROJECT_DIR$/mob.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pickup.py" beforeDir="false" afterPath="$PROJECT_DIR$/pickup.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/2dWF$main.coverage" NAME="main Coverage Results" MODIFIED="1536695139142" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="-535242405">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="4" />
+          <entry key="project.open.time.11" value="1" />
+          <entry key="project.open.time.12" value="1" />
+          <entry key="project.open.time.8" value="3" />
+          <entry key="project.opened" value="5" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="dummy" value="22" />
+          <entry key="md" value="520" />
+          <entry key="py" value="3757" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Markdown" value="520" />
+          <entry key="PLAIN_TEXT" value="22" />
+          <entry key="Python" value="3757" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="md" value="1" />
+          <entry key="png" value="59" />
+          <entry key="py" value="4" />
+          <entry key="txt" value="5" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Image" value="59" />
+          <entry key="Markdown" value="1" />
+          <entry key="PLAIN_TEXT" value="5" />
+          <entry key="Python" value="4" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="430">
+              <caret line="598" column="54" lean-forward="true" selection-start-line="598" selection-start-column="54" selection-end-line="598" selection-end-column="54" />
+              <folding>
+                <element signature="e#18#38#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>spawnenem</find>
+      <find>reset</find>
+      <find>startGame</find>
+      <find>startGame())</find>
+      <find>fixlevel(</find>
+      <find>makeNewLevel</find>
+      <find>level</find>
+      <find>def level</find>
+      <find>drawTile</find>
+      <find>maketil</find>
+      <find>fixLevel</find>
+      <find>tile</find>
+      <find>fixtile</find>
+      <find>drawtile</find>
+      <find>maketile(</find>
+      <find>unionall</find>
+      <find>startgame()</find>
+      <find>for i in range(20</find>
+      <find>startgame</find>
+      <find>maketile</find>
+      <find>makenewle</find>
+      <find>makenewlevel</find>
+      <find>fixlevel</find>
+      <find>startGam</find>
+      <find>start</find>
+      <find>print</find>
+      <find>door</find>
+      <find>doorList.appe</find>
+      <find>makenew</find>
+      <find>yoff</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>bullet2.Bullet2</replace>
+      <replace>.facing_left</replace>
+      <replace>.width</replace>
+      <replace>weapon.Weapon</replace>
+      <replace>.png').convert_alpha()</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/weapon.py" />
+        <option value="$PROJECT_DIR$/bullet2.py" />
+        <option value="$PROJECT_DIR$/math_tools.py" />
+        <option value="$PROJECT_DIR$/damage_text.py" />
+        <option value="$PROJECT_DIR$/door.py" />
+        <option value="$PROJECT_DIR$/particle.py" />
+        <option value="$PROJECT_DIR$/damage_area.py" />
+        <option value="$PROJECT_DIR$/explosion.py" />
+        <option value="$PROJECT_DIR$/pickup.py" />
+        <option value="$PROJECT_DIR$/mob.py" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/main.py" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="width" value="1100" />
+    <option name="height" value="1940" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="readme_data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+              <item name="misc" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+              <item name="music" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="tileset" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="settings.editor.selected.configurable" value="settings.github" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" singleton="true" temporary="true">
+      <module name="2dWF" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="af9bda6f-a3a0-44bd-a59a-ed49291137a0" name="Default" comment="" />
+      <created>1511271480556</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1511271480556</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Created classes for most things">
+      <created>1535725879313</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1535725879313</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14872068" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32936078" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4978678" weight="0.32936078" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5021322" side_tool="true" weight="0.32936078" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="bottom" id="Statistic" order="11" weight="0.32936078" />
+      <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="13" show_stripe_button="false" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Data View" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+      <window_info anchor="right" id="SciView" order="5" />
+    </layout>
+    <layout-to-restore>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17270789" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32936078" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4978678" weight="0.32936078" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5021322" side_tool="true" weight="0.32936078" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="bottom" id="Statistic" order="11" weight="0.32936078" />
+      <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="13" show_stripe_button="false" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Data View" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+      <window_info anchor="right" id="SciView" order="5" />
+    </layout-to-restore>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Created classes for most things" />
+    <option name="LAST_COMMIT_MESSAGE" value="Created classes for most things" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/images/companions/kubrows/white/kubrowWhite009.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/images/companions/kubrows/white/kubrowWhite013.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/images/companions/kubrows/white/kubrowWhite000.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level407912.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level771235.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level950877.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level225919.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level838825.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level591781.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level119179.png" />
+    <entry file="file://$PROJECT_DIR$/mob.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="536">
+          <caret line="241" column="36" selection-start-line="241" selection-start-column="36" selection-end-line="241" selection-end-column="36" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="272">
+            <caret line="17" column="4" selection-start-line="17" selection-start-column="4" selection-end-line="17" selection-end-column="4" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level90420.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level839563.png" />
+    <entry file="file://$PROJECT_DIR$/tileset/plat1.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tileset/plat2.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tileset/plat3.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tileset/plat4.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tileset/plat0.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level2098.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level2861.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level10948.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level12700.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level26844.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level28809.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level60100.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level32636.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level38198.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level37632.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level54456.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level47524.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level50373.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level55861.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level58304.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level40128.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level62922.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level78688.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level5535.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level17936.png" />
+    <entry file="file://$PROJECT_DIR$/readme_data/level55339.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level9528.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level28779.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level35008.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level46064.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level72793.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level85852.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level99625.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level6533.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/level21606.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="430">
+          <caret line="598" column="54" lean-forward="true" selection-start-line="598" selection-start-column="54" selection-end-line="598" selection-end-column="54" />
+          <folding>
+            <element signature="e#18#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
