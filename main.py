@@ -114,7 +114,7 @@ def miniMap():  # draws minimap in top left of hud
     mMapSurf = Surface((200, 100), SRCALPHA)
     mMapSurf.fill(WHITE)  # fill with white
     mMapSurf.blit(minimap, (100 - player.X // 7, 50 - player.Y // 7))  # blit scaled down tile
-    mMapSurf = transform.rotate(mMapSurf, -1)  # tilt it so it looks like the warframe minimap
+    MapSurf = transform.rotate(mMapSurf, -1)  # tilt it so it looks like the warframe minimap
 
     screen.blit(mMapSurf, (5, 5))
 
@@ -697,7 +697,7 @@ def pauseMenu():
 
 
 def shipMenu():
-    global gameState, playTile, drawnmap, minimap, mb, typeSortedWeapons, purchasedWeapons, weaponCosts, rotPos, selectedStoreProduct, currentWeapon, canClick
+    global gameState, playTile, drawnmap, minimap, mb, typeSortedWeapons, purchasedWeapons, weaponCosts, rotPos, selectedStoreProduct, currentWeapon, canClick, circleRadii
     screen.blit(storeBackdrop, (0, 0))
     rifleRect = Rect(190, 190, 70, 70)
     shottyRect = Rect(190, 530, 70, 70)
@@ -724,15 +724,16 @@ def shipMenu():
         renderedButtonText = micRoboto.render(j, True, WHITE)
         # draw.rect(screen,k,l)
 
-        if l.collidepoint(mx, my):
+        if math.hypot(buttonCenter[0]-mx, buttonCenter[1]-my) < l.width//3+25:
             canSpin = True
-            draw.circle(screen, (200, 200, 200), buttonCenter, l.width // 3)
-            draw.circle(screen, WHITE, buttonCenter, l.width // 3 - 5)
+            circleRadii[m] = min(100, circleRadii[m]+15)
+            draw.circle(screen, WHITE, buttonCenter, int(l.width / (4-(circleRadii[m]/100))))
+            draw.circle(screen, (200, 200, 200), buttonCenter, int(l.width / (4-(circleRadii[m]/100))), 5)
             draw.circle(screen, k, buttonCenter, i.width // 2)
             for n, o in zip(typeSortedWeapons[m], range(len(typeSortedWeapons[m]))):
                 bubbleSeperation = 360 // len(typeSortedWeapons[m])
-                circlePos = (int((l.width // 3) * cosd(bubbleSeperation * o + rotPos[m]) + buttonCenter[0]),
-                             int((l.width // 3) * sind(bubbleSeperation * o + rotPos[m])) + buttonCenter[1])
+                circlePos = (int((l.width // (4-(circleRadii[m]/100))) * cosd(bubbleSeperation * o + rotPos[m]) + buttonCenter[0]),
+                             int((l.width // (4-(circleRadii[m]/100))) * sind(bubbleSeperation * o + rotPos[m])) + buttonCenter[1])
                 weaponIcon = eval(n)
                 bubbleBox = Rect(circlePos[0] - 30, circlePos[1] - 30, 60, 60)
                 draw.circle(screen, k, circlePos, 15)
@@ -754,9 +755,10 @@ def shipMenu():
                 rotPos[m] += 0.1
         else:
             rotPos[m] = 0
-            draw.circle(screen, (200, 200, 200), buttonCenter, l.width // 4)
-            draw.circle(screen, WHITE, buttonCenter, l.width // 4 - 5)
+            draw.circle(screen, WHITE, buttonCenter, int(l.width / (4 - (circleRadii[m] / 100))))
+            draw.circle(screen, (200, 200, 200), buttonCenter, int(l.width / (4-(circleRadii[m]/100))),5)
             draw.circle(screen, (120, 120, 120), buttonCenter, i.width // 2)
+            circleRadii[m] = max(0,circleRadii[m]-15)
         screen.blit(renderedButtonText, (buttonCenter[0] - (renderedButtonText.get_width() // 2),
                                          buttonCenter[1] - (renderedButtonText.get_height() // 2)))
     # Weapon Stats Card
@@ -1340,6 +1342,8 @@ regenTimer = 0
 deathAnimation = 0
 canRegenShields = False
 selectedWeaponType = 0
+circleRadii = [0,0,0,0]
+circleRadii = [0,0,0,0]
 
 # Other
 running = True

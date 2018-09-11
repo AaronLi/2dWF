@@ -1,5 +1,6 @@
 from pygame import *
 import math_tools
+import math as pmath
 class Bullet2:
     def __init__(self, x, y, angle, damage, faction, range, speed, colour, hitColour, length, gravity, slowdown,
                  thickness, isExplosive=0, explosiveRadius=0, explosiveFalloff=0,
@@ -34,7 +35,8 @@ class Bullet2:
 
     def draw(self, surface, player):
         surface.set_at((int(self.x), int(self.y)), self.colour)
+        angle = pmath.degrees(pmath.atan2(self.vY, self.vX))
         draw.line(surface, self.colour, (self.x + 640 - player.X, self.y + 360 - player.Y), (
-            int((self.length * math_tools.cosd(self.angle)) + self.x + (640 - player.X)),
-            int((self.length * math_tools.sind(self.angle)) + self.y + (360 - player.Y))), self.thickness)
+            int((self.length * math_tools.cosd(angle)) + self.x + (640 - player.X)),
+            int((self.length * math_tools.sind(angle)) + self.y + (360 - player.Y))), self.thickness)
 
