@@ -1,6 +1,6 @@
 # 2dWF
 ## A 2D PvE shooter with random level generation and a diverse weapon collection
-####Perpetual Work In Progress  
+#### Perpetual Work In Progress  
 
 ## Features  
     
@@ -26,4 +26,4 @@ https://8bitwarframe.itch.io/lost-sector
 1. Python 3 (I'm using 3.4 64bit)
   * https://www.python.org/downloads/
 2. Pygame (use 64bit if you're using 64 bit python)
-  * https://bitbucket.org/pygame/pygame/downloads
+  * ```pip3 install pygame```
