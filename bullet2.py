@@ -6,7 +6,6 @@ class Bullet2:
                  thickness, isExplosive=0, explosiveRadius=0, explosiveFalloff=0,
                  fuse=0,isCrit = 0):  # Gravity reduces vY, slowdown decreases vX
         self.x, self.y = x, y
-        self.angle = angle
         self.vX, self.vY = speed * math_tools.cosd(angle), speed * math_tools.sind(angle)
         self.damage = damage
         self.faction = faction

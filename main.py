@@ -654,7 +654,6 @@ def fixLevel(levelData):  # Moves the level so that it isn't outside of the boun
         if i[1] == 3:
             spawnX, spawnY = newTile[-1][0].topleft #we use [-1][0] because the tile that has the proper position has been appended to new tile
         elif i[1] == 4:
-            print(newTile[-1][0].topleft)
             doorList.append(door.Door(newTile[-1][0].topleft, 4, 15, 60, 80, corpDoor1))
             del newTile[-1]
     platforms = []
