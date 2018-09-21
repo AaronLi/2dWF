@@ -14,7 +14,7 @@ mixer.music.set_volume(0.1)
 startTime = time.get_ticks()
 startingMoney = 5000
 screen = display.set_mode((1280, 720))
-MAX_ENEMIES = 0
+MAX_ENEMIES = 3
 
 def loadSave(fName):
     global purchasedWeapons
@@ -287,6 +287,7 @@ def drawUpper(playerX, playerY):  # Also includes shooting
                 for i in range(playerWeapon.burstDelay,playerWeapon.burstDelay*playerWeapon.fireMode,playerWeapon.burstDelay):
                     queuedShots.append([i,angleIn])
     elif mb[0] and not player.mag and not player.reloading:  # if you have no ammo but are trying to shoot
+        #TODO: prevent reload when there is no ammo in reserve
         weaponList[currentWeapon].reloadSound.play()
         player.reloading += 1
 
@@ -559,7 +560,7 @@ def moveParticles():
 
 def spawnEnemies():
     mobSpawnY = player.Y - 500  # height at which the mob should spawn
-    if len(mobList) < MAX_ENEMIES:  # if there are less than 2 enemies
+    if len(mobList) < MAX_ENEMIES:  # if there are less than MAX_ENEMIES enemies
         for i in range(random.randint(1,5)):  # spawn 3
             newEnemyType = random.randint(-2, 3)  # pick random enemy type
             if newEnemyType <= 0:  # refer to mob
