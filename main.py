@@ -1,7 +1,7 @@
 # Base Platformer
 from pygame import *
-import glob, random, math, pickle, weapon
-
+import glob, random, pickle, weapon
+from weapon import Weapon
 import bullet2
 import door
 import explosion
@@ -1119,29 +1119,30 @@ noSound = mixer.Sound('sfx/misc/none.ogg')
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'), mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 # Weapon Info
 weaponList = {
-    'braton': weapon.Weapon(25, 18, 45, 100, bratonShoot, (200, 150, 0), 1, 1, bratonReload, 0, 0, 0, 0, cost=5000, wepType=0),
-    'dera': weapon.Weapon(15, 13, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,wepType=0),
-    'boarP': weapon.Weapon(6, 13, 20, 100, boarShoot, (200, 150, 0), 13, 7, boarReload, 1, 0, 0, 0,bulletRange = 300, cost=20000, wepType=1),
-    'laser': weapon.Weapon(4, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=3),
-    'hek': weapon.Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 4, hekReload, 1, 0, 0, 0,bulletRange = 500, cost=17500, wepType=1, fireMode = 1),
-    'tigris': weapon.Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 6, tigrisReload, 1, 0, 0, 0,bulletRange =400 , cost=17500, wepType=1, fireMode = 1),
-    'rubico': weapon.Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType=2, fireMode = 1),
-    'gorgon': weapon.Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,wepType=3),
-    'grakata': weapon.Weapon(4, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 8, grakataReload, 0, 0, 0, 0, cost=15000,wepType=0,critChance = 50, critMult = 3),
-    'twinviper': weapon.Weapon(6, 3, 28, 80, twinviperShoot, WHITE, 1, 7, twinviperReload, 0, 0, 0, 0, cost=5000, wepType=0),
-    'vulkar': weapon.Weapon(120, 100, 6, 100, vulkarShoot, (200, 150, 0), 1, 0, vulkarReload, 3, 0, 0, 0, cost=15000,wepType=2, fireMode = 1),
-    'lanka': weapon.Weapon(170, 150, 10, 100, lankaShoot, (0, 255, 0), 1, 1, lankaReload, 3, 1, 0, 15, 10, 4, 700, cost=17500,wepType=2, fireMode = 1),
-    'ignis': weapon.Weapon(0.7, 3, 150, 100, ignisShoot, (255, 200, 0), 15, 4, ignisReload, 2, 1, 0.1, 7, 5, 5, 80, cost=20000,wepType=3),
-    'zhuge': weapon.Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType=3),
+    'braton': weapon.Weapon(25, 18, 45, 100, bratonShoot, (200, 150, 0), 1, 1, bratonReload, 0, 0, 0, 0, cost=5000, wepType=Weapon.WEAPON_TYPE.RIFLE),
+    'dera': weapon.Weapon(15, 13, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,wepType=Weapon.WEAPON_TYPE.RIFLE),
+    'boarP': weapon.Weapon(6, 13, 20, 100, boarShoot, (200, 150, 0), 13, 7, boarReload, 1, 0, 0, 0,bulletRange = 300, cost=20000, wepType=Weapon.WEAPON_TYPE.SHOTGUN),
+    'laser': weapon.Weapon(4, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=Weapon.WEAPON_TYPE.SPECIAL),
+    'hek': weapon.Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 4, hekReload, 1, 0, 0, 0,bulletRange = 500, cost=17500, wepType = Weapon.WEAPON_TYPE.SHOTGUN, fireMode = 1),
+    'tigris': weapon.Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 6, tigrisReload, 1, 0, 0, 0,bulletRange =400 , cost=17500, wepType = Weapon.WEAPON_TYPE.SHOTGUN, fireMode = 1),
+    'rubico': weapon.Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE, fireMode = 1),
+    'gorgon': weapon.Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,wepType = Weapon.WEAPON_TYPE.SPECIAL),
+    'grakata': weapon.Weapon(4, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 8, grakataReload, 0, 0, 0, 0, cost=15000,wepType = Weapon.WEAPON_TYPE.RIFLE,critChance = 50, critMult = 3),
+    'twinviper': weapon.Weapon(6, 3, 28, 80, twinviperShoot, WHITE, 1, 7, twinviperReload, 0, 0, 0, 0, cost=5000, wepType = Weapon.WEAPON_TYPE.RIFLE),
+    'vulkar': weapon.Weapon(120, 100, 6, 100, vulkarShoot, (200, 150, 0), 1, 0, vulkarReload, 3, 0, 0, 0, cost=15000,wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE, fireMode = 1),
+    'lanka': weapon.Weapon(170, 150, 10, 100, lankaShoot, (0, 255, 0), 1, 1, lankaReload, 3, 1, 0, 15, 10, 4, 700, cost=17500,wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE, fireMode = 1),
+    'ignis': weapon.Weapon(0.7, 3, 150, 100, ignisShoot, (255, 200, 0), 15, 4, ignisReload, 2, 1, 0.1, 7, 5, 5, 80, cost=20000,wepType = Weapon.WEAPON_TYPE.SPECIAL),
+    'zhuge': weapon.Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType = Weapon.WEAPON_TYPE.SPECIAL),
     'supra': weapon.Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
     'ogris': weapon.Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0 ),
     'soma':weapon.Weapon(2.6,5,100,150,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 7),
-    'prismagorgon':weapon.Weapon(12,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = 3,critChance = 35, critMult = 3),
+    'prismagorgon':weapon.Weapon(12,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = Weapon.WEAPON_TYPE.SPECIAL,critChance = 35, critMult = 3),
     'burston':weapon.Weapon(18,40,45,120,burstonShoot,WHITE,1,1,burstonReload,0,0,cost = 10000,fireMode = 3, burstDelay = 10),
     'sybaris':weapon.Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
     'detron':weapon.Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
-    'vectis':weapon.Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3, cost = 20000,wepType = 2,critChance = 25,critMult=2,fireMode = 1),
-    'targeter':weapon.Weapon(150,100,10,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3, bulletType=1, bulletSpeed=10 ,cost = 30000,wepType = 3,fireMode = 1, bulletLength=10,bulletThickness = 4),
+    'vectis':weapon.Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3, cost = 20000,wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE,critChance = 25,critMult=2,fireMode = 1),
+    #'drakgoon':weapon.Weapon(10,1,7,120,vectisShoot,WHITE,10,3,vectisShoot,1, bulletType = 1, bulletGravity=0.1, bulletSpeed=10, bulletLength = 1, bulletThickness=1, cost = 20000,wepType = Weapon.WEAPON_TYPE.SHOTGUN,critChance = 25,critMult=2,fireMode = 1),
+    'targeter':weapon.Weapon(150,100,10,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3, bulletType=1, bulletSpeed=10 ,cost = 30000,wepType = Weapon.WEAPON_TYPE.SPECIAL,fireMode = 1, bulletLength=10,bulletThickness = 4),
     'unarmed': weapon.Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
 
 display.set_icon(image.load('images/deco/icon.png').convert_alpha())
@@ -1177,6 +1178,7 @@ sybaris = image.load('images/weapons/tenno/sybaris.png').convert_alpha()
 detron = image.load('images/weapons/corpus/detron.png').convert_alpha()
 vectis = image.load('images/weapons/tenno/vectis.png').convert_alpha()
 targeter = image.load('images/weapons/tenno/vectis.png').convert_alpha()
+drakgoon = image.load('images/weapons/orokin/boarP.png').convert_alpha()
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png').convert_alpha()
 frostArms = image.load('images/warframes/frost/frostArms.png').convert_alpha()
