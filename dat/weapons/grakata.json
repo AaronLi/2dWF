@@ -1,0 +1,23 @@
+{
+ "name": "Grakata",
+ "weapon_type": "rifle",
+ "fire_rate": 5,
+ "damage": 4,
+ "sprite": "images/weapons/grineer/grakata.png",
+ "cost": 15000,
+ "magazine_size": 60,
+ "reload_speed": 100,
+ "bullet_colour": "#c89600",
+ "bullets_per_shot": 1,
+ "inaccuracy": 8,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/grakataShoot.ogg",
+  "reloading": "sfx/weapons/grineer/grakataReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 50,
+ "critical_multiplier": 3.0,
+ "fire_mode": "auto"
+}

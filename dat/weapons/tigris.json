@@ -1,0 +1,23 @@
+{
+ "name": "Tigris",
+ "weapon_type": "shotgun",
+ "fire_rate": 15,
+ "damage": 25,
+ "sprite": "images/weapons/tenno/tigris.png",
+ "cost": 17500,
+ "magazine_size": 2,
+ "reload_speed": 120,
+ "bullet_colour": "#c89600",
+ "bullets_per_shot": 5,
+ "inaccuracy": 6,
+ "sounds": {
+  "firing": "sfx/weapons/tenno/tigris.ogg",
+  "reloading": "sfx/weapons/tenno/tigrisReload.ogg"
+ },
+ "ammo_type": "shotgun",
+ "bullet_type": "hitscan",
+ "bullet_range": 400,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "semi"
+}

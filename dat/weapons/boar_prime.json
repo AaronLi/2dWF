@@ -1,0 +1,23 @@
+{
+ "name": "Boar Prime",
+ "weapon_type": "shotgun",
+ "fire_rate": 13,
+ "damage": 6,
+ "sprite": "images/weapons/orokin/boarP.png",
+ "cost": 20000,
+ "magazine_size": 20,
+ "reload_speed": 100,
+ "bullet_colour": "#c89600",
+ "bullets_per_shot": 13,
+ "inaccuracy": 7,
+ "sounds": {
+  "firing": "sfx/weapons/orokin/boarP.ogg",
+  "reloading": "sfx/weapons/orokin/boarPreload.ogg"
+ },
+ "ammo_type": "shotgun",
+ "bullet_type": "hitscan",
+ "bullet_range": 300,
+ "critical_chance": 1,
+ "critical_multiplier": 2.0,
+ "fire_mode": "auto"
+}

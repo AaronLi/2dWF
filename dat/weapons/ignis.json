@@ -1,0 +1,27 @@
+{
+ "name": "Ignis",
+ "weapon_type": "special",
+ "fire_rate": 3,
+ "damage": 0.7,
+ "sprite": "images/weapons/grineer/ignis.png",
+ "cost": 20000,
+ "magazine_size": 150,
+ "reload_speed": 100,
+ "bullet_colour": "#FFC800",
+ "bullets_per_shot": 15,
+ "inaccuracy": 4,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/ignisShoot.ogg",
+  "reloading": "sfx/weapons/grineer/ignisReload.ogg"
+ },
+ "ammo_type": "special",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0.1,
+ "bullet_speed": 7,
+ "bullet_length": 5,
+ "bullet_thickness": 5,
+ "bullet_range": 80,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

@@ -2,6 +2,11 @@ from pygame import *
 import math_tools
 import math as pmath
 class Bullet2:
+
+    class BulletType:
+        HITSCAN = 0
+        PROJECTILE = 1
+
     def __init__(self, x, y, angle, damage, faction, range, speed, colour, hitColour, length, gravity, slowdown,
                  thickness, isExplosive=0, explosiveRadius=0, explosiveFalloff=0,
                  fuse=0,isCrit = 0):  # Gravity reduces vY, slowdown decreases vX

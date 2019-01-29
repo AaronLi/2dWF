@@ -1,7 +1,7 @@
 # Base Platformer
 from pygame import *
 import glob, random, pickle, weapon
-from weapon import Weapon
+from weapon import Weapon, WeaponFactory
 import bullet2
 import door
 import explosion
@@ -103,7 +103,12 @@ def drawUpperSprite():  # creates a new surface for when the player is standing 
     global currentWeapon, upperSurf, lUpperSurf
     upperSurf = Surface((22, 20), SRCALPHA)
     upperSurf.blit(frostUpper, (1, 0))  # regular upper half of body
-    upperSurf.blit(eval(currentWeapon), (5, 8))  # weapon #TODO: remove eval
+
+    weaponSprite = weaponList[currentWeapon].sprite
+    #TODO: remove when json loading is fully implemented
+    if weaponSprite is None:
+        weaponSprite = eval(currentWeapon)
+    upperSurf.blit(weaponSprite, (5, 8))  # weapon #TODO: remove eval
     upperSurf.blit(frostArms, (0, 10))  # arms
     upperSurf = transform.scale(upperSurf, (
         int(upperSurf.get_width() * 1.5), int(upperSurf.get_height() * 1.5)))  # scale it all up
@@ -304,14 +309,14 @@ def fireWeapon(angleIn):
         for i in range(weaponList[currentWeapon].bulletsPerShot):  # check if the bullet hit an enemy
             angle = angleIn + random.randint(-weaponList[currentWeapon].inaccuracy, weaponList[
                 currentWeapon].inaccuracy)  # angle from player's upper body to mouse
-            if weaponList[currentWeapon].bulletType == 0:
+            if weaponList[currentWeapon].bulletType == bullet2.Bullet2.BulletType.HITSCAN:
                 enemyHit = playerShoot(weaponList[currentWeapon], angle)
                 if type(enemyHit) == int:  # if it hit an enemy
                     if random.randint(0, 100) < weaponList[currentWeapon].critChance:
                         mobList[enemyHit].damage(weaponList[currentWeapon].damage * weaponList[currentWeapon].critMult, damagePopoff, 1)
                     else:
                         mobList[enemyHit].damage(weaponList[currentWeapon].damage, damagePopoff)
-            elif weaponList[currentWeapon].bulletType == 1:
+            elif weaponList[currentWeapon].bulletType == bullet2.Bullet2.BulletType.PROJECTILE:
                 if currentWeapon == 'ignis':
                     if random.randint(0, 100) < weaponList[currentWeapon].critChance:
                         bulletList.append(
@@ -734,7 +739,8 @@ def shipMenu():
                 bubbleSeperation = 360 // len(typeSortedWeapons[m])
                 circlePos = (int((l.width // (4-(circleRadii[m]/100))) * cosd(bubbleSeperation * o + rotPos[m]) + buttonCenter[0]),
                              int((l.width // (4-(circleRadii[m]/100))) * sind(bubbleSeperation * o + rotPos[m])) + buttonCenter[1])
-                weaponIcon = eval(n)
+
+                weaponIcon = weaponList[n].sprite
                 bubbleBox = Rect(circlePos[0] - 30, circlePos[1] - 30, 60, 60)
                 draw.circle(screen, k, circlePos, 15)
                 screen.blit(weaponIcon, (
@@ -765,20 +771,27 @@ def shipMenu():
     draw.rect(screen, (140, 140, 140), (470, 50, 340, 540))
     if not selectedStoreProduct == '':
         draw.rect(screen, (100, 100, 100), (480, 60, 320, 300))
-        weaponIcon = eval(selectedStoreProduct)
+
+        weaponIcon = weaponList[selectedStoreProduct].sprite
         weaponIcon = transform.scale(weaponIcon, (weaponIcon.get_width() * 10, weaponIcon.get_height() * 10))
         weaponIcon = transform.rotate(weaponIcon, 45)
         screen.blit(weaponIcon, (640 - (weaponIcon.get_width() // 2), 210 - (weaponIcon.get_height() // 2)))
-        weaponNameRender = smallRoboto.render('"%s"' % (selectedStoreProduct.title()), True, (255, 255, 255))
+
+        weaponName = weaponList[selectedStoreProduct].name
+
+        if weaponName is None:
+            weaponName = selectedStoreProduct.title()
+
+        weaponNameRender = smallRoboto.render('%s' % (weaponName.upper()), True, (255, 255, 255))
         screen.blit(weaponNameRender, (640 - (weaponNameRender.get_width() // 2), 370))
         for i,j,k in zip(weaponSpecialStats,weaponStatsReq,range(len(weaponSpecialStats))):
-            if eval('weaponList[selectedStoreProduct].'+i) > j:
+            if eval('weaponList[selectedStoreProduct].'+i) > j: #TODO: remove this line
                 screen.blit(specialIconList[k],(784-specStatOffset,380))
                 specStatOffset+=18
         for i, j, k in zip(weaponStatNames, range(6), weaponStatIDs):
             weaponStatRender = smallRoboto.render(i, True, (255, 255, 255))
             screen.blit(weaponStatRender, (480, 20 * j + 400))
-            weaponStatValue = eval('weaponList[selectedStoreProduct].%s' % (k))
+            weaponStatValue = eval('weaponList[selectedStoreProduct].%s' % (k)) #TODO: remove this line
             if k == 'reloadSpeed' or k == 'firerate':
                 weaponStatValue = round(weaponStatValue / 60, 2)
                 if k == 'reloadSpeed':
@@ -855,7 +868,7 @@ def startGame():  # reset all game related variables
     drawnMap = playTile[1]
     minimap = transform.scale(drawnMap, [drawnMap.get_width() // 7, drawnMap.get_height() // 7])
     player.health, player.shield = player.maxHealth, player.maxShield
-    player.reserveAmmo = [500, 200, 2500, 60]
+    player.reserveAmmo = [500, 200, 60, 2500]
     player.X, player.Y = spawnX, spawnY
     mobList = []
     pickupList = []
@@ -1065,50 +1078,6 @@ corpDoor1 = image.load('images/levels/corpDoor1.png').convert_alpha()
 # Sounds
 # Music
 mixer.music.load('sfx/music/theme.ogg')  # loads music
-# Shooting
-bratonShoot = mixer.Sound('sfx/weapons/corpus/bratonShoot.ogg')
-deraShoot = mixer.Sound('sfx/weapons/corpus/deraShoot.ogg')
-boarShoot = mixer.Sound('sfx/weapons/orokin/boarP.ogg')
-laserShoot = mixer.Sound('sfx/weapons/factionless/moaGun.ogg')
-hekShoot = mixer.Sound('sfx/weapons/grineer/hekShoot.ogg')
-rubicoShoot = mixer.Sound('sfx/weapons/tenno/rubico.ogg')
-tigrisShoot = mixer.Sound('sfx/weapons/tenno/tigris.ogg')
-gorgonShoot = mixer.Sound('sfx/weapons/grineer/gorgon.ogg')
-grakataShoot = mixer.Sound('sfx/weapons/grineer/grakataShoot.ogg')
-twinviperShoot = mixer.Sound('sfx/weapons/grineer/twinviper.ogg')
-vulkarShoot = mixer.Sound('sfx/weapons/grineer/vulkar.ogg')
-lankaShoot = mixer.Sound('sfx/weapons/corpus/lankaShoot.ogg')
-ignisShoot = mixer.Sound('sfx/weapons/grineer/ignisShoot.ogg')
-zhugeShoot = mixer.Sound('sfx/weapons/tenno/zhuge.ogg')
-supraShoot = mixer.Sound('sfx/weapons/corpus/supraShoot.ogg')
-ogrisShoot = mixer.Sound('sfx/weapons/grineer/ogrisShoot.ogg')
-somaShoot = mixer.Sound('sfx/weapons/tenno/somaShoot.ogg')
-burstonShoot = mixer.Sound('sfx/weapons/tenno/burstonShoot.ogg')
-sybarisShoot = mixer.Sound('sfx/weapons/tenno/sybarisShoot.ogg')
-detronShoot = mixer.Sound('sfx/weapons/corpus/detronShoot.ogg')
-vectisShoot = mixer.Sound('sfx/weapons/tenno/vectisShoot.ogg')
-# Reloading
-laserReload = mixer.Sound('sfx/weapons/factionless/moaGunReload.ogg')
-bratonReload = mixer.Sound('sfx/weapons/corpus/bratonReload.ogg')
-deraReload = mixer.Sound('sfx/weapons/corpus/deraReload.ogg')
-boarReload = mixer.Sound('sfx/weapons/orokin/boarPreload.ogg')
-hekReload = mixer.Sound('sfx/weapons/grineer/hekReload.ogg')
-rubicoReload = mixer.Sound('sfx/weapons/tenno/rubicoReload.ogg')
-tigrisReload = mixer.Sound('sfx/weapons/tenno/tigrisReload.ogg')
-gorgonReload = mixer.Sound('sfx/weapons/grineer/gorgonReload.ogg')
-grakataReload = mixer.Sound('sfx/weapons/grineer/grakataReload.ogg')
-twinviperReload = mixer.Sound('sfx/weapons/grineer/twinviperReload.ogg')
-vulkarReload = mixer.Sound('sfx/weapons/grineer/vulkarReload.ogg')
-lankaReload = mixer.Sound('sfx/weapons/corpus/lankaReload.ogg')
-ignisReload = mixer.Sound('sfx/weapons/grineer/ignisReload.ogg')
-zhugeReload = mixer.Sound('sfx/weapons/tenno/zhugeReload.ogg')
-supraReload = mixer.Sound('sfx/weapons/corpus/supraReload.ogg')
-ogrisReload = mixer.Sound('sfx/weapons/grineer/ogrisReload.ogg')
-somaReload = mixer.Sound('sfx/weapons/tenno/somaReload.ogg')
-burstonReload = mixer.Sound('sfx/weapons/tenno/burstonReload.ogg')
-sybarisReload = mixer.Sound('sfx/weapons/tenno/sybarisReload.ogg')
-detronReload = mixer.Sound('sfx/weapons/corpus/detronReload.ogg')
-vectisReload = mixer.Sound('sfx/weapons/tenno/vectisReload.ogg')
 # Other
 ammoPickup = mixer.Sound('sfx/misc/ammoPickup.ogg')
 healthPickup = mixer.Sound('sfx/misc/healthPickup.ogg')
@@ -1118,32 +1087,32 @@ noSound = mixer.Sound('sfx/misc/none.ogg')
 
 enemyDeathSounds = [mixer.Sound('sfx/misc/corpusDeath.ogg'), mixer.Sound('sfx/misc/corpusDeath1.ogg')]
 # Weapon Info
+weaponFactory = WeaponFactory()
 weaponList = {
-    'braton': weapon.Weapon(25, 18, 45, 100, bratonShoot, (200, 150, 0), 1, 1, bratonReload, 0, 0, 0, 0, cost=5000, wepType=Weapon.WEAPON_TYPE.RIFLE),
-    'dera': weapon.Weapon(15, 13, 30, 80, deraShoot, (50, 170, 255), 1, 1, deraReload, 0, 1, 0, 10, 5, 3, 500, cost=5000,wepType=Weapon.WEAPON_TYPE.RIFLE),
-    'boarP': weapon.Weapon(6, 13, 20, 100, boarShoot, (200, 150, 0), 13, 7, boarReload, 1, 0, 0, 0,bulletRange = 300, cost=20000, wepType=Weapon.WEAPON_TYPE.SHOTGUN),
-    'laser': weapon.Weapon(4, 2, 250, 100, laserShoot, (255, 0, 0), 1, 0, laserReload, 2, 0, 0, 0, cost=20000, wepType=Weapon.WEAPON_TYPE.SPECIAL),
-    'hek': weapon.Weapon(19, 30, 4, 100, hekShoot, (200, 150, 0), 7, 4, hekReload, 1, 0, 0, 0,bulletRange = 500, cost=17500, wepType = Weapon.WEAPON_TYPE.SHOTGUN, fireMode = 1),
-    'tigris': weapon.Weapon(25, 15, 2, 120, tigrisShoot, (200, 150, 0), 5, 6, tigrisReload, 1, 0, 0, 0,bulletRange =400 , cost=17500, wepType = Weapon.WEAPON_TYPE.SHOTGUN, fireMode = 1),
-    'rubico': weapon.Weapon(150, 150, 5, 100, rubicoShoot, WHITE, 1, 0, rubicoReload, 3, 0, 0, 0, cost=20000, wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE, fireMode = 1),
-    'gorgon': weapon.Weapon(20, 10, 90, 180, gorgonShoot, (200, 150, 0), 1, 3, gorgonReload, 0, 0, 0, 0, cost=17500,wepType = Weapon.WEAPON_TYPE.SPECIAL),
-    'grakata': weapon.Weapon(4, 5, 60, 100, grakataShoot, (200, 150, 0), 1, 8, grakataReload, 0, 0, 0, 0, cost=15000,wepType = Weapon.WEAPON_TYPE.RIFLE,critChance = 50, critMult = 3),
-    'twinviper': weapon.Weapon(6, 3, 28, 80, twinviperShoot, WHITE, 1, 7, twinviperReload, 0, 0, 0, 0, cost=5000, wepType = Weapon.WEAPON_TYPE.RIFLE),
-    'vulkar': weapon.Weapon(120, 100, 6, 100, vulkarShoot, (200, 150, 0), 1, 0, vulkarReload, 3, 0, 0, 0, cost=15000,wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE, fireMode = 1),
-    'lanka': weapon.Weapon(170, 150, 10, 100, lankaShoot, (0, 255, 0), 1, 1, lankaReload, 3, 1, 0, 15, 10, 4, 700, cost=17500,wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE, fireMode = 1),
-    'ignis': weapon.Weapon(0.7, 3, 150, 100, ignisShoot, (255, 200, 0), 15, 4, ignisReload, 2, 1, 0.1, 7, 5, 5, 80, cost=20000,wepType = Weapon.WEAPON_TYPE.SPECIAL),
-    'zhuge': weapon.Weapon(60, 23, 20, 100, zhugeShoot, (190, 190, 190), 1, 2, zhugeReload, 0, 1, 0.05, 10, 12, 2, 500,cost=20000, wepType = Weapon.WEAPON_TYPE.SPECIAL),
-    'supra': weapon.Weapon(11, 5, 180, 180, supraShoot, (0, 255, 0), 1, 2, supraReload, 0, 1, 0, 10, 2, 1, 500, 20000, 3),
-    'ogris': weapon.Weapon(120, 120, 5, 150, ogrisShoot, (255, 200, 0), 1, 1, ogrisReload, 3, 1, 0, 5, 5, 3, 500, 22500, 3, 1,100, 0, 0 ),
-    'soma':weapon.Weapon(2.6,5,100,150,somaShoot,WHITE,1,1,somaReload,0,cost = 20000,critChance = 75, critMult = 7),
-    'prismagorgon':weapon.Weapon(12,8,120,160,gorgonShoot,WHITE,1,3,gorgonReload,0,cost = 21000,wepType = Weapon.WEAPON_TYPE.SPECIAL,critChance = 35, critMult = 3),
-    'burston':weapon.Weapon(18,40,45,120,burstonShoot,WHITE,1,1,burstonReload,0,0,cost = 10000,fireMode = 3, burstDelay = 10),
-    'sybaris':weapon.Weapon(30,30,10,120,sybarisShoot,WHITE,1,1,sybarisReload,0,0,cost = 15000,fireMode = 2,burstDelay = 7,critChance = 25,critMult = 2),
-    'detron':weapon.Weapon(14.5,18,5,60,detronShoot,WHITE,7,3,detronReload,1,1,0,13,2,1,30,10000,1,fireMode = 1),
-    'vectis':weapon.Weapon(160,1,1,120,vectisShoot,WHITE,1,0,vectisShoot,3, cost = 20000,wepType = Weapon.WEAPON_TYPE.SNIPER_RIFLE,critChance = 25,critMult=2,fireMode = 1),
+    'braton': weaponFactory.load_from_file("dat/weapons/braton.json"),
+    'dera': weaponFactory.load_from_file("dat/weapons/dera.json"),
+    'boarP': weaponFactory.load_from_file("dat/weapons/boar_prime.json"),
+    'laser': weaponFactory.load_from_file("dat/weapons/laser.json"),
+    'hek': weaponFactory.load_from_file("dat/weapons/hek.json"),
+    'tigris': weaponFactory.load_from_file("dat/weapons/tigris.json"),
+    'rubico': weaponFactory.load_from_file("dat/weapons/rubico.json"),
+    'gorgon': weaponFactory.load_from_file("dat/weapons/gorgon.json"),
+    'grakata': weaponFactory.load_from_file('dat/weapons/grakata.json'),
+    'twinviper': weaponFactory.load_from_file('dat/weapons/twin_viper.json'),
+    'vulkar': weaponFactory.load_from_file('dat/weapons/vulkar.json'),
+    'lanka': weaponFactory.load_from_file('dat/weapons/lanka.json'),
+    'ignis': weaponFactory.load_from_file('dat/weapons/ignis.json'),
+    'zhuge': weaponFactory.load_from_file('dat/weapons/zhuge.json'),
+    'supra': weaponFactory.load_from_file('dat/weapons/supra.json'),
+    'ogris': weaponFactory.load_from_file('dat/weapons/ogris.json'),
+    'soma' : weaponFactory.load_from_file('dat/weapons/soma.json'),
+    'prismagorgon' : weaponFactory.load_from_file('dat/weapons/prismagorgon.json'),
+    'burston' : weaponFactory.load_from_file('dat/weapons/burston.json'),
+    'sybaris' : weaponFactory.load_from_file('dat/weapons/sybaris.json'),
+    'detron' : weaponFactory.load_from_file('dat/weapons/detron.json'),
     #'drakgoon':weapon.Weapon(10,1,7,120,vectisShoot,WHITE,10,3,vectisShoot,1, bulletType = 1, bulletGravity=0.1, bulletSpeed=10, bulletLength = 1, bulletThickness=1, cost = 20000,wepType = Weapon.WEAPON_TYPE.SHOTGUN,critChance = 25,critMult=2,fireMode = 1),
-    'targeter':weapon.Weapon(150,100,10,300,vulkarShoot,(50,170,255),1,1,gorgonReload,3, bulletType=1, bulletSpeed=10 ,cost = 30000,wepType = Weapon.WEAPON_TYPE.SPECIAL,fireMode = 1, bulletLength=10,bulletThickness = 4),
-    'unarmed': weapon.Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, 0, 0)}
+    'targeter' : weaponFactory.load_from_file('dat/weapons/targeter.json'),
+    'unarmed': weapon.Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, Weapon.WEAPON_TYPE.RIFLE, 0)}
 
 display.set_icon(image.load('images/deco/icon.png').convert_alpha())
 for i in range(len(mainMenuBackDrops)):
@@ -1155,30 +1124,7 @@ levelAtlas = image.load('images/levels/tileTextures.png').convert_alpha()
 hudCredit = image.load('images/drops/lifeSupport/hudCredits.png').convert_alpha()
 # Guns
 unarmed = Surface((1, 1), SRCALPHA)
-braton = image.load('images/weapons/corpus/braton.png').convert_alpha()
-dera = image.load('images/weapons/corpus/dera.png').convert_alpha()
-boarP = image.load('images/weapons/orokin/boarP.png').convert_alpha()
-laser = image.load('images/weapons/corpus/moaGun.png').convert_alpha()
-rubico = image.load('images/weapons/tenno/rubico.png').convert_alpha()
-tigris = image.load('images/weapons/tenno/tigris.png').convert_alpha()
-hek = image.load('images/weapons/grineer/hek.png').convert_alpha()
-gorgon = image.load('images/weapons/grineer/gorgon.png').convert_alpha()
-grakata = image.load('images/weapons/grineer/grakata.png').convert_alpha()
-twinviper = image.load('images/weapons/grineer/twinviper.png').convert_alpha()
-vulkar = image.load('images/weapons/grineer/vulkar.png').convert_alpha()
-lanka = image.load('images/weapons/corpus/lanka.png').convert_alpha()
-ignis = image.load('images/weapons/grineer/ignis.png').convert_alpha()
-zhuge = image.load('images/weapons/tenno/zhuge.png').convert_alpha()
-supra = image.load('images/weapons/corpus/supra.png').convert_alpha()
-ogris = image.load('images/weapons/grineer/ogris.png').convert_alpha()
-soma = image.load('images/weapons/tenno/soma.png').convert_alpha()
-prismagorgon = image.load('images/weapons/grineer/gorgonPrisma.png').convert_alpha()
-burston = image.load('images/weapons/tenno/burston.png').convert_alpha()
-sybaris = image.load('images/weapons/tenno/sybaris.png').convert_alpha()
-detron = image.load('images/weapons/corpus/detron.png').convert_alpha()
-vectis = image.load('images/weapons/tenno/vectis.png').convert_alpha()
-targeter = image.load('images/weapons/tenno/vectis.png').convert_alpha()
-drakgoon = image.load('images/weapons/orokin/boarP.png').convert_alpha()
+
 
 frostUpper = image.load('images/warframes/frost/frostUpper.png').convert_alpha()
 frostArms = image.load('images/warframes/frost/frostArms.png').convert_alpha()
@@ -1187,7 +1133,7 @@ currentWeapon = 'unarmed'
 
 pic = Surface((20, 30))
 pickupSprites = [image.load('images/drops/ammo/rifleAmmo.png').convert_alpha(), image.load('images/drops/ammo/shotgunAmmo.png').convert_alpha(),
-                 image.load('images/drops/ammo/laserAmmo.png').convert_alpha(), image.load('images/drops/ammo/sniperAmmo.png').convert_alpha(),
+                 image.load('images/drops/ammo/sniperAmmo.png').convert_alpha(), image.load('images/drops/ammo/laserAmmo.png').convert_alpha(),
                  image.load('images/drops/lifeSupport/health.png').convert_alpha(),
                  image.load('images/drops/lifeSupport/credits.png').convert_alpha()]  # money is now required to live
 pickupList = []

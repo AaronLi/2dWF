@@ -1,0 +1,24 @@
+{
+ "name": "Braton",
+ "weapon_type": "rifle",
+ "damage":25,
+ "fire_rate":18,
+ "sprite": "images/weapons/corpus/braton.png",
+ "cost": 5000,
+ "magazine_size": 45,
+ "reload_speed": 100,
+ "bullet_colour": "#c89600",
+ "bullets_per_shot": 1,
+ "inaccuracy": 1,
+ "sounds": {
+  "firing": "sfx/weapons/corpus/bratonShoot.ogg",
+  "reloading": "sfx/weapons/corpus/bratonReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "hitscan",
+ "bullet_thickness": 0,
+ "bullet_range": 900,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

@@ -1,0 +1,27 @@
+{
+ "name": "Zhuge",
+ "weapon_type": "special",
+ "fire_rate": 23,
+ "damage": 60,
+ "sprite": "images/weapons/tenno/zhuge.png",
+ "cost": 20000,
+ "magazine_size": 20,
+ "reload_speed": 100,
+ "bullet_colour": "#BEBEBE",
+ "bullets_per_shot": 1,
+ "inaccuracy": 2,
+ "sounds": {
+  "firing": "sfx/weapons/tenno/zhuge.ogg",
+  "reloading": "sfx/weapons/tenno/zhugeReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0.05,
+ "bullet_speed": 10,
+ "bullet_length": 12,
+ "bullet_thickness": 2,
+ "bullet_range": 500,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

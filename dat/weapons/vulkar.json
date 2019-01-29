@@ -1,0 +1,23 @@
+{
+ "name": "Vulkar",
+"weapon_type": "sniper_rifle",
+ "fire_rate": 100,
+ "damage": 120,
+ "sprite": "images/weapons/grineer/vulkar.png",
+ "cost": 15000,
+ "magazine_size": 6,
+ "reload_speed": 100,
+ "bullet_colour": "#C89600",
+ "bullets_per_shot": 1,
+ "inaccuracy": 0,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/vulkar.ogg",
+  "reloading": "sfx/weapons/grineer/vulkarReload.ogg"
+ },
+ "ammo_type": "sniper_rifle",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "semi"
+}

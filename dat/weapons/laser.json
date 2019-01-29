@@ -1,0 +1,23 @@
+{
+ "name": "Moa Laser",
+ "weapon_type": "special",
+ "fire_rate": 2,
+ "damage": 4,
+ "sprite": "images/weapons/corpus/moaGun.png",
+ "cost": 20000,
+ "magazine_size": 250,
+ "reload_speed": 100,
+ "bullet_colour": "#ff0000",
+ "bullets_per_shot": 1,
+ "inaccuracy": 0,
+ "sounds": {
+  "firing": "sfx/weapons/factionless/moaGun.ogg",
+  "reloading": "sfx/weapons/factionless/moaGunReload.ogg"
+ },
+ "ammo_type": "special",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

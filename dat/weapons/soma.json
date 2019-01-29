@@ -1,0 +1,23 @@
+{
+ "name": "Soma",
+ "weapon_type": "rifle",
+ "fire_rate": 5,
+ "damage": 2.6,
+ "sprite": "images/weapons/tenno/soma.png",
+ "cost": 20000,
+ "magazine_size": 100,
+ "reload_speed": 150,
+ "bullet_colour": "#ffffff",
+ "bullets_per_shot": 1,
+ "inaccuracy": 1,
+ "sounds": {
+  "firing": "sfx/weapons/tenno/somaShoot.ogg",
+  "reloading": "sfx/weapons/tenno/somaReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 75,
+ "critical_multiplier": 7.0,
+ "fire_mode": "auto"
+}

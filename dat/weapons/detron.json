@@ -1,0 +1,27 @@
+{
+ "name": "Detron",
+ "weapon_type": "shotgun",
+ "fire_rate": 18,
+ "damage": 14.5,
+ "sprite": "images/weapons/corpus/detron.png",
+ "cost": 10000,
+ "magazine_size": 5,
+ "reload_speed": 60,
+ "bullet_colour": "#ffffff",
+ "bullets_per_shot": 7,
+ "inaccuracy": 3,
+ "sounds": {
+  "firing": "sfx/weapons/corpus/detronShoot.ogg",
+  "reloading": "sfx/weapons/corpus/detronReload.ogg"
+ },
+ "ammo_type": "shotgun",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0,
+ "bullet_speed": 13,
+ "bullet_length": 2,
+ "bullet_thickness": 1,
+ "bullet_range": 30,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "semi"
+}

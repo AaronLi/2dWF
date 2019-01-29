@@ -1,0 +1,27 @@
+{
+ "name": "Targeter",
+ "weapon_type": "special",
+ "fire_rate": 100,
+ "damage": 150,
+ "sprite": "images/weapons/tenno/vectis.png",
+ "cost": 30000,
+ "magazine_size": 10,
+ "reload_speed": 300,
+ "bullet_colour": "#32AAFF",
+ "bullets_per_shot": 1,
+ "inaccuracy": 1,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/vulkar.ogg",
+  "reloading": "sfx/weapons/grineer/gorgonReload.ogg"
+ },
+ "ammo_type": "sniper_rifle",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0,
+ "bullet_speed": 10,
+ "bullet_length": 10,
+ "bullet_thickness": 4,
+ "bullet_range": 900,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "semi"
+}

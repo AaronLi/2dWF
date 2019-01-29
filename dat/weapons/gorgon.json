@@ -1,0 +1,23 @@
+{
+ "name": "Gorgon",
+ "weapon_type": "special",
+ "fire_rate": 10,
+ "damage": 20,
+ "sprite": "images/weapons/grineer/gorgon.png",
+ "cost": 17500,
+ "magazine_size": 90,
+ "reload_speed": 100,
+ "bullet_colour": "#c89600",
+ "bullets_per_shot": 1,
+ "inaccuracy": 3,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/gorgon.ogg",
+  "reloading": "sfx/weapons/grineer/gorgonReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

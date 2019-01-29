@@ -1,0 +1,23 @@
+{
+ "name": "Hek",
+ "weapon_type": "shotgun",
+ "fire_rate": 30,
+ "damage": 12,
+ "sprite": "images/weapons/grineer/hek.png",
+ "cost": 17500,
+ "magazine_size": 4,
+ "reload_speed": 100,
+ "bullet_colour": "#c89600",
+ "bullets_per_shot": 7,
+ "inaccuracy": 4,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/hekShoot.ogg",
+  "reloading": "sfx/weapons/grineer/hekReload.ogg"
+ },
+ "ammo_type": "shotgun",
+ "bullet_type": "hitscan",
+ "bullet_range": 500,
+ "critical_chance": 10,
+ "critical_multiplier": 1.75,
+ "fire_mode": "semi"
+}

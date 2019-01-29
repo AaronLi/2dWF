@@ -1,0 +1,27 @@
+{
+ "name": "Lanka",
+ "weapon_type": "sniper_rifle",
+ "fire_rate": 150,
+ "damage": 170,
+ "sprite": "images/weapons/corpus/lanka.png",
+ "cost": 17500,
+ "magazine_size": 10,
+ "reload_speed": 100,
+ "bullet_colour": "#00ff00",
+ "bullets_per_shot": 1,
+ "inaccuracy": 1,
+ "sounds": {
+  "firing": "sfx/weapons/corpus/lankaShoot.ogg",
+  "reloading": "sfx/weapons/corpus/lankaReload.ogg"
+ },
+ "ammo_type": "sniper_rifle",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0,
+ "bullet_speed": 15,
+ "bullet_length": 10,
+ "bullet_thickness": 4,
+ "bullet_range": 700,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "semi"
+}

@@ -1,0 +1,23 @@
+{
+ "name": "Prisma Gorgon",
+ "weapon_type": "special",
+ "fire_rate": 8,
+ "damage": 12,
+ "sprite": "images/weapons/grineer/gorgonPrisma.png",
+ "cost": 21000,
+ "magazine_size": 120,
+ "reload_speed": 160,
+ "bullet_colour": "#ffffff",
+ "bullets_per_shot": 1,
+ "inaccuracy": 3,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/gorgon.ogg",
+  "reloading": "sfx/weapons/grineer/gorgonReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 35,
+ "critical_multiplier": 3,
+ "fire_mode": "auto"
+}

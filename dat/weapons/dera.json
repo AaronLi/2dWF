@@ -1,0 +1,27 @@
+{
+ "name": "Dera",
+ "weapon_type": "rifle",
+ "fire_rate": 13,
+ "damage": 15,
+ "sprite": "images/weapons/corpus/dera.png",
+ "cost": 5000,
+ "magazine_size": 30,
+ "reload_speed": 80,
+ "bullet_colour": "#32aaff",
+ "bullets_per_shot": 1,
+ "inaccuracy": 0,
+ "sounds": {
+  "firing": "sfx/weapons/corpus/deraShoot.ogg",
+  "reloading": "sfx/weapons/corpus/deraReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0,
+ "bullet_speed": 10,
+ "bullet_length": 5,
+ "bullet_thickness": 3,
+ "bullet_range": 500,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

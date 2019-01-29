@@ -1,0 +1,23 @@
+{
+ "name": "Vectis",
+ "weapon_type": "sniper_rifle",
+ "fire_rate": 1,
+ "damage": 160,
+ "sprite": "images/weapons/tenno/vectis.png",
+ "cost": 20000,
+ "magazine_size": 1,
+ "reload_speed": 120,
+ "bullet_colour": "#ffffff",
+ "bullets_per_shot": 1,
+ "inaccuracy": 0,
+ "sounds": {
+  "firing": "sfx/weapons/tenno/vectisShoot.ogg",
+  "reloading": "sfx/weapons/tenno/vectisReload.ogg"
+ },
+ "ammo_type": "sniper_rifle",
+ "bullet_type": "hitscan",
+ "bullet_range": 900,
+ "critical_chance": 25,
+ "critical_multiplier": 2.0,
+ "fire_mode": "semi"
+}

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="af9bda6f-a3a0-44bd-a59a-ed49291137a0" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/2dWF.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/2dWF.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="af9bda6f-a3a0-44bd-a59a-ed49291137a0" name="Default" comment="preparing to rework weapon loading system to be more readable">
+      <change afterPath="$PROJECT_DIR$/dat/weapons/prismagorgon.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bullet2.py" beforeDir="false" afterPath="$PROJECT_DIR$/bullet2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/weapon.py" beforeDir="false" afterPath="$PROJECT_DIR$/weapon.py" afterDir="false" />
     </list>
@@ -15,7 +15,8 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/2dWF$main.coverage" NAME="main Coverage Results" MODIFIED="1544649103777" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/2dWF$weapon.coverage" NAME="weapon Coverage Results" MODIFIED="1548739995394" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/2dWF$main.coverage" NAME="main Coverage Results" MODIFIED="1548741043600" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FUSProjectUsageTrigger">
     <session id="-535242405">
@@ -62,30 +63,45 @@
     <session id="-1961207984">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="2" />
+          <entry key="project.closed" value="7" />
+          <entry key="project.open.time.12" value="2" />
           <entry key="project.open.time.14" value="1" />
+          <entry key="project.open.time.19" value="1" />
           <entry key="project.open.time.3" value="2" />
-          <entry key="project.opened" value="3" />
+          <entry key="project.open.time.8" value="2" />
+          <entry key="project.opened" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="1" />
+          <entry key="gif" value="1" />
+          <entry key="json" value="44" />
+          <entry key="png" value="5" />
+          <entry key="pstat" value="1" />
+          <entry key="py" value="5" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="1" />
+          <entry key="Image" value="6" />
+          <entry key="JSON" value="44" />
+          <entry key="Profiler Session" value="1" />
+          <entry key="Python" value="5" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="451" />
+          <entry key="Python Console" value="183" />
+          <entry key="json" value="2910" />
+          <entry key="py" value="6256" />
+          <entry key="txt" value="61" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="451" />
+          <entry key="JSON" value="2910" />
+          <entry key="PLAIN_TEXT" value="61" />
+          <entry key="Python" value="6439" />
         </counts>
       </usages-collector>
     </session>
@@ -95,31 +111,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="1121" column="74" selection-start-line="1121" selection-start-column="74" selection-end-line="1121" selection-end-column="74" />
+            <state relative-caret-position="-1">
+              <caret line="307" column="23" selection-start-line="307" selection-start-column="23" selection-end-line="307" selection-end-column="23" />
               <folding>
                 <element signature="e#18#38#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mob.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3792">
-              <caret line="241" column="36" selection-start-line="241" selection-start-column="36" selection-end-line="241" selection-end-column="36" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bullet2.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="80">
-              <caret line="7" column="29" selection-start-line="7" selection-start-column="29" selection-end-line="7" selection-end-column="29" />
-              <folding>
-                <element signature="e#0#20#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -128,37 +123,83 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/weapon.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="331">
-              <caret line="32" column="38" lean-forward="true" selection-start-line="32" selection-start-column="38" selection-end-line="32" selection-end-column="38" />
+            <state relative-caret-position="-20">
+              <caret line="126" column="40" selection-start-line="126" selection-start-column="40" selection-end-line="126" selection-end-column="40" />
               <folding>
-                <marker date="1544649296379" expanded="true" signature="77:166" ph="..." />
-                <marker date="1544649296379" expanded="true" signature="1560:1565" ph="..." />
+                <element signature="e#0#11#0" expanded="true" />
+                <marker date="1548741043588" expanded="true" signature="144:789" ph="..." />
+                <marker date="1548741043588" expanded="true" signature="2263:2268" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/explosion.py">
+        <entry file="file://$PROJECT_DIR$/dat/weapons/sybaris.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <folding>
-                <element signature="e#0#35#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="224">
+              <caret line="14" column="34" selection-start-line="14" selection-start-column="34" selection-end-line="14" selection-end-column="34" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="320">
-                <caret line="20" selection-start-line="20" selection-end-line="20" />
-              </first_editor>
-              <second_editor />
+        <entry file="file://$PROJECT_DIR$/dat/weapons/detron.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="224">
+              <caret line="14" column="35" selection-start-line="14" selection-start-column="35" selection-end-line="14" selection-end-column="35" />
             </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/dat/weapons/ogris.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="480">
+              <caret line="30" column="1" lean-forward="true" selection-start-line="30" selection-start-column="1" selection-end-line="30" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/dat/weapons/targeter.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="400">
+              <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/dat/weapons/vectis.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="336">
+              <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/dat/weapons/vulkar.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="336">
+              <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/dat/weapons/laser.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="16">
+              <caret line="1" column="14" selection-start-line="1" selection-start-column="14" selection-end-line="1" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/readme_data/storeMenu.gif">
+          <provider selected="true" editor-type-id="images" />
         </entry>
       </file>
     </leaf>
@@ -172,36 +213,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>maketile</find>
-      <find>makenewle</find>
-      <find>fixlevel</find>
-      <find>startGam</find>
-      <find>start</find>
-      <find>print</find>
-      <find>door</find>
-      <find>doorList.appe</find>
-      <find>makenew</find>
-      <find>yoff</find>
-      <find>store</find>
+      <find>(wepType) ?= ?3</find>
+      <find>yappi</find>
+      <find>WeaponFac</find>
+      <find>ammotype</find>
+      <find>drawstuff</find>
+      <find>pickuplist.</find>
+      <find>pickupsprites</find>
+      <find>.droptype</find>
+      <find>pickuplist</find>
+      <find>ammo</find>
+      <find>reserve</find>
+      <find>reserveAmmo</find>
+      <find>weaponList =</find>
+      <find>out.firemode</find>
+      <find>weaponList = {</find>
+      <find>o,age/;pad</find>
+      <find>image</find>
+      <find>weaponList</find>
+      <find>((weaponList\[)+\w+\])</find>
+      <find>weapon</find>
       <find>draw</find>
-      <find>while running</find>
-      <find>shipmenu()</find>
-      <find>shipMenu()</find>
-      <find>hypot</find>
-      <find>hypo</find>
-      <find>store info</find>
-      <find>shipmenu</find>
-      <find>sybaris.</find>
-      <find>ship</find>
-      <find>minimap</find>
-      <find>transform.scale</find>
-      <find>screen.blit</find>
-      <find>bullet</find>
-      <find>draw.line</find>
-      <find>bulletlist.append</find>
-      <find>bulletList.append</find>
-      <find>doorList.append</find>
-      <find>makenewlevel</find>
+      <find>def draw</find>
+      <find>&quot;&quot;</find>
+      <find>is None</find>
+      <find>'laser'</find>
+      <find>store</find>
+      <find>def targeter</find>
+      <find>targeter</find>
+      <find>queuedShots</find>
+      <find>fireweapon</find>
     </findStrings>
     <replaceStrings>
       <replace>bullet2.Bullet2</replace>
@@ -209,6 +250,7 @@
       <replace>.width</replace>
       <replace>weapon.Weapon</replace>
       <replace>.png').convert_alpha()</replace>
+      <replace>wepType = Weapon.WEAPON_TYPE.SPECIAL</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -226,7 +268,30 @@
         <option value="$PROJECT_DIR$/pickup.py" />
         <option value="$PROJECT_DIR$/mob.py" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/dat/weapons/braton.json" />
         <option value="$PROJECT_DIR$/bullet2.py" />
+        <option value="$PROJECT_DIR$/dat/weapons/dera.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/boar_prime.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/hek.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/tigris.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/rubico.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/gorgon.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/grakata.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/twin_viper.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/vulkar.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/lanka.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/ignis.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/zhuge.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/supra.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/ogris.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/soma.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/prismagorgon.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/burston.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/vectis.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/targeter.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/sybaris.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/detron.json" />
+        <option value="$PROJECT_DIR$/dat/weapons/laser.json" />
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/weapon.py" />
       </list>
@@ -257,6 +322,42 @@
             <path>
               <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
               <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="dat" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="dat" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="corpus" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="orokin" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
               <item name="readme_data" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -268,18 +369,42 @@
               <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
               <item name="2dWF" type="462c0819:PsiDirectoryNode" />
               <item name="sfx" type="462c0819:PsiDirectoryNode" />
-              <item name="misc" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
               <item name="2dWF" type="462c0819:PsiDirectoryNode" />
               <item name="sfx" type="462c0819:PsiDirectoryNode" />
-              <item name="music" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="corpus" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
               <item name="2dWF" type="462c0819:PsiDirectoryNode" />
-              <item name="tileset" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="factionless" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="grineer" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="orokin" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="2dWF" type="b2602c69:ProjectViewProjectNode" />
+              <item name="2dWF" type="462c0819:PsiDirectoryNode" />
+              <item name="sfx" type="462c0819:PsiDirectoryNode" />
+              <item name="weapons" type="462c0819:PsiDirectoryNode" />
+              <item name="tenno" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -290,7 +415,12 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\dumpl\PycharmProjects\2dWF\dat\weapons" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -304,7 +434,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.main">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" singleton="true" temporary="true">
       <module name="2dWF" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -327,9 +457,36 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="weapon" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="2dWF" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/weapon.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.weapon" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.weapon" />
       </list>
     </recent_temporary>
   </component>
@@ -365,28 +522,35 @@
       <option name="project" value="LOCAL" />
       <updated>1536794591187</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="preparing to rework weapon loading system to be more readable">
+      <created>1544649314030</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1544649314030</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13113007" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13646056" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49733475" visible="true" weight="0.32917467" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.329718" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4968017" visible="true" weight="0.32821497" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3991323" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Statistic" order="8" />
       <window_info anchor="bottom" id="Terminal" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5026652" side_tool="true" visible="true" weight="0.32917467" />
-      <window_info anchor="bottom" id="Python Console" order="11" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50053304" side_tool="true" weight="0.329718" />
+      <window_info anchor="bottom" id="Python Console" order="11" sideWeight="0.49946696" weight="0.32917467" />
       <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="13" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -394,7 +558,8 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Data View" order="3" />
       <window_info anchor="right" id="Database" order="4" />
-      <window_info anchor="right" id="SciView" order="5" />
+      <window_info anchor="right" id="SciView" order="5" weight="0.32995737" />
+      <window_info anchor="right" id="Coverage" order="6" side_tool="true" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -407,29 +572,10 @@
     <MESSAGE value="Created classes for most things" />
     <MESSAGE value="Added animations to store menu and made arrows curve in flight" />
     <MESSAGE value="removed useless code" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed useless code" />
+    <MESSAGE value="preparing to rework weapon loading system to be more readable" />
+    <option name="LAST_COMMIT_MESSAGE" value="preparing to rework weapon loading system to be more readable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/readme_data/level407912.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level771235.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level950877.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level225919.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level838825.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level591781.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level119179.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level90420.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level839563.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level2098.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level2861.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level10948.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level12700.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level26844.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level28809.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level60100.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level32636.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level38198.png" />
-    <entry file="file://$PROJECT_DIR$/readme_data/level37632.png" />
     <entry file="file://$PROJECT_DIR$/readme_data/level54456.png" />
     <entry file="file://$PROJECT_DIR$/readme_data/level47524.png" />
     <entry file="file://$PROJECT_DIR$/readme_data/level50373.png" />
@@ -450,29 +596,34 @@
     <entry file="file://$PROJECT_DIR$/readme_data/level99625.png" />
     <entry file="file://$PROJECT_DIR$/mob.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3792">
-          <caret line="241" column="36" selection-start-line="241" selection-start-column="36" selection-end-line="241" selection-end-column="36" />
+        <state relative-caret-position="2848">
+          <caret line="182" column="61" selection-start-line="182" selection-start-column="61" selection-end-line="182" selection-end-column="61" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bullet2.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
-          <caret line="7" column="29" selection-start-line="7" selection-start-column="29" selection-end-line="7" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
+          <caret line="7" column="22" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/explosion.py">
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/json/decoder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="434">
+          <caret line="354" selection-start-line="354" selection-end-line="354" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/json/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="298" selection-start-line="298" selection-end-line="298" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Documents/ShareX/Screenshots/2018-12/pycharm64_8Bce9vXu5j.png">
+      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
@@ -489,23 +640,191 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/explosion.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/dera.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="6" column="14" lean-forward="true" selection-start-line="6" selection-start-column="14" selection-end-line="6" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/boar_prime.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="14" column="35" selection-start-line="14" selection-start-column="35" selection-end-line="14" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/tigris.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="9" column="26" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/gorgon.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/hek.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="9" column="26" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/grakata.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="20" column="27" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/braton.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="9" column="26" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/rubico.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/lanka.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/ignis.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/zhuge.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/supra.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/prismagorgon.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="20" column="25" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/soma.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/burston.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="22" column="18" selection-start-line="22" selection-start-column="18" selection-end-line="22" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/vectis.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/vulkar.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/laser.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="1" column="14" selection-start-line="1" selection-start-column="14" selection-end-line="1" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme_data/storeMenu.gif">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/twin_viper.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="14" column="36" selection-start-line="14" selection-start-column="36" selection-end-line="14" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/targeter.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="1121" column="74" selection-start-line="1121" selection-start-column="74" selection-end-line="1121" selection-end-column="74" />
+        <state relative-caret-position="-1">
+          <caret line="307" column="23" selection-start-line="307" selection-start-column="23" selection-end-line="307" selection-end-column="23" />
           <folding>
             <element signature="e#18#38#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/detron.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="14" column="35" selection-start-line="14" selection-start-column="35" selection-end-line="14" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/ogris.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="30" column="1" lean-forward="true" selection-start-line="30" selection-start-column="1" selection-end-line="30" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/weapons/sybaris.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="14" column="34" selection-start-line="14" selection-start-column="34" selection-end-line="14" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/weapon.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="331">
-          <caret line="32" column="38" lean-forward="true" selection-start-line="32" selection-start-column="38" selection-end-line="32" selection-end-column="38" />
+        <state relative-caret-position="-20">
+          <caret line="126" column="40" selection-start-line="126" selection-start-column="40" selection-end-line="126" selection-end-column="40" />
           <folding>
-            <marker date="1544649296379" expanded="true" signature="77:166" ph="..." />
-            <marker date="1544649296379" expanded="true" signature="1560:1565" ph="..." />
+            <element signature="e#0#11#0" expanded="true" />
+            <marker date="1548741043588" expanded="true" signature="144:789" ph="..." />
+            <marker date="1548741043588" expanded="true" signature="2263:2268" ph="..." />
           </folding>
         </state>
       </provider>

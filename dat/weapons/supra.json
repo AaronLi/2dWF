@@ -1,0 +1,27 @@
+{
+ "name": "Supra",
+ "weapon_type": "special",
+ "fire_rate": 5,
+ "damage": 11,
+ "sprite": "images/weapons/corpus/supra.png",
+ "cost": 20000,
+ "magazine_size": 180,
+ "reload_speed": 180,
+ "bullet_colour": "#00ff00",
+ "bullets_per_shot": 1,
+ "inaccuracy": 2,
+ "sounds": {
+  "firing": "sfx/weapons/corpus/supraShoot.ogg",
+  "reloading": "sfx/weapons/corpus/supraReload.ogg"
+ },
+ "ammo_type": "rifle",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0,
+ "bullet_speed": 10,
+ "bullet_length": 2,
+ "bullet_thickness": 1,
+ "bullet_range": 500,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "auto"
+}

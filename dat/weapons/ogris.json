@@ -1,0 +1,31 @@
+{
+ "name": "Ogris",
+ "weapon_type": "special",
+ "fire_rate": 120,
+ "damage": 120,
+ "sprite": "images/weapons/grineer/ogris.png",
+ "cost": 22500,
+ "magazine_size": 5,
+ "reload_speed": 150,
+ "bullet_colour": "#ffc800",
+ "bullets_per_shot": 1,
+ "inaccuracy": 1,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/ogrisShoot.ogg",
+  "reloading": "sfx/weapons/grineer/ogrisReload.ogg"
+ },
+ "ammo_type": "special",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0,
+ "bullet_speed": 5,
+ "bullet_length": 5,
+ "bullet_thickness": 3,
+ "bullet_range": 500,
+ "is_explosive": "true",
+ "explosive_radius": 100,
+ "explosive_falloff": 0,
+ "fuse": 0,
+ "critical_chance": 5,
+ "critical_multiplier": 1.5,
+ "fire_mode": "semi"
+}
