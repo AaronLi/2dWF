@@ -28,10 +28,9 @@ class Mob:  # Class used for the player and enemies
 
         self.shieldTimer = 300  # Time until shield begins regenerating
         self.animation = animation  # current frame set the mob is on
-        self.weapon = weapon  # current weapon the mob is using (Used more with enemies)
+        self.weaponName = weapon  # current weapon the mob is using (Used more with enemies)
         self.shootCooldown = 0  # Fire rate timer
         self.mag = 45  # Current magazine size, changes with weapon
-        self.reloading = 0  # Reload timer
         # Enemy Related things
         self.enemyType = enemyType
         self.attacking = False
@@ -126,61 +125,61 @@ class Mob:  # Class used for the player and enemies
                                 self.animation = 4
                             else:
                                 self.animation = 5
-                            if self.shootCounter % weaponList[self.weapon].firerate == 0:
+                            if self.shootCounter % weaponList[self.weaponName].firerate == 0:
                                 # different bullet based on different enemy type
                                 if self.enemyType == 0:
                                     if self.facing_left:
                                         bulletList.append(
-                                            bullet2.Bullet2(self.X, self.Y + 25+random.randint(-1,1), 0,
-                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
-                                                    weaponList[self.weapon].bulletColour,
-                                                    (255, 0, 0), 7, 0, 0, 2))
+                                            bullet2.Bullet2(self.X, self.Y + 25 + random.randint(-1,1), 0,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 3,
+                                                            weaponList[self.weaponName].bulletColour,
+                                                            (255, 0, 0), 7, 0, 0, 2))
                                     else:
                                         bulletList.append(
                                             bullet2.Bullet2(self.X + self.width, self.Y + 25 + random.randint(-1, 1), 180,
-                                                            weaponList[self.weapon].damage // 2, 0, 400, 3,
-                                                            weaponList[self.weapon].bulletColour, (255, 0, 0), 7,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 3,
+                                                            weaponList[self.weaponName].bulletColour, (255, 0, 0), 7,
                                                             0, 0, 2))
                                 elif self.enemyType == 1:
                                     if self.facing_left:
                                         bulletList.append(
                                             bullet2.Bullet2(self.X + self.width // 2, self.Y + random.randint(-1, 1), 0,
-                                                            weaponList[self.weapon].damage // 2, 0, 400, 3,
-                                                            weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 3,
+                                                            weaponList[self.weaponName].bulletColour, (255, 0, 0), 5,
                                                             0, 0, 4))
                                     else:
                                         bulletList.append(
                                             bullet2.Bullet2(self.X + self.width // 2, self.Y, 180,
-                                                            weaponList[self.weapon].damage // 2, 0, 400, 3,
-                                                            weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 3,
+                                                            weaponList[self.weaponName].bulletColour, (255, 0, 0), 5,
                                                             0, 0, 4))
                                 elif self.enemyType == 2:
                                     if self.facing_left:
                                         bulletList.append(
                                             bullet2.Bullet2(self.X + self.width // 2, self.Y + 25 + random.randint(-1, 1), 0,
-                                                            weaponList[self.weapon].damage // 2, 0, 400, 7,
-                                                            weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 7,
+                                                            weaponList[self.weaponName].bulletColour, (255, 0, 0), 5,
                                                             0, 0, 4))
                                     else:
                                         bulletList.append(
                                             bullet2.Bullet2(self.X + self.width // 2, self.Y + 25 + random.randint(-1, 1), 180,
-                                                            weaponList[self.weapon].damage // 2, 0, 400, 7,
-                                                            weaponList[self.weapon].bulletColour, (255, 0, 0), 5,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 7,
+                                                            weaponList[self.weaponName].bulletColour, (255, 0, 0), 5,
                                                             0, 0, 4))
                                 elif self.enemyType == 3:
                                     if self.facing_left:
                                         bulletList.append(
-                                            bullet2.Bullet2(self.X, self.Y + 22+random.randint(-1,1), 0,
-                                                    weaponList[self.weapon].damage // 2, 0, 400, 3,
-                                                    weaponList[self.weapon].bulletColour,
-                                                    (255, 0, 0), 7, 0, 0, 2))
+                                            bullet2.Bullet2(self.X, self.Y + 22 + random.randint(-1,1), 0,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 3,
+                                                            weaponList[self.weaponName].bulletColour,
+                                                            (255, 0, 0), 7, 0, 0, 2))
                                     else:
                                         bulletList.append(
                                             bullet2.Bullet2(self.X + self.width, self.Y + 22 + random.randint(-1, 1), 180,
-                                                            weaponList[self.weapon].damage // 2, 0, 400, 3,
-                                                            weaponList[self.weapon].bulletColour, (255, 0, 0), 7,
+                                                            weaponList[self.weaponName].damage // 2, 0, 400, 3,
+                                                            weaponList[self.weaponName].bulletColour, (255, 0, 0), 7,
                                                             0, 0, 2))
-                                weaponList[self.weapon].fireSound.play()
+                                weaponList[self.weaponName].fireSound.play()
                             break
                         if player.X > self.X:  # check 3 pixels along the line of sight
                             losX += 3

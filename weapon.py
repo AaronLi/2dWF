@@ -2,7 +2,6 @@ import json
 from pygame import image, Color, mixer
 from bullet2 import Bullet2
 
-#TODO: make weapon factory
 class Weapon:
 
     class WEAPON_TYPE:
@@ -61,6 +60,15 @@ class Weapon:
         self.fireMode = fireMode
         self.burstDelay = burstDelay
         self.sprite = None
+
+    def get_stats(self):
+        stats_out = {"damage":self.damage,
+                     "firerate":self.firerate,
+                     "magSize":self.magSize,
+                     "reloadSpeed":self.reloadSpeed,
+                     "inaccuracy":self.inaccuracy,
+                     "bulletsPerShot":self.bulletsPerShot}
+        return stats_out
 
 class WeaponFactory:
     def __init__(self):

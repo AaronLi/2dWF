@@ -7,7 +7,7 @@ import door
 import explosion
 import particle
 from math_tools import *
-import mob
+import mob, player
 
 init()
 mixer.music.set_volume(0.1)
@@ -34,8 +34,8 @@ def findSaves():
 def drawCursor():
     draw.circle(screen, WHITE, (int(mx), int(my)), 3)
     draw.circle(screen, BLACK, (int(mx), int(my)), 2)
-    if player.reloading>0:
-        reloadPercent = player.reloading/weaponList[currentWeapon].reloadSpeed
+    if playerUser.reloading>0:
+        reloadPercent = playerUser.reloading / weaponList[currentWeapon].reloadSpeed
         for i in range(-90,int(360*reloadPercent)-90):
             draw.line(screen,WHITE,(mx+(5*sind(i)),my+(5*cosd(i))),(mx+(10*sind(i)),my+(10*cosd(i))))
 def flipFrames(frameList):  # Reflects the sprites in a spritelist if they're all facing the wrong direction
@@ -85,16 +85,16 @@ def readyController():
 
 def swordHit():  # check for sword hits
     global playerRect
-    swingBox = Rect(player.X, player.Y, 40, player.H)  # sword area
+    swingBox = Rect(playerUser.X, playerUser.Y, 40, playerUser.H)  # sword area
     for i in mobList:
         enemyRect = Rect(i.X, i.Y, i.width, i.H)  # enemy area
         # Swing
-        if player.facing_left:  # if player is facing left
+        if playerUser.facing_left:  # if player is facing left
             if enemyRect.colliderect(swingBox.move(-swingBox.w, 0)):  # if enemy is colliding with the sword
                 i.damage(50, damagePopoff)
                 break
-        elif not player.facing_left:  # if player is facing right
-            if enemyRect.colliderect(swingBox.move(player.width, 0)):
+        elif not playerUser.facing_left:  # if player is facing right
+            if enemyRect.colliderect(swingBox.move(playerUser.width, 0)):
                 i.damage(50, damagePopoff)
                 break
 
@@ -108,7 +108,7 @@ def drawUpperSprite():  # creates a new surface for when the player is standing 
     #TODO: remove when json loading is fully implemented
     if weaponSprite is None:
         weaponSprite = eval(currentWeapon)
-    upperSurf.blit(weaponSprite, (5, 8))  # weapon #TODO: remove eval
+    upperSurf.blit(weaponSprite, (5, 8))  # weapon
     upperSurf.blit(frostArms, (0, 10))  # arms
     upperSurf = transform.scale(upperSurf, (
         int(upperSurf.get_width() * 1.5), int(upperSurf.get_height() * 1.5)))  # scale it all up
@@ -118,7 +118,7 @@ def drawUpperSprite():  # creates a new surface for when the player is standing 
 def miniMap():  # draws minimap in top left of hud
     mMapSurf = Surface((200, 100), SRCALPHA)
     mMapSurf.fill(WHITE)  # fill with white
-    mMapSurf.blit(minimap, (100 - player.X // 7, 50 - player.Y // 7))  # blit scaled down tile
+    mMapSurf.blit(minimap, (100 - playerUser.X // 7, 50 - playerUser.Y // 7))  # blit scaled down tile
     MapSurf = transform.rotate(mMapSurf, -1)  # tilt it so it looks like the warframe minimap
 
     screen.blit(mMapSurf, (5, 5))
@@ -129,21 +129,21 @@ def drawHud():  # Draw hud, credits, health, shields, minimap, ammo
     angledHudSec = Surface((300, 43), SRCALPHA)
     ammoHud = Surface((165, 25), SRCALPHA)
     creditHud = Surface((200, 25), SRCALPHA)
-    creditDisplay = smallRoboto.render(str(player.money), True, WHITE)  # render current money
+    creditDisplay = smallRoboto.render(str(playerUser.money), True, WHITE)  # render current money
     ammoCounter = smallRoboto.render(
-        '%10s: %-3d/ %2d' % (currentWeapon, player.mag, player.reserveAmmo[weaponList[currentWeapon].ammoType]), True,
+        '%10s: %-3d/ %2d' % (currentWeapon, playerUser.mag, playerUser.reserveAmmo[weaponList[currentWeapon].ammoType]), True,
         WHITE)  # render current ammo / ammo reserve
-    healthCounter = largeRoboto.render(str(max(0, player.health)), True, (255, 40, 40))  # render health
-    shieldCounter = largeRoboto.render(str(max(0, int(player.shield))), True, (100, 170, 255))  # render shields
+    healthCounter = largeRoboto.render(str(max(0, playerUser.health)), True, (255, 40, 40))  # render health
+    shieldCounter = largeRoboto.render(str(max(0, int(playerUser.shield))), True, (100, 170, 255))  # render shields
     angledHudSec.blit(healthCounter, (300 - healthCounter.get_width(), 10))
     creditHud.blit(hudCredit, (0, 5))
     creditHud.blit(creditDisplay, (20, 0))
-    draw.line(angledHudSec, (255, 40, 40), (300 - (math.ceil(45 * (max(0, player.health) / player.maxHealth))), 42),
+    draw.line(angledHudSec, (255, 40, 40), (300 - (math.ceil(45 * (max(0, playerUser.health) / playerUser.maxHealth))), 42),
               (300, 42), 3)  # draw line for player health
     angledHudSec.blit(shieldCounter, (245 - shieldCounter.get_width(), 10))
-    if player.shield > 0:  # don't show player shields bar if they're at 0
+    if playerUser.shield > 0:  # don't show player shields bar if they're at 0
         draw.line(angledHudSec, (100, 170, 255),
-                  (245 - (math.ceil(45 * (max(0, player.shield) / player.maxShield))), 42), (245, 42),
+                  (245 - (math.ceil(45 * (max(0, playerUser.shield) / playerUser.maxShield))), 42), (245, 42),
                   3)  # draw line for player shields
     ammoHud.blit(ammoCounter, (0, 0))
     rotatedCreditHud = transform.rotate(creditHud, -2)  # rotate so it looks like warframe hud
@@ -213,12 +213,18 @@ def calcBullets():  # check if the enemy bullets hit anything
 
     for i in range(len(bulletList) - 1, -1, -1):
         nextBullet = False  # will stop checking things if the bullet no longer exists
+        bullAngle = math.degrees(math.atan2(bulletList[i].vY, bulletList[i].vX))
         for j in playTile[2]:
             if j[0].collidepoint(bulletList[i].x, bulletList[i].y) and j[1] != 3:  # if bullet hit a platform or wall
                 if bulletList[i].isExplosive:
                     explosiveList.append(explosion.Explosion(bulletList[i].x-bulletList[i].vX, bulletList[i].y-bulletList[i].vY, bulletList[i].damage,
                                                    bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
                                                    weaponList[currentWeapon].bulletColour, (200, 200, 200), weaponList[currentWeapon].fuse))
+                if weapon:
+                    for k in range(5):  # make particles on the environment at the hit location
+                        particleList.append(
+                            particle.Particle(screen, bulletList[i].x, bulletList[i].y, -bullAngle + 180, 5, weaponList[currentWeapon].bulletColour, 4,
+                                     0.2, 0.2, 0.4, 1, 10))
                 del bulletList[i]
                 nextBullet = True
                 break
@@ -232,6 +238,12 @@ def calcBullets():  # check if the enemy bullets hit anything
                                       bulletList[i].explosiveFalloff, bulletList[i].explosiveRadius,
                                       weaponList[currentWeapon].bulletColour, (200, 200, 200),
                                       weaponList[currentWeapon].fuse))
+                    if weapon:
+                        for k in range(5):  # make particles on the environment at the hit location
+                            particleList.append(
+                                particle.Particle(screen, bulletList[i].x, bulletList[i].y, -bullAngle + 180, 5,
+                                                  weaponList[currentWeapon].bulletColour, 4,
+                                                  0.2, 0.2, 0.4, 1, 10))
                     del bulletList[i]
                     nextBullet = True
                     break
@@ -251,12 +263,12 @@ def calcBullets():  # check if the enemy bullets hit anything
             if len(bulletList) > 0:
                 if playerRect.collidepoint(bulletList[i].x, bulletList[i].y) and bulletList[i].faction == 0 and \
                                 bulletList[i].range > 0:  # if bullet is still alive and it hit the player
-                    if player.shield != player.maxShield:
+                    if playerUser.shield != playerUser.maxShield:
                         regenTimer = 200  # begin shield regen
-                    if player.shield > 0:  # if the player has shields
-                        player.shield -= bulletList[i].damage  # hit shields
+                    if playerUser.shield > 0:  # if the player has shields
+                        playerUser.shield -= bulletList[i].damage  # hit shields
                     else:
-                        player.health = max(0, player.health - bulletList[i].damage)  # hit health
+                        playerUser.health = max(0, playerUser.health - bulletList[i].damage)  # hit health
                     bulletList[i].range = 0
                 else:
                     bulletList[i].move()
@@ -269,15 +281,15 @@ def drawUpper(playerX, playerY):  # Also includes shooting
     smallestLimit = -180
     largestLimit = 180
     playerWeapon = weaponList[currentWeapon]
-    if not player.facing_left:
+    if not playerUser.facing_left:
         rotUpper = transform.rotate(upperSurf, angleIn)  # rotate upper body
         screen.blit(rotUpper, (playerX - rotUpper.get_width() // 2, playerY - rotUpper.get_height() // 2 - 2))
     else:
         rotUpper = transform.rotate(lUpperSurf, angleIn)  # rotate upper body
         screen.blit(rotUpper, (playerX - 5 - rotUpper.get_width() // 2, playerY - rotUpper.get_height() // 2 - 2))
 
-    if mb[0] and player.shootCooldown == 0 and player.mag > 0 and player.reloading == 0:  # if player can shoot and is trying to shoot
-        player.shootCooldown = playerWeapon.firerate  # fire rate timer
+    if mb[0] and playerUser.shootCooldown == 0 and playerUser.mag > 0 and playerUser.reloading == 0:  # if player can shoot and is trying to shoot
+        playerUser.shootCooldown = playerWeapon.firerate  # fire rate timer
         if playerWeapon.fireMode == 0:
             fireWeapon(angleIn)
         elif playerWeapon.fireMode >= 1:
@@ -291,21 +303,20 @@ def drawUpper(playerX, playerY):  # Also includes shooting
                 canClick = False
                 for i in range(playerWeapon.burstDelay,playerWeapon.burstDelay*playerWeapon.fireMode,playerWeapon.burstDelay):
                     queuedShots.append([i,angleIn])
-    elif mb[0] and not player.mag and not player.reloading:  # if you have no ammo but are trying to shoot
-        #TODO: prevent reload when there is no ammo in reserve
+    elif mb[0] and not playerUser.mag and not playerUser.reloading and playerUser.reserveAmmo[weaponList[currentWeapon].wepType] > 0:  # if you have no ammo but are trying to shoot
         weaponList[currentWeapon].reloadSound.play()
-        player.reloading += 1
+        playerUser.reloading += 1
 
-    player.facing_left = -270 < angleIn < -90  # change player direction if they are aiming on the left or right
+    playerUser.facing_left = -270 < angleIn < -90  # change player direction if they are aiming on the left or right
 def fireWeapon(angleIn):
-    if player.mag > 0:
+    if playerUser.mag > 0:
         for i in range(10):  # add particles at muzzle of gun
             particleList.append(
-                particle.Particle(screen, player.X + (player.width // 2) + 20 * cosd(angleIn), player.Y + 20 - 20 * sind(angleIn),
+                particle.Particle(screen, playerUser.X + (playerUser.width // 2) + 20 * cosd(angleIn), playerUser.Y + 20 - 20 * sind(angleIn),
                                   -angleIn, 5, weaponList[currentWeapon].bulletColour, 4, 0.1, 0.1, 7, 2, 20))
         weaponList[currentWeapon].fireSound.stop()
         weaponList[currentWeapon].fireSound.play()
-        player.mag -= 1
+        playerUser.mag -= 1
         for i in range(weaponList[currentWeapon].bulletsPerShot):  # check if the bullet hit an enemy
             angle = angleIn + random.randint(-weaponList[currentWeapon].inaccuracy, weaponList[
                 currentWeapon].inaccuracy)  # angle from player's upper body to mouse
@@ -320,7 +331,7 @@ def fireWeapon(angleIn):
                 if currentWeapon == 'ignis':
                     if random.randint(0, 100) < weaponList[currentWeapon].critChance:
                         bulletList.append(
-                            bullet2.Bullet2(player.X + player.width // 2, player.Y + 20, -angle,
+                            bullet2.Bullet2(playerUser.X + playerUser.width // 2, playerUser.Y + 20, -angle,
                                             weaponList[currentWeapon].damage * weaponList[currentWeapon].critMult,
                                             1, weaponList[currentWeapon].bulletRange,
                                             weaponList[currentWeapon].bulletSpeed + random.randint(-2, 2) + random.random(),
@@ -329,7 +340,7 @@ def fireWeapon(angleIn):
                                             weaponList[currentWeapon].bulletThickness, isCrit=1))
                     else:
                         bulletList.append(
-                            bullet2.Bullet2(player.X + player.width // 2, player.Y + 20, -angle,
+                            bullet2.Bullet2(playerUser.X + playerUser.width // 2, playerUser.Y + 20, -angle,
                                             weaponList[currentWeapon].damage,
                                             1, weaponList[currentWeapon].bulletRange,
                                             weaponList[currentWeapon].bulletSpeed + random.randint(-2, 2) + random.random(),
@@ -339,7 +350,7 @@ def fireWeapon(angleIn):
                 else:
                     if random.randint(0, 100) < weaponList[currentWeapon].critChance:
                         bulletList.append(
-                            bullet2.Bullet2(player.X + player.width // 2, player.Y + 20, -angle,
+                            bullet2.Bullet2(playerUser.X + playerUser.width // 2, playerUser.Y + 20, -angle,
                                             weaponList[currentWeapon].damage * weaponList[currentWeapon].critMult,
                                             1, weaponList[currentWeapon].bulletRange, weaponList[currentWeapon].bulletSpeed,
                                             weaponList[currentWeapon].bulletColour, weaponList[currentWeapon].bulletColour,
@@ -349,7 +360,7 @@ def fireWeapon(angleIn):
                                             weaponList[currentWeapon].fuse, isCrit=1))
                     else:
                         bulletList.append(
-                            bullet2.Bullet2(player.X + player.width // 2, player.Y + 20, -angle,
+                            bullet2.Bullet2(playerUser.X + playerUser.width // 2, playerUser.Y + 20, -angle,
                                             weaponList[currentWeapon].damage,
                                             1, weaponList[currentWeapon].bulletRange, weaponList[currentWeapon].bulletSpeed,
                                             weaponList[currentWeapon].bulletColour, weaponList[currentWeapon].bulletColour,
@@ -396,70 +407,70 @@ def makeTile(tileInfo):  # draw the tile
 
 
 def keysDown(keys):  # check what keys are being held
-    global player, canUseSword, currentFrame
+    global playerUser, canUseSword, currentFrame
     if keys[K_a]:
-        player.vX -= player.vAx  # moves left
-        player.facing_left = True  # player is facing left
-    if (keys[K_w] or keys[K_SPACE]) and player.oW and (keys[K_a] or keys[K_d]):  # if player is wall running
-        player.vY = max(-4, player.vY - 0.5)  # move player up
-        if player.facing_left:  # wall running animation
-            player.animation = 9
-        elif not player.facing_left:
-            player.animation = 8
+        playerUser.vX -= playerUser.vAx  # moves left
+        playerUser.facing_left = True  # player is facing left
+    if (keys[K_w] or keys[K_SPACE]) and playerUser.oW and (keys[K_a] or keys[K_d]):  # if player is wall running
+        playerUser.vY = max(-4, playerUser.vY - 0.5)  # move player up
+        if playerUser.facing_left:  # wall running animation
+            playerUser.animation = 9
+        elif not playerUser.facing_left:
+            playerUser.animation = 8
     if keys[K_d]:
-        player.vX += player.vAx  # moves right
-        player.facing_left = False  # player is facing right
+        playerUser.vX += playerUser.vAx  # moves right
+        playerUser.facing_left = False  # player is facing right
     if keys[K_e] and not keys[K_a] and not keys[K_d]:  # if player is stationary and meleeing
-        if player.facing_left:
-            player.animation = 7  # melee animation
-        elif not player.facing_left:
-            player.animation = 6
+        if playerUser.facing_left:
+            playerUser.animation = 7  # melee animation
+        elif not playerUser.facing_left:
+            playerUser.animation = 6
         if (currentFrame == 0 or currentFrame == 2):  # frames that have the sword swipe
             if canUseSword:
                 swordHit()  # check if the sword hit anything
                 sword1.play()  # make sword swinging sound
                 canUseSword = False  # can only hit one target per swing
                 # reflecting bullets
-            swingBox = Rect(player.X, player.Y, 40, player.H)  # sword area
+            swingBox = Rect(playerUser.X, playerUser.Y, 40, playerUser.H)  # sword area
             for i in bulletList:  # go through list of enemy bullets
-                if player.facing_left:  # if player is facing left
+                if playerUser.facing_left:  # if player is facing left
                     if swingBox.move(-swingBox.w, 0).collidepoint(i.x, i.y):  # check if bullet is hitting sword
                         i.angle = 180
                         i.vX, i.vY = i.speed * cosd(i.angle), i.speed * sind(i.angle)
                         i.faction = 1  # change bullet into player's bullet
                         break
-                elif not player.facing_left:
-                    if swingBox.move(player.width, 0).collidepoint(i.x,
-                                                               i.y):  # i.hitRect.colliderect(swingBox.move(player.width,0)):
+                elif not playerUser.facing_left:
+                    if swingBox.move(playerUser.width, 0).collidepoint(i.x,
+                                                                       i.y):  # i.hitRect.colliderect(swingBox.move(player.width,0)):
                         i.angle = 0
                         i.vX, i.vY = i.speed * cosd(i.angle), i.speed * sind(i.angle)
                         i.faction = 1
                         break
         elif currentFrame == 1 or currentFrame == 3:  # frames that no longer have the sword swipe
             canUseSword = True
-    elif player.oG:  # if the player isn't doing anything and is stationary
-        if player.facing_left:
-            player.animation = idleLeft
-        elif not player.facing_left:
-            player.animation = idleRight
+    elif playerUser.oG:  # if the player isn't doing anything and is stationary
+        if playerUser.facing_left:
+            playerUser.animation = idleLeft
+        elif not playerUser.facing_left:
+            playerUser.animation = idleRight
 
 def targeterMech():
     global angleIn
     for i in mobList:
-        if player.facing_left:
-            playerToEnemy = angleBetween((player.X,player.Y+player.H//2),(i.X+i.width//2,i.Y+i.H//2))
+        if playerUser.facing_left:
+            playerToEnemy = angleBetween((playerUser.X, playerUser.Y + playerUser.H // 2), (i.X + i.width // 2, i.Y + i.H // 2))
         else:
-            playerToEnemy = angleBetween((player.X + player.width, player.Y + player.H // 2),
+            playerToEnemy = angleBetween((playerUser.X + playerUser.width, playerUser.Y + playerUser.H // 2),
                                          (i.X + i.width // 2, i.Y + i.H // 2))
-        aimFromEnemy = int(angleIn-angleBetween((player.X,player.Y),(i.X,i.Y)))
-        if checkBullTrajectory(180+playerToEnemy,player.X,player.Y,700,mobList.index(i),False) == mobList.index(i) and abs(aimFromEnemy) in range(140,210) and len(targeterList)<6:
+        aimFromEnemy = int(angleIn - angleBetween((playerUser.X, playerUser.Y), (i.X, i.Y)))
+        if checkBullTrajectory(180+playerToEnemy, playerUser.X, playerUser.Y, 700, mobList.index(i), False) == mobList.index(i) and abs(aimFromEnemy) in range(140, 210) and len(targeterList)<6:
             addToList = True
             for j in targeterList:
                 if i in j:
                     addToList = False
             if addToList:
                 targeterList.append([i,90,180+playerToEnemy])
-        elif checkBullTrajectory(180+playerToEnemy,player.X+player.width, player.Y, 700, mobList.index(i), False) == mobList.index(i) and abs(aimFromEnemy) in range(140, 210) and len(targeterList)<6:
+        elif checkBullTrajectory(180+playerToEnemy, playerUser.X + playerUser.width, playerUser.Y, 700, mobList.index(i), False) == mobList.index(i) and abs(aimFromEnemy) in range(140, 210) and len(targeterList)<6:
             addToList = True
             for j in targeterList:
                 if i in j:
@@ -474,54 +485,54 @@ def targeterMech():
     for i in range(len(targeterList)-1,-1,-1):
         mobInfo = targeterList[i]
         if mobInfo[1] > 0:
-            if player.facing_left:
-                draw.line(screen,(255,0,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].width//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+            if playerUser.facing_left:
+                draw.line(screen, (255,0,0), (640,375), (640 - playerUser.X + mobInfo[0].X + (mobInfo[0].width // 2), 360 - playerUser.Y + mobInfo[0].Y + (mobInfo[0].H // 2)))
             else:
-                draw.line(screen,(255,0,0),(670,375),(640-player.X+mobInfo[0].X+(mobInfo[0].width//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+                draw.line(screen, (255,0,0), (670,375), (640 - playerUser.X + mobInfo[0].X + (mobInfo[0].width // 2), 360 - playerUser.Y + mobInfo[0].Y + (mobInfo[0].H // 2)))
             targeterList[i][1] -= 1
         elif mobInfo[1]<= 0:
-            if player.facing_left:
-                draw.line(screen,(0,255,0),(640,375),(640-player.X+mobInfo[0].X+(mobInfo[0].width//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
+            if playerUser.facing_left:
+                draw.line(screen, (0,255,0), (640,375), (640 - playerUser.X + mobInfo[0].X + (mobInfo[0].width // 2), 360 - playerUser.Y + mobInfo[0].Y + (mobInfo[0].H // 2)))
             else:
-                draw.line(screen,(0,255,0),(670,375),(640-player.X+mobInfo[0].X+(mobInfo[0].width//2),360-player.Y+mobInfo[0].Y+(mobInfo[0].H//2)))
-        targeterList[i][2] = angleBetween((player.X + player.width // 2, player.Y + player.H // 2), (mobInfo[0].X + mobInfo[0].width // 2, mobInfo[0].Y + mobInfo[0].H // 2))
+                draw.line(screen, (0,255,0), (670,375), (640 - playerUser.X + mobInfo[0].X + (mobInfo[0].width // 2), 360 - playerUser.Y + mobInfo[0].Y + (mobInfo[0].H // 2)))
+        targeterList[i][2] = angleBetween((playerUser.X + playerUser.width // 2, playerUser.Y + playerUser.H // 2), (mobInfo[0].X + mobInfo[0].width // 2, mobInfo[0].Y + mobInfo[0].H // 2))
         if mobInfo[0].health<=0:
             del targeterList[i]
 
 def drawStuff(tileSurf, tileSize, keys):  # render everything
-    global player, frames, animation, visualOff, pic, currentFrame, bulletTrailList
+    global playerUser, frames, animation, visualOff, pic, currentFrame, bulletTrailList
     screen.fill((0, 0, 0))
-    if keys[K_a] and player.oG:  # conditional animations
-        player.animation = left
-    elif keys[K_d] and player.oG:
-        player.animation = right
-    elif player.facing_left and not player.oG and not player.oW:
-        player.animation = jumpLeft
-    elif not player.facing_left and not player.oG and not player.oW:
-        player.animation = jumpRight
-    elif player.facing_left and player.oG and player.animation != 7 and player.animation != 8:
-        player.animation = idleLeft
-    elif not player.facing_left and player.oG and player.animation != 6 and player.animation != 9:
-        player.animation = idleRight
+    if keys[K_a] and playerUser.oG:  # conditional animations
+        playerUser.animation = left
+    elif keys[K_d] and playerUser.oG:
+        playerUser.animation = right
+    elif playerUser.facing_left and not playerUser.oG and not playerUser.oW:
+        playerUser.animation = jumpLeft
+    elif not playerUser.facing_left and not playerUser.oG and not playerUser.oW:
+        playerUser.animation = jumpRight
+    elif playerUser.facing_left and playerUser.oG and playerUser.animation != 7 and playerUser.animation != 8:
+        playerUser.animation = idleLeft
+    elif not playerUser.facing_left and playerUser.oG and playerUser.animation != 6 and playerUser.animation != 9:
+        playerUser.animation = idleRight
 
-    pic = playerFrames[player.animation][0][player.frame // playerFrames[player.animation][1] % len(
-        playerFrames[player.animation][0])]  # current frame to show
-    player.frame += 1
+    pic = playerFrames[playerUser.animation][0][playerUser.frame // playerFrames[playerUser.animation][1] % len(
+        playerFrames[playerUser.animation][0])]  # current frame to show
+    playerUser.frame += 1
     for i in doorList:
-        i.draw(screen, player)
-    screen.blit(tileSurf, (640 - player.X, 360 - player.Y))  # blit the level
+        i.draw(screen, playerUser)
+    screen.blit(tileSurf, (640 - playerUser.X, 360 - playerUser.Y))  # blit the level
     moveParticles()
     for i in damagePopoff:
-        screen.blit(i.renderedText,(640-player.X+i.x,360-player.Y+i.y))
+        screen.blit(i.renderedText, (640 - playerUser.X + i.x, 360 - playerUser.Y + i.y))
     for i in bulletList:
-        i.draw(screen, player)
+        i.draw(screen, playerUser)
     for i in range(len(pickupList)):
         screen.blit(pickupSprites[pickupList[i].dropType],
-                    (640 - player.X + pickupList[i].X, 360 - player.Y + pickupList[i].Y))  # draw the pickups/drops
+                    (640 - playerUser.X + pickupList[i].X, 360 - playerUser.Y + pickupList[i].Y))  # draw the pickups/drops
     for i in range(len(bulletTrailList) - 1, -1, -1):  # draw the bullet trails from the player
         draw.line(screen, weaponList[currentWeapon].bulletColour,
-                  (640 - player.X + bulletTrailList[i][0], 360 - player.Y + bulletTrailList[i][1]),
-                  (640 - player.X + bulletTrailList[i][2], 360 - player.Y + bulletTrailList[i][3]),max(weaponList[currentWeapon].bulletThickness,1))
+                  (640 - playerUser.X + bulletTrailList[i][0], 360 - playerUser.Y + bulletTrailList[i][1]),
+                  (640 - playerUser.X + bulletTrailList[i][2], 360 - playerUser.Y + bulletTrailList[i][3]), max(weaponList[currentWeapon].bulletThickness, 1))
     bulletTrailList = []
     for i in mobList:
 
@@ -537,57 +548,57 @@ def drawStuff(tileSurf, tileSize, keys):  # render everything
             enemyPic = cTechFrames[i.animation][0][
                 i.frame // cTechFrames[i.animation][1] % len(cTechFrames[i.animation][0])]
         i.frame += 1
-        screen.blit(enemyPic, (640 - player.X + i.X, 379 - player.Y + i.Y + (25 - enemyPic.get_height())))
+        screen.blit(enemyPic, (640 - playerUser.X + i.X, 379 - playerUser.Y + i.Y + (25 - enemyPic.get_height())))
         if i.dying==0:
-            draw.line(screen, (255, 40, 40), (640 - player.X + i.X + (30 * max(0, i.health) // i.maxHealth),
-                                          360 - player.Y + i.Y + (25 - enemyPic.get_height())),
-                  (640 - player.X + i.X, 360 - player.Y + i.Y + (25 - enemyPic.get_height())))
+            draw.line(screen, (255, 40, 40), (640 - playerUser.X + i.X + (30 * max(0, i.health) // i.maxHealth),
+                                              360 - playerUser.Y + i.Y + (25 - enemyPic.get_height())),
+                      (640 - playerUser.X + i.X, 360 - playerUser.Y + i.Y + (25 - enemyPic.get_height())))
     companionPic =  wKubrowFrames[companion.animation][0][
                 companion.frame // wKubrowFrames[companion.animation][1] % len(wKubrowFrames[companion.animation][0])]
-    screen.blit(companionPic, (640 - player.X + companion.X, 379 - player.Y + companion.Y + (10 - companionPic.get_height())))
+    screen.blit(companionPic, (640 - playerUser.X + companion.X, 379 - playerUser.Y + companion.Y + (10 - companionPic.get_height())))
     companion.frame+=1
-    currentFrame = player.frame // playerFrames[player.animation][1] % len(
-        playerFrames[player.animation][0])  # the current frame for use in other functions
-    screen.blit(pic, (640 + additionalOffsets[player.animation][
-        player.frame // playerFrames[player.animation][1] % len(playerFrames[player.animation][0])],
+    currentFrame = playerUser.frame // playerFrames[playerUser.animation][1] % len(
+        playerFrames[playerUser.animation][0])  # the current frame for use in other functions
+    screen.blit(pic, (640 + additionalOffsets[playerUser.animation][
+        playerUser.frame // playerFrames[playerUser.animation][1] % len(playerFrames[playerUser.animation][0])],
                       360 + (36 - pic.get_height())))  # blit the player on the center of the screen
-    if not (not player.oG or player.animation == 7 or player.animation == 6):  # if the player isn't moving or meleeing
+    if not (not playerUser.oG or playerUser.animation == 7 or playerUser.animation == 6):  # if the player isn't moving or meleeing
         drawUpper(660, 376 + (36 - pic.get_height()))
     drawHud()
 
 
 def moveParticles():
     for i in range(len(particleList) - 1, -1, -1):
-        particleList[i].moveParticle(player)
+        particleList[i].moveParticle(playerUser)
         if not particleList[i].live:  # remove if dead
             del particleList[i]
 
 
 def spawnEnemies():
-    mobSpawnY = player.Y - 500  # height at which the mob should spawn
+    mobSpawnY = playerUser.Y - 500  # height at which the mob should spawn
     if len(mobList) < MAX_ENEMIES:  # if there are less than MAX_ENEMIES enemies
         for i in range(random.randint(1,5)):  # spawn 3
             newEnemyType = random.randint(-2, 3)  # pick random enemy type
             if newEnemyType <= 0:  # refer to mob
                 mobList.append(
-                    mob.Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 3 + random.random(), 0.3,
-                        False, 1, weapon='dera', avoidance=50 + random.randint(-5, 60),
-                        shootRange=150 + random.randint(-10, 10)))
+                    mob.Mob(playerUser.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 3 + random.random(), 0.3,
+                            False, 1, weapon='dera', avoidance=50 + random.randint(-5, 60),
+                            shootRange=150 + random.randint(-10, 10)))
             elif newEnemyType == 1:
                 mobList.append(
-                    mob.Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 4 + random.random(), 0.3,
-                        False, 1, weapon='laser', enemyType=1, avoidance=40 + random.randint(-5, 30), health=170,
-                        shootRange=130 + random.randint(-20, 10)))
+                    mob.Mob(playerUser.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 4 + random.random(), 0.3,
+                            False, 1, weapon='laser', enemyType=1, avoidance=40 + random.randint(-5, 30), health=170,
+                            shootRange=130 + random.randint(-20, 10)))
             elif newEnemyType == 2:
                 mobList.append(
-                    mob.Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 2 + random.random(), 0.3,
-                        False, 1, weapon='lanka', enemyType=2, avoidance=430 + random.randint(-5, 40),
-                        shootRange=500 + random.randint(0, 100), health=60))
+                    mob.Mob(playerUser.X + random.choice([-1200, 1200]), mobSpawnY + 50, 45, 45, 0, 0, 2 + random.random(), 0.3,
+                            False, 1, weapon='lanka', enemyType=2, avoidance=430 + random.randint(-5, 40),
+                            shootRange=500 + random.randint(0, 100), health=60))
             elif newEnemyType == 3:
                 mobList.append(
-                    mob.Mob(player.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 2.5 + random.random(), 0.3,
-                        False, 1, weapon='supra', enemyType=3, avoidance=100 + random.randint(-5, 40),
-                        shootRange=170 + random.randint(0, 100), health=120)
+                    mob.Mob(playerUser.X + random.choice([-1200, 1200]), mobSpawnY + 50, 30, 45, 0, 0, 2.5 + random.random(), 0.3,
+                            False, 1, weapon='supra', enemyType=3, avoidance=100 + random.randint(-5, 40),
+                            shootRange=170 + random.randint(0, 100), health=120)
                 )
 
 
@@ -644,10 +655,10 @@ def makeNewLevel(levelLength):  # stitches the rects from different tiles togeth
 def playerShoot(weapon, angle):  # finds what the player hit
     global pic, movedTileTops, mx, my
     retVal = None
-    if player.facing_left:
-        retVal = checkBullTrajectory(angle, player.X, player.Y + 20, weaponList[currentWeapon].bulletRange)
+    if playerUser.facing_left:
+        retVal = checkBullTrajectory(angle, playerUser.X, playerUser.Y + 20, weaponList[currentWeapon].bulletRange)
     else:
-        retVal = checkBullTrajectory(angle, player.X + player.width, player.Y + 20, weaponList[currentWeapon].bulletRange)
+        retVal = checkBullTrajectory(angle, playerUser.X + playerUser.width, playerUser.Y + 20, weaponList[currentWeapon].bulletRange)
     return retVal
 
 
@@ -721,7 +732,7 @@ def shipMenu():
     weaponStatNames = ['Damage', 'Fire Rate', 'Magazine', 'Reload Speed', 'Accuracy', 'Projectiles']
     weaponStatIDs = ['damage', 'firerate', 'magSize', 'reloadSpeed', 'inaccuracy', 'bulletsPerShot']
     weaponSpecialStats = ['isExplosive','critChance','fireMode']
-    weaponStatsReq = [0,20,1]
+    weaponStatsReq = {'isExplosive':0, 'critChance':20, 'fireMode':1}
     specStatOffset = 0
     for i, j, k, l, m in zip(buttonRects, buttonText, buttonColours, wheelRects, range(4)):
         buttonCenter = (i.x + (i.width // 2), i.y + (i.height // 2))
@@ -784,14 +795,27 @@ def shipMenu():
 
         weaponNameRender = smallRoboto.render('%s' % (weaponName.upper()), True, (255, 255, 255))
         screen.blit(weaponNameRender, (640 - (weaponNameRender.get_width() // 2), 370))
-        for i,j,k in zip(weaponSpecialStats,weaponStatsReq,range(len(weaponSpecialStats))):
-            if eval('weaponList[selectedStoreProduct].'+i) > j: #TODO: remove this line
-                screen.blit(specialIconList[k],(784-specStatOffset,380))
-                specStatOffset+=18
+
+
+        specialIcons = []
+
+        if weaponList[selectedStoreProduct].isExplosive > weaponStatsReq['isExplosive']:
+            specialIcons.append(explosiveIcon)
+        if weaponList[selectedStoreProduct].critChance > weaponStatsReq['critChance']:
+            specialIcons.append(criticalIcon)
+        if weaponList[selectedStoreProduct].fireMode > weaponStatsReq['fireMode']:
+            specialIcons.append(burstIcon)
+
+        for i, icon in enumerate(specialIcons):
+            screen.blit(icon, (784 - 18 * i, 380))
+
+        #rendering the stats on the weapon card
+        weaponStats = weaponList[selectedStoreProduct].get_stats()
+
         for i, j, k in zip(weaponStatNames, range(6), weaponStatIDs):
-            weaponStatRender = smallRoboto.render(i, True, (255, 255, 255))
+            weaponStatRender = smallRoboto.render(i, True, (255, 255, 255)) # render the name of the stat
             screen.blit(weaponStatRender, (480, 20 * j + 400))
-            weaponStatValue = eval('weaponList[selectedStoreProduct].%s' % (k)) #TODO: remove this line
+            weaponStatValue = weaponStats[k]
             if k == 'reloadSpeed' or k == 'firerate':
                 weaponStatValue = round(weaponStatValue / 60, 2)
                 if k == 'reloadSpeed':
@@ -804,16 +828,16 @@ def shipMenu():
             screen.blit(weaponStatValueRender, (800 - weaponStatValueRender.get_width(), 20 * j + 400))
         # Buy and equip button
         if not purchasedWeapons[weaponNamesList.index(selectedStoreProduct)]:
-            weaponCostRender = micRoboto.render('%d/%d' % (weaponList[selectedStoreProduct].cost, player.money), True,
+            weaponCostRender = micRoboto.render('%d/%d' % (weaponList[selectedStoreProduct].cost, playerUser.money), True,
                                                 (255, 255, 255))
             buyTextRender = micRoboto.render('Buy', True, (255, 255, 255))
             buyButton = Rect(480, 540, weaponCostRender.get_width() + 30, 40)
-            if player.money >= weaponList[selectedStoreProduct].cost:
+            if playerUser.money >= weaponList[selectedStoreProduct].cost:
                 if buyButton.collidepoint(mx, my):
                     draw.rect(screen, (100, 255, 100), buyButton)
                     if mb[0] == 1:
                         canClick = False
-                        player.money -= weaponList[selectedStoreProduct].cost
+                        playerUser.money -= weaponList[selectedStoreProduct].cost
                         purchasedWeapons[weaponNamesList.index(selectedStoreProduct)] = True
                 else:
                     draw.rect(screen, (0, 200, 0), buyButton)
@@ -829,6 +853,7 @@ def shipMenu():
                 draw.rect(screen, (0, 0, 255), equipButton)
                 if mb[0] and canClick:
                     currentWeapon = selectedStoreProduct
+                    playerUser.weaponName = selectedStoreProduct
             else:
                 draw.rect(screen, (100, 100, 180), equipButton)
             screen.blit(equipText, (530 - (equipText.get_width() // 2), 545))
@@ -851,15 +876,15 @@ def shipMenu():
 
 def reloadTime():
     global weaponList
-    if player.reloading > 0:
-        player.reloading += 1
-    if player.reloading == weaponList[currentWeapon].reloadSpeed:
-        player.reloading = 0
-        player.reserveAmmo[weaponList[currentWeapon].ammoType] += player.mag  # move ammo from mag to reserve
-        transferAmmo = min(weaponList[currentWeapon].magSize, player.reserveAmmo[
+    if playerUser.reloading > 0:
+        playerUser.reloading += 1
+    if playerUser.reloading == weaponList[currentWeapon].reloadSpeed:
+        playerUser.reloading = 0
+        playerUser.reserveAmmo[weaponList[currentWeapon].ammoType] += playerUser.mag  # move ammo from mag to reserve
+        transferAmmo = min(weaponList[currentWeapon].magSize, playerUser.reserveAmmo[
             weaponList[currentWeapon].ammoType])  # prepare to move one mag worth of ammo back
-        player.mag = transferAmmo
-        player.reserveAmmo[weaponList[currentWeapon].ammoType] -= transferAmmo
+        playerUser.mag = transferAmmo
+        playerUser.reserveAmmo[weaponList[currentWeapon].ammoType] -= transferAmmo
 
 
 def startGame():  # reset all game related variables
@@ -867,17 +892,17 @@ def startGame():  # reset all game related variables
     playTile = makeTile(fixLevel(makeNewLevel(10)))
     drawnMap = playTile[1]
     minimap = transform.scale(drawnMap, [drawnMap.get_width() // 7, drawnMap.get_height() // 7])
-    player.health, player.shield = player.maxHealth, player.maxShield
-    player.reserveAmmo = [500, 200, 60, 2500]
-    player.X, player.Y = spawnX, spawnY
+    playerUser.health, playerUser.shield = playerUser.maxHealth, playerUser.maxShield
+    playerUser.reserveAmmo = [500, 200, 60, 2500]
+    playerUser.X, playerUser.Y = spawnX, spawnY
     mobList = []
     pickupList = []
     bulletList = []
     regenTimer = 0
     menuAnimation = 0
-    player.reloading = 0
+    playerUser.reloading = 0
     animationStatus = -1
-    player.mag = weaponList[currentWeapon].magSize
+    playerUser.mag = weaponList[currentWeapon].magSize
     drawUpperSprite()
     return playTile, drawnMap, minimap
 
@@ -1052,7 +1077,6 @@ storeBackdrop = image.load('images/menu/storeBackDrop.jpg')
 explosiveIcon = image.load('images/menu/explosive.png').convert_alpha()
 criticalIcon = image.load('images/menu/critical.png').convert_alpha()
 burstIcon = image.load('images/menu/burst.png').convert_alpha()
-specialIconList = [explosiveIcon,criticalIcon,burstIcon]
 # Adds backdrops to a list for main menu slideshow
 mainMenuBackDrops = []
 backdropGlob = glob.glob('images/backdrops/backdrop*')
@@ -1110,8 +1134,8 @@ weaponList = {
     'burston' : weaponFactory.load_from_file('dat/weapons/burston.json'),
     'sybaris' : weaponFactory.load_from_file('dat/weapons/sybaris.json'),
     'detron' : weaponFactory.load_from_file('dat/weapons/detron.json'),
-    #'drakgoon':weapon.Weapon(10,1,7,120,vectisShoot,WHITE,10,3,vectisShoot,1, bulletType = 1, bulletGravity=0.1, bulletSpeed=10, bulletLength = 1, bulletThickness=1, cost = 20000,wepType = Weapon.WEAPON_TYPE.SHOTGUN,critChance = 25,critMult=2,fireMode = 1),
-    'targeter' : weaponFactory.load_from_file('dat/weapons/targeter.json'),
+    'drakgoon':weaponFactory.load_from_file('dat/weapons/drakgoon.json'),
+    #'targeter' : weaponFactory.load_from_file('dat/weapons/targeter.json'),
     'unarmed': weapon.Weapon(0, 0, 0, 10, noSound, BLACK, 0, 0, noSound, Weapon.WEAPON_TYPE.RIFLE, 0)}
 
 display.set_icon(image.load('images/deco/icon.png').convert_alpha())
@@ -1269,7 +1293,7 @@ playTile = ((0, 0), Surface((0, 0)), [[Rect(0, 0, 0, 0)], 0])
 minimap = Surface((0, 0))
 drawMap = playTile[1]
 # Player
-player = mob.Mob(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2, health=100, shield=100, money=startingMoney)  # refer to mob
+playerUser = player.Player(400, 300, 33, 36, 0, 0, 4, 0.3, False, 2, health=100, shield=100, money=startingMoney)  # refer to mob
 currentFrame = 0
 
 # Store info
@@ -1295,7 +1319,7 @@ circleRadii = [0,0,0,0]
 
 # Other
 running = True
-playerStanding = Surface((player.width, player.H))
+playerStanding = Surface((playerUser.width, playerUser.H))
 playerStanding.fill((255, 0, 0))
 gameClock = time.Clock()
 controllerMode = False
@@ -1346,9 +1370,9 @@ while running:
             if e.type == KEYDOWN:
                 if e.key==K_0:
                     purchasedWeapons = [1 for i in range(len(weaponList))]
-                if (e.key == K_w or e.key == K_SPACE) and player.jumps > 0:  # if player can jump
-                    player.vY = -7
-                    player.jumps -= 1
+                if (e.key == K_w or e.key == K_SPACE) and playerUser.jumps > 0:  # if player can jump
+                    playerUser.vY = -7
+                    playerUser.jumps -= 1
                 if e.key == K_ESCAPE:  # pausing the game
                     if gameState == 'game':
                         animationStatus *= -1
@@ -1360,9 +1384,9 @@ while running:
                             closeMenu.play()
                             menuAnimation = 20
                 if e.key == K_r:  # reload
-                    if player.reloading == 0 and player.mag < weaponList[currentWeapon].magSize:
+                    if playerUser.reloading == 0 and playerUser.mag < weaponList[currentWeapon].magSize and playerUser.reserveAmmo[weaponList[currentWeapon].wepType] > 0:
                         weaponList[currentWeapon].reloadSound.play()
-                        player.reloading += 1
+                        playerUser.reloading += 1
             if e.type == MOUSEBUTTONDOWN:  # shooting
                 if e.button == 1:
                     shooting = True
@@ -1404,12 +1428,12 @@ while running:
                     else:
                         keysIn[K_a], keysIn[K_d] = False, False
                 if e.axis == 3:
-                    if e.value < -0.5 and player.jumps > 0 and canJump:
+                    if e.value < -0.5 and playerUser.jumps > 0 and canJump:
                         canJump = False
                         keysIn[K_w] = True
-                        player.vY = -7
-                        player.jumps -= 1
-                    elif e.value < -0.5 and player.oW:
+                        playerUser.vY = -7
+                        playerUser.jumps -= 1
+                    elif e.value < -0.5 and playerUser.oW:
                         keysIn[K_w] = True
                     elif 0 > e.value > -0.5:
                         keysIn[K_w] = False
@@ -1423,9 +1447,9 @@ while running:
                     if gameState == 'ship':
                         gameState = 'menu'
                 if e.button == 2:
-                    if player.reloading == 0:
+                    if playerUser.reloading == 0:
                         weaponList[currentWeapon].reloadSound.play()
-                        player.reloading += 1
+                        playerUser.reloading += 1
                 if e.button == 4:
                     if gameState == 'ship':
                         selectedWeaponType = (selectedWeaponType - 1) % 4
@@ -1465,10 +1489,10 @@ while running:
         if gameState != 'menu':
             mx = max(min(mx + joyInputX, 1279), 0)
             my = max(min(my + joyInputY, 719), 0)
-    playerRect = Rect(player.X, player.Y, player.width, player.H)
+    playerRect = Rect(playerUser.X, playerUser.Y, playerUser.width, playerUser.H)
     display.set_caption('pyFrame - %d fps' % (int(gameClock.get_fps())))
     if gameState != 'game':
-        player.reloading = 0
+        playerUser.reloading = 0
     if gameState == 'ship':
         shipMenu()
     elif gameState == 'menu':
@@ -1477,15 +1501,15 @@ while running:
         instructions()
     elif gameState == 'game':
         possibleangleIn()
-        if menuAnimation <= 0 and player.health > 0:  # go through all game related functions if not in the pause menu and if alive
+        if menuAnimation <= 0 and playerUser.health > 0:  # go through all game related functions if not in the pause menu and if alive
             spawnEnemies()
             keysDown(keysIn)
             reloadTime()
-            player.move()
-            player.hitStuff(playTile, gravity)
-            player.applyFriction(friction, airFriction)
+            playerUser.move()
+            playerUser.hitStuff(playTile, gravity)
+            playerUser.applyFriction(friction, airFriction)
             companion.move()
-            companion.kubrowLogic(player, mobList, damagePopoff)
+            companion.kubrowLogic(playerUser, mobList, damagePopoff)
             companion.hitStuff(playTile, gravity)
             companion.applyFriction(friction, airFriction)
             for i in range(len(queuedShots)-1,-1,-1):
@@ -1496,7 +1520,7 @@ while running:
                     del queuedShots[i]
             for i in range(len(mobList)-1,-1,-1):
                 mobList[i].move()
-                mobList[i].enemyLogic(player, pickupList, enemyDeathSounds, pickupSprites, playTile, doorList, bulletList, weaponList, playerRect)
+                mobList[i].enemyLogic(playerUser, pickupList, enemyDeathSounds, pickupSprites, playTile, doorList, bulletList, weaponList, playerRect)
                 mobList[i].hitStuff(playTile, gravity)
                 mobList[i].applyFriction(friction, airFriction)
                 if mobList[i].despawn:
@@ -1514,27 +1538,27 @@ while running:
                 damagePopoff[i].move()
                 if damagePopoff[i].life <=0:
                     del damagePopoff[i]
-            canRegenShields = player.shield < player.maxShield
+            canRegenShields = playerUser.shield < playerUser.maxShield
             calcBullets()
             # Shield regen and sfx
-            if int(player.shield) == 0 and regenTimer == 0:  # play sound only if player has hit 0 health
+            if int(playerUser.shield) == 0 and regenTimer == 0:  # play sound only if player has hit 0 health
                 beginShieldRegen.play()
             if canRegenShields and regenTimer == 0:
-                player.shield += 0.4
+                playerUser.shield += 0.4
 
             regenTimer = max(0, regenTimer - 1)
             # pickups
             for i in range(len(pickupList) - 1, -1, -1):
                 pickupList[i].fallToGround(pickupSprites, playTile)
-                if pickupList[i].checkCollide(player, ammoPickup, healthPickup):
+                if pickupList[i].checkCollide(playerUser, ammoPickup, healthPickup):
                     del pickupList[i]
             for i in doorList:
-                i.moveDoor(mobList, companion, player)
+                i.moveDoor(mobList, companion, playerUser)
             drawStuff(playTile[1], playTile[0], keysIn)
             if currentWeapon == 'targeter':
                 targeterMech()
-            if player.shootCooldown > 0:  # fire rate
-                player.shootCooldown -= 1
+            if playerUser.shootCooldown > 0:  # fire rate
+                playerUser.shootCooldown -= 1
         elif menuAnimation >= 1:  # if paused
             screen.blit(pauseScreen, (0, 0))
             draw.rect(screen, WHITE, (
@@ -1543,8 +1567,8 @@ while running:
                 2 * min(menuAnimation * 10, 110)))
             if menuAnimation >= 20:
                 pauseMenu()
-        elif player.health <= 0:  # if dead
-            if player.health <= 0 and deathAnimation == 0:
+        elif playerUser.health <= 0:  # if dead
+            if playerUser.health <= 0 and deathAnimation == 0:
                 encouragementText = random.choice(encouragement)
             deathAnimation += 1
             if deathAnimation < 350:
