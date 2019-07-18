@@ -1,0 +1,31 @@
+{
+ "name": "Drakgoon",
+ "weapon_type": "shotgun",
+ "fire_rate": 45,
+ "damage": 10,
+ "sprite": "images/weapons/grineer/drakgoon.png",
+ "cost": 15000,
+ "magazine_size": 7,
+ "reload_speed": 150,
+ "bullet_colour": "#ffffff",
+ "bullets_per_shot": 10,
+ "inaccuracy": 2,
+ "sounds": {
+  "firing": "sfx/weapons/grineer/drakgoonShoot.ogg",
+  "reloading": "sfx/weapons/grineer/drakgoonReload.ogg"
+ },
+ "ammo_type": "shotgun",
+ "bullet_type": "projectile",
+ "bullet_gravity": 0.15,
+ "bullet_speed": 15,
+ "bullet_length": 4,
+ "bullet_thickness": 2,
+ "bullet_range": 600,
+ "is_explosive": "false",
+ "explosive_radius": 0,
+ "explosive_falloff": 0,
+ "fuse": 0,
+ "critical_chance": 10,
+ "critical_multiplier": 2.0,
+ "fire_mode": "semi"
+}
